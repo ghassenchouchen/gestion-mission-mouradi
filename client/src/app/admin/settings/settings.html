@@ -1,0 +1,430 @@
+<div class="settings-wrapper">
+  <app-sidebar activeItem="settings"></app-sidebar>
+
+  <div class="main-wrap">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-title-block">
+        <h1>Paramètres</h1>
+        <p>Configuration des tables de référence de l'application</p>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Tabs Navigation -->
+      <div class="tabs-container animate-in">
+        <div class="tab-bar">
+          <button class="tab-btn" [class.active]="activeTab === 'chauffeurs'" (click)="switchTab('chauffeurs')">
+            <iconify-icon icon="lucide:user-check"></iconify-icon>
+            Chauffeurs
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'vehicules'" (click)="switchTab('vehicules')">
+            <iconify-icon icon="lucide:truck"></iconify-icon>
+            Véhicules
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'objets'" (click)="switchTab('objets')">
+            <iconify-icon icon="lucide:compass"></iconify-icon>
+            Objets de mission
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'destinations'" (click)="switchTab('destinations')">
+            <iconify-icon icon="lucide:map-pin"></iconify-icon>
+            Destinations
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'employes'" (click)="switchTab('employes')">
+            <iconify-icon icon="lucide:users"></iconify-icon>
+            Employés
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'utilisateurs'" (click)="switchTab('utilisateurs')">
+            <iconify-icon icon="lucide:shield-alert"></iconify-icon>
+            Utilisateurs
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="animate-in" style="animation-delay: 0.1s;">
+        <!-- Header Actions Row -->
+        <div class="tab-actions-row">
+          <div class="tab-actions-title">
+            <h3 *ngIf="activeTab === 'chauffeurs'">Chauffeurs</h3>
+            <p *ngIf="activeTab === 'chauffeurs'">Gérez la liste des chauffeurs d'El Mouradi Hotels</p>
+
+            <h3 *ngIf="activeTab === 'vehicules'">Véhicules</h3>
+            <p *ngIf="activeTab === 'vehicules'">Gérez le parc automobile disponible pour les déplacements</p>
+
+            <h3 *ngIf="activeTab === 'objets'">Objets de mission</h3>
+            <p *ngIf="activeTab === 'objets'">Configurez les motifs standard des ordres de mission</p>
+
+            <h3 *ngIf="activeTab === 'destinations'">Destinations</h3>
+            <p *ngIf="activeTab === 'destinations'">Gérez la liste des hôtels et lieux d'affectation</p>
+
+            <h3 *ngIf="activeTab === 'employes'">Employés</h3>
+            <p *ngIf="activeTab === 'employes'">Gérez les profils des collaborateurs de la chaîne</p>
+
+            <h3 *ngIf="activeTab === 'utilisateurs'">Comptes Utilisateurs</h3>
+            <p *ngIf="activeTab === 'utilisateurs'">Configurez les accès Administrateurs et Ressources Humaines</p>
+          </div>
+
+          <button class="btn-primary" (click)="openAddModal()">
+            <iconify-icon icon="lucide:plus"></iconify-icon>
+            Ajouter
+          </button>
+        </div>
+
+        <!-- Reference Tables -->
+        <div class="table-card">
+          <div class="table-responsive">
+
+            <!-- Chauffeurs Table -->
+            <table class="data-table" *ngIf="activeTab === 'chauffeurs'">
+              <thead>
+                <tr>
+                  <th>Matricule (MLE)</th>
+                  <th>Prénom & Nom</th>
+                  <th>Téléphone</th>
+                  <th>Disponibilité</th>
+                  <th style="width: 100px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of chauffeurs">
+                  <td><span class="mono-field">{{ item.mle }}</span></td>
+                  <td style="font-weight: 500;">{{ item.prenom }} {{ item.nom }}</td>
+                  <td>{{ item.telephone }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="item.disponible ? 'badge-active' : 'badge-inactive'">
+                      {{ item.disponible ? 'Disponible' : 'Occupé / En mission' }}
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <button class="icon-btn" (click)="openEditModal(item)" title="Modifier"><iconify-icon
+                        icon="lucide:edit-2"></iconify-icon></button>
+                    <button class="icon-btn icon-btn-danger" (click)="deleteItem(item.id)"
+                      title="Supprimer"><iconify-icon icon="lucide:trash"></iconify-icon></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Vehicules Table -->
+            <table class="data-table" *ngIf="activeTab === 'vehicules'">
+              <thead>
+                <tr>
+                  <th>Immatriculation</th>
+                  <th>Marque & Modèle</th>
+                  <th>Type</th>
+                  <th>Disponibilité</th>
+                  <th style="width: 100px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of vehicules">
+                  <td><span class="mono-field">{{ item.immatriculation }}</span></td>
+                  <td style="font-weight: 500;">{{ item.marque }} {{ item.modele }}</td>
+                  <td>{{ item.type }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="item.disponible ? 'badge-active' : 'badge-inactive'">
+                      {{ item.disponible ? 'Disponible' : 'En route' }}
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <button class="icon-btn" (click)="openEditModal(item)" title="Modifier"><iconify-icon
+                        icon="lucide:edit-2"></iconify-icon></button>
+                    <button class="icon-btn icon-btn-danger" (click)="deleteItem(item.id)"
+                      title="Supprimer"><iconify-icon icon="lucide:trash"></iconify-icon></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Objets de Mission Table -->
+            <table class="data-table" *ngIf="activeTab === 'objets'">
+              <thead>
+                <tr>
+                  <th>Libellé de l'objet</th>
+                  <th>Statut</th>
+                  <th style="width: 100px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of objets">
+                  <td style="font-weight: 500;">{{ item.libelle }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="item.actif ? 'badge-active' : 'badge-inactive'">
+                      {{ item.actif ? 'Actif' : 'Désactivé' }}
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <button class="icon-btn" (click)="openEditModal(item)" title="Modifier"><iconify-icon
+                        icon="lucide:edit-2"></iconify-icon></button>
+                    <button class="icon-btn icon-btn-danger" (click)="deleteItem(item.id)"
+                      title="Supprimer"><iconify-icon icon="lucide:trash"></iconify-icon></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Destinations Table -->
+            <table class="data-table" *ngIf="activeTab === 'destinations'">
+              <thead>
+                <tr>
+                  <th>Nom du lieu / hôtel</th>
+                  <th>Ville</th>
+                  <th style="width: 100px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of destinations">
+                  <td style="font-weight: 500;">{{ item.nom }}</td>
+                  <td>{{ item.ville }}</td>
+                  <td style="text-align: right;">
+                    <button class="icon-btn" (click)="openEditModal(item)" title="Modifier"><iconify-icon
+                        icon="lucide:edit-2"></iconify-icon></button>
+                    <button class="icon-btn icon-btn-danger" (click)="deleteItem(item.id)"
+                      title="Supprimer"><iconify-icon icon="lucide:trash"></iconify-icon></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Employes Table -->
+            <table class="data-table" *ngIf="activeTab === 'employes'">
+              <thead>
+                <tr>
+                  <th>Matricule (MLE)</th>
+                  <th>Prénom & Nom</th>
+                  <th>Fonction</th>
+                  <th>Affectation</th>
+                  <th>État</th>
+                  <th style="width: 100px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of employes">
+                  <td><span class="mono-field">{{ item.mle }}</span></td>
+                  <td style="font-weight: 500;">{{ item.prenom }} {{ item.nom }}</td>
+                  <td>{{ item.fonction }}</td>
+                  <td>{{ item.hotelAffectation }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="item.actif ? 'badge-active' : 'badge-inactive'">
+                      {{ item.actif ? 'Actif' : 'Inactif' }}
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <button class="icon-btn" (click)="openEditModal(item)" title="Modifier"><iconify-icon
+                        icon="lucide:edit-2"></iconify-icon></button>
+                    <button class="icon-btn icon-btn-danger" (click)="deleteItem(item.id)"
+                      title="Supprimer"><iconify-icon icon="lucide:trash"></iconify-icon></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Utilisateurs Table -->
+            <table class="data-table" *ngIf="activeTab === 'utilisateurs'">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Nom complet</th>
+                  <th>Rôle</th>
+                  <th style="width: 100px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of utilisateurs">
+                  <td><span class="mono-field">{{ item.email }}</span></td>
+                  <td style="font-weight: 500;">{{ item.prenom }} {{ item.nom }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="item.role === 'ADMIN' ? 'badge-active' : 'badge-inactive'"
+                      style="background: rgba(212, 168, 83, 0.1); color: #d4a853; border: 1px solid rgba(212, 168, 83, 0.2);">
+                      {{ item.role === 'ADMIN' ? 'Administrateur' : 'Ressources Humaines (RH)' }}
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <button class="icon-btn" (click)="openEditModal(item)" title="Modifier"><iconify-icon
+                        icon="lucide:edit-2"></iconify-icon></button>
+                    <button class="icon-btn icon-btn-danger" (click)="deleteItem(item.id)"
+                      title="Supprimer"><iconify-icon icon="lucide:trash"></iconify-icon></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-backdrop" *ngIf="isModalOpen">
+  <div class="modal-card animate-in">
+    <div class="modal-header">
+      <h3>{{ getModalTitle() }}</h3>
+      <button class="modal-close-btn" (click)="closeModal()">
+        <iconify-icon icon="lucide:x"></iconify-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Chauffeurs Fields -->
+      <div *ngIf="activeTab === 'chauffeurs'">
+        <div class="form-group">
+          <label>Matricule (MLE)</label>
+          <input type="text" class="form-control" placeholder="Ex: CH004" [(ngModel)]="formData.mle" />
+        </div>
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" class="form-control" placeholder="Ex: Slim" [(ngModel)]="formData.prenom" />
+        </div>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" class="form-control" placeholder="Ex: Ben Ali" [(ngModel)]="formData.nom" />
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="text" class="form-control" placeholder="Ex: +216 98 999 999" [(ngModel)]="formData.telephone" />
+        </div>
+        <div class="form-group toggle-group" style="margin-top: 12px;">
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="formData.disponible" />
+            <span class="toggle-slider"></span>
+          </label>
+          <label>Disponible pour les missions</label>
+        </div>
+      </div>
+
+      <!-- Véhicules Fields -->
+      <div *ngIf="activeTab === 'vehicules'">
+        <div class="form-group">
+          <label>Immatriculation</label>
+          <input type="text" class="form-control" placeholder="Ex: 215 TUN 4321"
+            [(ngModel)]="formData.immatriculation" />
+        </div>
+        <div class="form-group">
+          <label>Marque</label>
+          <input type="text" class="form-control" placeholder="Ex: Ford" [(ngModel)]="formData.marque" />
+        </div>
+        <div class="form-group">
+          <label>Modèle</label>
+          <input type="text" class="form-control" placeholder="Ex: Transit" [(ngModel)]="formData.modele" />
+        </div>
+        <div class="form-group">
+          <label>Type de véhicule</label>
+          <select class="form-control" [(ngModel)]="formData.type">
+            <option value="Voiture">Voiture</option>
+            <option value="Bus">Bus</option>
+            <option value="Utilitaire">Utilitaire</option>
+            <option value="Aucun">Aucun</option>
+          </select>
+        </div>
+        <div class="form-group toggle-group" style="margin-top: 12px;">
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="formData.disponible" />
+            <span class="toggle-slider"></span>
+          </label>
+          <label>Disponible pour utilisation</label>
+        </div>
+      </div>
+
+      <!-- Objets Fields -->
+      <div *ngIf="activeTab === 'objets'">
+        <div class="form-group">
+          <label>Libellé de l'objet</label>
+          <input type="text" class="form-control" placeholder="Ex: Réunion de chantier"
+            [(ngModel)]="formData.libelle" />
+        </div>
+        <div class="form-group toggle-group" style="margin-top: 12px;">
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="formData.actif" />
+            <span class="toggle-slider"></span>
+          </label>
+          <label>Actif (Disponible pour sélection)</label>
+        </div>
+      </div>
+
+      <!-- Destinations Fields -->
+      <div *ngIf="activeTab === 'destinations'">
+        <div class="form-group">
+          <label>Nom du lieu / hôtel</label>
+          <input type="text" class="form-control" placeholder="Ex: El Mouradi Palace" [(ngModel)]="formData.nom" />
+        </div>
+        <div class="form-group">
+          <label>Ville</label>
+          <input type="text" class="form-control" placeholder="Ex: Sousse" [(ngModel)]="formData.ville" />
+        </div>
+      </div>
+
+      <!-- Employés Fields -->
+      <div *ngIf="activeTab === 'employes'">
+        <div class="form-group">
+          <label>Matricule (MLE)</label>
+          <input type="text" class="form-control" placeholder="Ex: EMP006" [(ngModel)]="formData.mle" />
+        </div>
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" class="form-control" placeholder="Ex: Fatma" [(ngModel)]="formData.prenom" />
+        </div>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" class="form-control" placeholder="Ex: Kallel" [(ngModel)]="formData.nom" />
+        </div>
+        <div class="form-group">
+          <label>Fonction</label>
+          <input type="text" class="form-control" placeholder="Ex: Responsable RH" [(ngModel)]="formData.fonction" />
+        </div>
+        <div class="form-group">
+          <label>Hôtel d'affectation principal</label>
+          <select class="form-control" [(ngModel)]="formData.hotelAffectation">
+            <option value="" disabled selected>Choisir un hôtel...</option>
+            <option *ngFor="let hotel of hotelsList" [value]="hotel">{{ hotel }}</option>
+          </select>
+        </div>
+        <div class="form-group toggle-group" style="margin-top: 12px;">
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="formData.actif" />
+            <span class="toggle-slider"></span>
+          </label>
+          <label>Actif (Employé de l'entreprise)</label>
+        </div>
+      </div>
+
+      <!-- Utilisateurs Fields -->
+      <div *ngIf="activeTab === 'utilisateurs'">
+        <div class="form-group">
+          <label>Adresse Email</label>
+          <input type="email" class="form-control" placeholder="Ex: nom@elmouradi.tn" [(ngModel)]="formData.email" />
+        </div>
+        <div class="form-group" *ngIf="modalMode === 'add'">
+          <label>Mot de passe</label>
+          <input type="password" class="form-control" placeholder="Définir un mot de passe"
+            [(ngModel)]="formData.password" />
+        </div>
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" class="form-control" placeholder="Ex: Hichem" [(ngModel)]="formData.prenom" />
+        </div>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" class="form-control" placeholder="Ex: Belhadj" [(ngModel)]="formData.nom" />
+        </div>
+        <div class="form-group">
+          <label>Rôle</label>
+          <select class="form-control" [(ngModel)]="formData.role">
+            <option value="ADMIN">Administrateur</option>
+            <option value="HR">Ressources Humaines (RH)</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="closeModal()">Annuler</button>
+      <button class="btn-primary" (click)="saveItem()">Enregistrer</button>
+    </div>
+  </div>
+</div>

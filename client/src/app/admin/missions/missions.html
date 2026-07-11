@@ -1,0 +1,145 @@
+<div class="missions-wrapper">
+  <app-sidebar activeItem="missions"></app-sidebar>
+
+  <div class="main-wrap">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-title-block">
+        <h1>Ordres de mission</h1>
+        <p>Gestion et suivi de tous les déplacements </p>
+      </div>
+      <div class="topbar-actions">
+        <a routerLink="/admin/nouvelle-mission" class="btn-primary">
+          <iconify-icon icon="lucide:plus"></iconify-icon>
+          Nouvelle Mission
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Filter Bar -->
+      <section class="filter-card animate-in">
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label>Rechercher</label>
+            <input type="text" class="filter-control" placeholder="Référence, employé, destination..."
+              [(ngModel)]="searchQuery" (ngModelChange)="onFilterChange()" />
+          </div>
+
+          <div class="filter-group">
+            <label>Statut</label>
+            <select class="filter-control" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+              <option value="ALL">Tous les statuts</option>
+              <option value="PLANIFIE">Validé</option>
+              <option value="EN_COURS">En cours</option>
+              <option value="TERMINE">Terminé</option>
+              <option value="ANNULE">Annulé</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Date Début</label>
+            <input type="date" class="filter-control" [(ngModel)]="startDateFilter"
+              (ngModelChange)="onFilterChange()" />
+          </div>
+
+          <div class="filter-group">
+            <label>Date Fin</label>
+            <input type="date" class="filter-control" [(ngModel)]="endDateFilter" (ngModelChange)="onFilterChange()" />
+          </div>
+
+          <button class="btn-ghost" style="margin-bottom: 0;" (click)="resetFilters()" title="Réinitialiser">
+            <iconify-icon icon="lucide:refresh-cw"></iconify-icon>
+          </button>
+        </div>
+      </section>
+
+      <!-- Table Section -->
+      <section class="table-card animate-in" style="animation-delay: 0.1s;">
+        <div class="table-header">
+          <div>
+            <h2 class="section-title">Liste des ordres de mission</h2>
+            <p class="section-sub">Total: {{ filteredMissions.length }} mission(s) correspondante(s)</p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Référence</th>
+                <th>Employé</th>
+                <th>Destination</th>
+                <th>Période</th>
+                <th>Statut</th>
+                <th style="width: 120px; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="paginatedMissions.length === 0">
+                <td colspan="6" style="text-align: center; color: #8a92a8; padding: 40px; font-style: italic;">
+                  Aucune mission trouvée pour ces filtres.
+                </td>
+              </tr>
+              <tr *ngFor="let mission of paginatedMissions">
+                <td>
+                  <span class="mono-ref">{{ mission.reference }}</span>
+                </td>
+                <td>
+                  <div class="emp-avatar-container">
+                    <div class="emp-avatar">{{ mission.employeeInitials }}</div>
+                    <span class="emp-name">{{ mission.employeeName }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="dest-container">
+                    <iconify-icon icon="lucide:map-pin"></iconify-icon>
+                    <span>{{ mission.destination }}</span>
+                  </div>
+                </td>
+                <td>{{ mission.dateStr }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusClass(mission.status)">
+                    {{ getStatusLabel(mission.status) }}
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <button class="icon-btn" (click)="viewMission(mission.reference)" title="Détails">
+                    <iconify-icon icon="lucide:eye"></iconify-icon>
+                  </button>
+                  <button class="icon-btn" (click)="editMission(mission.reference)" title="Modifier">
+                    <iconify-icon icon="lucide:edit-2"></iconify-icon>
+                  </button>
+                  <button class="icon-btn" (click)="printMission(mission.reference)" title="Imprimer">
+                    <iconify-icon icon="lucide:printer"></iconify-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer" *ngIf="filteredMissions.length > 0">
+          <span class="table-footer-text">
+            Affichage de {{ startItemIndex }} à {{ endItemIndex }} sur {{ filteredMissions.length }} entrées
+          </span>
+
+          <div class="pagination-controls">
+            <button class="btn-ghost" style="padding: 6px 12px; height: 32px;" [disabled]="currentPage === 1"
+              (click)="prevPage()">
+              Précédent
+            </button>
+            <span style="font-size: 13px; color: #4a5168; font-weight: 500;">
+              Page {{ currentPage }} sur {{ totalPages }}
+            </span>
+            <button class="btn-ghost" style="padding: 6px 12px; height: 32px;" [disabled]="currentPage === totalPages"
+              (click)="nextPage()">
+              Suivant
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>

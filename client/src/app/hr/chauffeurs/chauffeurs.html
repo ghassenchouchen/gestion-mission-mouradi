@@ -1,0 +1,75 @@
+<div class="missions-wrapper">
+  <app-sidebar activeItem="chauffeurs"></app-sidebar>
+
+  <div class="main-wrap">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-title-block">
+        <h1>Chauffeurs</h1>
+        <p>Suivi en temps réel de la disponibilité et des coordonnées des chauffeurs</p>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Filter Bar -->
+      <section class="filter-card animate-in">
+        <div class="filter-grid" style="grid-template-columns: 1fr;">
+          <div class="filter-group">
+            <label>Rechercher un chauffeur</label>
+            <input 
+              type="text" 
+              class="filter-control" 
+              placeholder="Rechercher par nom, prénom ou MLE..." 
+              [(ngModel)]="searchQuery"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Table Section -->
+      <section class="table-card animate-in" style="animation-delay: 0.1s;">
+        <div class="table-header">
+          <div>
+            <h2 class="section-title">Liste des chauffeurs</h2>
+            <p class="section-sub">Total: {{ filteredChauffeurs.length }} chauffeur(s)</p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Matricule (MLE)</th>
+                <th>Prénom</th>
+                <th>Nom</th>
+                <th>Numéro de Téléphone</th>
+                <th>Disponibilité</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="filteredChauffeurs.length === 0">
+                <td colspan="5" style="text-align: center; color: #8a92a8; padding: 40px; font-style: italic;">
+                  Aucun chauffeur correspondant trouvé.
+                </td>
+              </tr>
+              <tr *ngFor="let item of filteredChauffeurs">
+                <td>
+                  <span class="mono-ref">{{ item.mle }}</span>
+                </td>
+                <td style="font-weight: 500;">{{ item.prenom }}</td>
+                <td style="font-weight: 500;">{{ item.nom }}</td>
+                <td>{{ item.telephone }}</td>
+                <td>
+                  <span class="badge" [ngClass]="item.disponible ? 'badge-termine' : 'badge-encours'">
+                    {{ item.disponible ? 'Disponible' : 'En mission' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>

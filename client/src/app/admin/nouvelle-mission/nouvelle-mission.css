@@ -1,0 +1,400 @@
+/* ── Page Layout ── */
+.nouvelle-mission-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8f9fc;
+}
+
+.main-wrap {
+  margin-left: 256px;
+  flex: 1;
+  min-height: 100vh;
+  background: #f8f9fc;
+  box-sizing: border-box;
+}
+
+.topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e8eaef;
+  padding: 0 36px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.topbar-title-block h1 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #1a1f36;
+}
+
+.topbar-title-block p {
+  font-size: 12px;
+  color: #8a92a8;
+}
+
+.main-content {
+  padding: 36px 36px 48px;
+  box-sizing: border-box;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* ── Form Card ── */
+.form-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e8eaef;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+/* ── Form Sections ── */
+.form-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f0f2f7;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 16px;
+  padding-bottom: 0;
+}
+
+.section-header {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #1a1f36;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title iconify-icon {
+  color: #d4a853;
+  font-size: 18px;
+}
+
+.section-desc {
+  font-size: 12px;
+  color: #8a92a8;
+  margin-top: 2px;
+  padding-left: 26px;
+}
+
+/* ── Form Fields Layout ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding-left: 26px;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 768px) {
+  .grid-2, .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #4a5168;
+}
+
+.form-group label span {
+  color: #e11d48;
+}
+
+/* ── Form Controls ── */
+.form-control {
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #1a1f36;
+  padding: 10px 14px;
+  border: 1px solid #d0d4e0;
+  border-radius: 8px;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  border-color: #d4a853;
+  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.15);
+}
+
+.form-control:disabled {
+  background: #f8f9fc;
+  color: #8a92a8;
+  cursor: not-allowed;
+}
+
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a5168' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ── Auto-complete Dropdown Panel ── */
+.search-container {
+  position: relative;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #d0d4e0;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.search-item {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1a1f36;
+  cursor: pointer;
+  transition: background 0.1s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-item:hover {
+  background: #f4f5f8;
+}
+
+.search-item .mle {
+  font-family: monospace;
+  font-size: 11.5px;
+  color: #8a92a8;
+  background: #f0f2f7;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ── Removable Chips Container ── */
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px dashed #d0d4e0;
+  border-radius: 8px;
+  min-height: 44px;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0f2f7;
+  color: #4a5168;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: 1px solid #e2e6ef;
+}
+
+.chip-remove {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #8a92a8;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.1s;
+}
+
+.chip-remove:hover {
+  color: #e11d48;
+}
+
+/* ── Collapsible Section ── */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.collapsible-trigger {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #1a1f36;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collapsible-trigger iconify-icon {
+  color: #d4a853;
+  font-size: 18px;
+}
+
+.collapsible-arrow {
+  color: #8a92a8;
+  transition: transform 0.2s;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.collapsible-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.collapsible-body {
+  margin-top: 20px;
+  padding-left: 26px;
+}
+
+/* ── Action Buttons ── */
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid #f0f2f7;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  background: #d4a853;
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(212,168,83,0.35);
+}
+
+.btn-primary:hover {
+  background: #c49940;
+  box-shadow: 0 4px 16px rgba(212,168,83,0.4);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9.5px 18px;
+  background: transparent;
+  color: #d4a853;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: 1.5px solid #d4a853;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-secondary:hover {
+  background: rgba(212, 168, 83, 0.05);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: transparent;
+  color: #4a5168;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid #e2e6ef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+
+.btn-ghost:hover {
+  background: #f4f5f8;
+  border-color: #d0d4e0;
+}
+
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid #d4a853;
+  color: #d4a853;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.add-btn:hover {
+  background: #d4a853;
+  color: #ffffff;
+}
+
+/* ── Animations ── */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}

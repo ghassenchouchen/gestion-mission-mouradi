@@ -1,0 +1,148 @@
+<div class="login-container page-bg bg-animate">
+
+  <!-- Decorative ambient blobs -->
+  <div class="ambient-blob-1"></div>
+  <div class="ambient-blob-2"></div>
+
+  <!-- Decorative corner pills -->
+  <div class="corner-badge" style="width: 180px; height: 36px; top: 40px; left: 48px;"></div>
+  <div class="corner-badge" style="width: 100px; height: 28px; top: 52px; left: 244px;"></div>
+  <div class="corner-badge" style="width: 140px; height: 32px; bottom: 48px; right: 64px;"></div>
+
+  <!-- Decorative text watermark -->
+  <div class="watermark">
+    <div class="watermark-line"></div>
+    <span class="watermark-text">El Mouradi Hotels</span>
+    <div class="watermark-line"></div>
+  </div>
+
+  <!-- Version badge -->
+  <div class="version-badge">v2.0</div>
+
+  <!-- LOGIN CARD -->
+  <div class="login-card-wrapper">
+    <div class="login-card card-animate">
+
+      <!-- Card top accent stripe -->
+      <div class="card-top-stripe"></div>
+
+      <div class="card-body">
+
+        <!-- Logo area -->
+        <div class="logo-container">
+          <div class="logo-box">
+            <img
+              src="/El-mouradi.png"
+              alt="El Mouradi Hotels"
+              class="logo-img"
+            />
+          </div>
+
+          <!-- Title block -->
+          <div class="title-block">
+            <h1 class="brand-title">El Mouradi Hotels</h1>
+            <h2 class="app-subtitle">Gestion des Missions</h2>
+            <p class="app-desc">Connectez-vous à votre espace de travail</p>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="divider"></div>
+
+        <!-- Form -->
+        <form (ngSubmit)="onSubmit()" class="login-form">
+
+          <!-- Error Message -->
+          @if (errorMessage) {
+            <div class="error-message">
+              <iconify-icon icon="lucide:alert-circle" style="font-size: 16px;"></iconify-icon>
+              <span>{{ errorMessage }}</span>
+            </div>
+          }
+
+          <!-- Email field -->
+          <div class="form-group">
+            <label class="form-label" for="email-input">Adresse email</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <iconify-icon icon="lucide:mail" style="font-size: 16px; color: #9aa3b8;"></iconify-icon>
+              </span>
+              <input
+                id="email-input"
+                name="email"
+                type="email"
+                class="input-field"
+                placeholder="adresse@elmouradi.tn"
+                autocomplete="email"
+                [(ngModel)]="email"
+                [disabled]="isLoading"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Password field -->
+          <div class="form-group">
+            <label class="form-label" for="password-input">Mot de passe</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <iconify-icon icon="lucide:lock" style="font-size: 16px; color: #9aa3b8;"></iconify-icon>
+              </span>
+              <input
+                id="password-input"
+                name="password"
+                [type]="showPassword ? 'text' : 'password'"
+                class="input-field"
+                placeholder="Mot de passe"
+                autocomplete="current-password"
+                [(ngModel)]="password"
+                [disabled]="isLoading"
+                required
+              />
+              <button 
+                type="button" 
+                class="pw-toggle" 
+                (click)="togglePw()" 
+                id="pw-toggle-btn" 
+                [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                [disabled]="isLoading"
+              >
+                <iconify-icon [icon]="showPassword ? 'lucide:eye-off' : 'lucide:eye'" style="font-size: 15px;"></iconify-icon>
+              </button>
+            </div>
+            <!-- Forgot password -->
+            <div class="forgot-container">
+              <a href="#" id="forgot-password-link" class="forgot-link">Mot de passe oublié ?</a>
+            </div>
+          </div>
+
+          <!-- Submit button -->
+          <div class="submit-container">
+            <button type="submit" class="btn-primary" id="signin-btn" [disabled]="isLoading">
+              <span class="btn-content">
+                @if (isLoading) {
+                  <iconify-icon icon="lucide:loader-2" class="animate-spin" style="font-size: 16px;"></iconify-icon>
+                  <span>Connexion en cours...</span>
+                } @else {
+                  <iconify-icon icon="lucide:log-in" style="font-size: 16px;"></iconify-icon>
+                  <span>Se connecter</span>
+                }
+              </span>
+            </button>
+          </div>
+
+        </form>
+
+        <!-- Footer note -->
+        <div class="card-footer">
+          <p class="footer-text">
+            Accès réservé au personnel autorisé.<br/>
+            <a href="#" id="support-link" class="forgot-link">Contacter le support IT</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

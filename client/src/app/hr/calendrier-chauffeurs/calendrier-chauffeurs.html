@@ -1,0 +1,187 @@
+<div class="suivi-wrapper">
+  <app-sidebar activeItem="suivi-chauffeurs"></app-sidebar>
+
+  <div class="main-wrap">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-title-block">
+        <h1>Suivi des Chauffeurs</h1>
+        <p>Consultez l'historique et le planning des missions par chauffeur</p>
+      </div>
+      <button class="btn-primary" (click)="printMonthlyReport()" id="btn-print-monthly">
+        <iconify-icon icon="lucide:printer"></iconify-icon>
+        Imprimer le mois
+      </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Summary Cards -->
+      <div class="summary-row animate-in">
+        <div class="summary-card">
+          <div class="summary-icon en-mission">
+            <iconify-icon icon="lucide:truck"></iconify-icon>
+          </div>
+          <div class="summary-info">
+            <span class="summary-value">{{ totalEnMission }}</span>
+            <span class="summary-label">En mission</span>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon disponible">
+            <iconify-icon icon="lucide:check-circle"></iconify-icon>
+          </div>
+          <div class="summary-info">
+            <span class="summary-value">{{ totalDisponible }}</span>
+            <span class="summary-label">Disponibles</span>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon total">
+            <iconify-icon icon="lucide:calendar-range"></iconify-icon>
+          </div>
+          <div class="summary-info">
+            <span class="summary-value">{{ totalMissionsThisMonth }}</span>
+            <span class="summary-label">Missions ce mois</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <section class="filter-card animate-in" style="animation-delay: 0.06s;">
+        <div class="filter-grid filter-grid-3">
+          <div class="filter-group">
+            <label>Rechercher un chauffeur</label>
+            <input type="text" class="filter-control" placeholder="Nom, prénom ou matricule..."
+              [(ngModel)]="searchQuery" />
+          </div>
+          <div class="filter-group">
+            <label>Mois</label>
+            <input type="month" class="filter-control" [(ngModel)]="selectedMonth" />
+          </div>
+          <div class="filter-group">
+            <label>Filtrer par statut</label>
+            <select class="filter-control" [(ngModel)]="filterStatus">
+              <option value="all">Tous les chauffeurs</option>
+              <option value="en-mission">En mission uniquement</option>
+              <option value="disponible">Disponibles uniquement</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Chauffeur Cards -->
+      <div class="chauffeur-list">
+        <div *ngIf="filteredChauffeurs.length === 0" class="empty-state animate-in">
+          <iconify-icon icon="lucide:search-x" style="font-size: 40px; color: #d0d4e0;"></iconify-icon>
+          <p>Aucun chauffeur correspondant à la recherche.</p>
+        </div>
+
+        <div class="chauffeur-card animate-in" *ngFor="let ch of filteredChauffeurs; let i = index"
+          [style.animation-delay]="(0.08 + i * 0.05) + 's'">
+
+          <!-- Card Header: Chauffeur identity + current status -->
+          <div class="card-header">
+            <div class="chauffeur-identity">
+              <div class="chauffeur-avatar" [class.avatar-busy]="isCurrentlyOnMission(ch)">
+                {{ ch.prenom.charAt(0) }}{{ ch.nom.charAt(0) }}
+              </div>
+              <div class="chauffeur-meta">
+                <h3 class="chauffeur-name">{{ ch.prenom }} {{ ch.nom }}</h3>
+                <div class="chauffeur-details">
+                  <span class="mono-ref">{{ ch.mle }}</span>
+                  <span class="detail-sep">•</span>
+                  <iconify-icon icon="lucide:phone" style="font-size: 12px;"></iconify-icon>
+                  {{ ch.telephone }}
+                </div>
+              </div>
+            </div>
+            <div class="current-status">
+              <span *ngIf="isCurrentlyOnMission(ch)" class="status-pill busy">
+                <iconify-icon icon="lucide:alert-circle"></iconify-icon>
+                En mission
+              </span>
+              <span *ngIf="!isCurrentlyOnMission(ch)" class="status-pill available">
+                <iconify-icon icon="lucide:check-circle"></iconify-icon>
+                Disponible
+              </span>
+            </div>
+          </div>
+
+          <!-- Active Mission Banner (if currently on mission) -->
+          <div class="active-mission-banner" *ngIf="getCurrentMission(ch) as mission">
+            <div class="banner-icon">
+              <iconify-icon icon="lucide:navigation"></iconify-icon>
+            </div>
+            <div class="banner-content">
+              <div class="banner-title">Mission en cours — <strong>{{ mission.missionRef }}</strong></div>
+              <div class="banner-detail">
+                <span>
+                  <iconify-icon icon="lucide:user" style="font-size: 12px;"></iconify-icon>
+                  {{ mission.employeeName }}
+                </span>
+                <span class="detail-sep">→</span>
+                <span>
+                  <iconify-icon icon="lucide:map-pin" style="font-size: 12px;"></iconify-icon>
+                  {{ mission.destination }}
+                </span>
+                <span class="detail-sep">•</span>
+                <span>
+                  <iconify-icon icon="lucide:calendar" style="font-size: 12px;"></iconify-icon>
+                  {{ formatDate(mission.dateDebut) }} — {{ formatDate(mission.dateFin) }}
+                  ({{ getDurationDays(mission.dateDebut, mission.dateFin) }}j)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mission History Table (filtered by selected month) -->
+          <div class="mission-history">
+            <div class="history-header">
+              <h4>Missions — {{ selectedMonthLabel }}</h4>
+              <span class="history-count">{{ getMissionsForMonth(ch).length }} mission(s)</span>
+            </div>
+            <div class="history-table-wrap" *ngIf="getMissionsForMonth(ch).length > 0">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Réf.</th>
+                    <th>Accompagnateur</th>
+                    <th>Destination</th>
+                    <th>Période</th>
+                    <th>Durée</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let m of getMissionsForMonth(ch)" [class.row-active]="m.status === 'EN_COURS'">
+                    <td><span class="mono-ref">{{ m.missionRef }}</span></td>
+                    <td style="font-weight: 500;">{{ m.employeeName }}</td>
+                    <td>
+                      <div class="dest-cell">
+                        <iconify-icon icon="lucide:map-pin" style="font-size: 12px; color: #8a92a8;"></iconify-icon>
+                        {{ m.destination }}
+                      </div>
+                    </td>
+                    <td>{{ formatDate(m.dateDebut) }} — {{ formatDate(m.dateFin) }}</td>
+                    <td>{{ getDurationDays(m.dateDebut, m.dateFin) }} jour(s)</td>
+                    <td>
+                      <span class="badge" [ngClass]="getStatusBadgeClass(m.status)">
+                        {{ getStatusLabel(m.status) }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div *ngIf="getMissionsForMonth(ch).length === 0" class="no-missions">
+              Aucune mission pour ce chauffeur en {{ selectedMonthLabel }}.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>

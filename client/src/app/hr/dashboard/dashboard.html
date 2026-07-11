@@ -1,0 +1,92 @@
+<div class="dashboard-wrapper">
+  <app-sidebar activeItem="dashboard"></app-sidebar>
+
+  <div class="main-wrap">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-title-block">
+        <h1>Tableau de bord RH</h1>
+        <p>Vue globale de l'état des présences en mission aujourd'hui</p>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Stats Grid -->
+      <section class="stats-grid">
+        <div class="stat-card animate-in delay-1" *ngFor="let stat of stats">
+          <div class="stat-header">
+            <div class="stat-icon-wrap" style="background: rgba(212, 168, 83, 0.1); color: #d4a853;">
+              <iconify-icon [attr.icon]="stat.icon" style="font-size: 22px;"></iconify-icon>
+            </div>
+            <span class="stat-badge" [ngClass]="stat.badgeClass">{{ stat.badgeText }}</span>
+          </div>
+          <div class="stat-number">{{ stat.value }}</div>
+          <div class="stat-label">{{ stat.title }}</div>
+          <div class="stat-footer">
+            <span>{{ stat.label }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Table Section -->
+      <section class="table-card animate-in delay-3">
+        <div class="table-header">
+          <div>
+            <h2 class="section-title">Missions actives aujourd'hui</h2>
+            <p class="section-sub">Aperçu rapide des employés en déplacement</p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Référence</th>
+                <th>Employé</th>
+                <th>Destination</th>
+                <th>Horaire prévu</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="todayMissions.length === 0">
+                <td colspan="5" style="text-align: center; color: #8a92a8; padding: 30px; font-style: italic;">
+                  Aucune mission prévue pour aujourd'hui.
+                </td>
+              </tr>
+              <tr *ngFor="let mission of todayMissions">
+                <td>
+                  <span class="mono-ref">{{ mission.reference }}</span>
+                </td>
+                <td>
+                  <div class="emp-avatar-container">
+                    <div class="emp-avatar">{{ mission.employeeInitials }}</div>
+                    <span class="emp-name">{{ mission.employeeName }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="dest-container">
+                    <iconify-icon icon="lucide:map-pin"></iconify-icon>
+                    <span>{{ mission.destination }}</span>
+                  </div>
+                </td>
+                <td>{{ mission.period }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusClass(mission.status)">
+                    {{ getStatusLabel(mission.status) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="table-footer-text">Données actualisées en temps réel</span>
+          <a routerLink="/hr/missions" class="table-footer-link">Consulter toutes les missions →</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>

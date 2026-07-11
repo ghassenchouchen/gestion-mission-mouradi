@@ -1,0 +1,58 @@
+<div class="sidebar">
+  <div class="sidebar-logo" style="justify-content: center; padding: 12px 16px;">
+    <img src="/El-mouradi.png" alt="El Mouradi Hotels" style="height: 68px; width: 100%; object-fit: contain;" />
+  </div>
+
+  <div class="sidebar-nav">
+    <!-- Admin Navigation -->
+    <ng-container *ngIf="currentUser()?.role === 'ADMIN'">
+      <a routerLink="/admin/dashboard" class="nav-item" [class.active]="activeItem === 'dashboard'">
+        <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
+        Tableau de bord
+      </a>
+      <a routerLink="/admin/nouvelle-mission" class="nav-item" [class.active]="activeItem === 'new-mission'">
+        <iconify-icon icon="lucide:plus-circle"></iconify-icon>
+        Nouvelle Mission
+      </a>
+      <a routerLink="/admin/missions" class="nav-item" [class.active]="activeItem === 'missions'">
+        <iconify-icon icon="lucide:file-text"></iconify-icon>
+        Ordres de mission
+      </a>
+      <a routerLink="/admin/settings" class="nav-item" [class.active]="activeItem === 'settings'">
+        <iconify-icon icon="lucide:settings"></iconify-icon>
+        Paramètres
+      </a>
+    </ng-container>
+
+    <!-- HR Navigation -->
+    <ng-container *ngIf="currentUser()?.role === 'HR'">
+      <a routerLink="/hr/dashboard" class="nav-item" [class.active]="activeItem === 'dashboard'">
+        <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
+        Tableau de bord
+      </a>
+      <a routerLink="/hr/missions" class="nav-item" [class.active]="activeItem === 'missions'">
+        <iconify-icon icon="lucide:file-text"></iconify-icon>
+        Missions
+      </a>
+      <a routerLink="/hr/suivi-chauffeurs" class="nav-item" [class.active]="activeItem === 'suivi-chauffeurs'">
+        <iconify-icon icon="lucide:calendar-clock"></iconify-icon>
+        Suivi Chauffeurs
+      </a>
+      <a routerLink="/hr/chauffeurs" class="nav-item" [class.active]="activeItem === 'chauffeurs'">
+        <iconify-icon icon="lucide:user-check"></iconify-icon>
+        Chauffeurs
+      </a>
+    </ng-container>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-row" (click)="logout()" title="Se déconnecter">
+      <div class="user-avatar">{{ initials() }}</div>
+      <div class="user-info">
+        <div class="user-name">{{ userName() }}</div>
+        <div class="user-role-label">{{ userRole() }}</div>
+      </div>
+      <iconify-icon icon="lucide:log-out" style="color: #7a8293; font-size: 16px; margin-left: auto;"></iconify-icon>
+    </div>
+  </div>
+</div>
