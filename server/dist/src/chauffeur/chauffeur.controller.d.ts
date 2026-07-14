@@ -2,21 +2,41 @@ import { ChauffeurService } from './chauffeur.service';
 export declare class ChauffeurController {
     private readonly chauffeurService;
     constructor(chauffeurService: ChauffeurService);
-    findAll(): Promise<{
-        id: number;
+    findAll(): Promise<({
+        vehiculeParDefaut: {
+            id: number;
+            immatriculation: string;
+            marque: string;
+            modele: string;
+            type: string;
+            disponible: boolean;
+        } | null;
+    } & {
         nom: string;
         prenom: string;
-        mle: string;
-        telephone: string | null;
+        id: number;
         disponible: boolean;
-    }[]>;
+        mle: string | null;
+        telephone: string | null;
+        vehiculeParDefautId: number | null;
+    })[]>;
     findOne(id: number): Promise<{
-        id: number;
+        vehiculeParDefaut: {
+            id: number;
+            immatriculation: string;
+            marque: string;
+            modele: string;
+            type: string;
+            disponible: boolean;
+        } | null;
+    } & {
         nom: string;
         prenom: string;
-        mle: string;
-        telephone: string | null;
+        id: number;
         disponible: boolean;
+        mle: string | null;
+        telephone: string | null;
+        vehiculeParDefautId: number | null;
     }>;
     create(body: {
         mle: string;
@@ -24,12 +44,13 @@ export declare class ChauffeurController {
         prenom: string;
         telephone?: string;
     }): Promise<{
-        id: number;
         nom: string;
         prenom: string;
-        mle: string;
-        telephone: string | null;
+        id: number;
         disponible: boolean;
+        mle: string | null;
+        telephone: string | null;
+        vehiculeParDefautId: number | null;
     }>;
     update(id: number, body: {
         mle?: string;
@@ -38,19 +59,21 @@ export declare class ChauffeurController {
         telephone?: string;
         disponible?: boolean;
     }): Promise<{
-        id: number;
         nom: string;
         prenom: string;
-        mle: string;
-        telephone: string | null;
+        id: number;
         disponible: boolean;
+        mle: string | null;
+        telephone: string | null;
+        vehiculeParDefautId: number | null;
     }>;
     remove(id: number): Promise<{
-        id: number;
         nom: string;
         prenom: string;
-        mle: string;
-        telephone: string | null;
+        id: number;
         disponible: boolean;
+        mle: string | null;
+        telephone: string | null;
+        vehiculeParDefautId: number | null;
     }>;
 }

@@ -1,19 +1,33 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { PrintService } from '../../services/print.service';
+import { 
+  OrdreMissionService, 
+  ChauffeurService, 
+  VehiculeService, 
+  DestinationService, 
+  ObjetMissionService, 
+  OrdreMission, 
+  Chauffeur, 
+  Vehicule, 
+  Destination, 
+  ObjetMission 
+} from '../../services/api.service';
 
 interface Mission {
+  id: number;
   reference: string;
   employeeName: string;
   employeeInitials: string;
   destination: string;
-  dateDebut: string; // ISO format for easy filtering
+  dateDebut: string; 
   dateFin: string;
   dateStr: string;
   status: 'PLANIFIE' | 'EN_COURS' | 'TERMINE' | 'ANNULE';
+  raw: OrdreMission;
 }
 
 @Component({
@@ -24,89 +38,15 @@ interface Mission {
   templateUrl: './missions.html',
   styleUrl: './missions.css'
 })
-export class MissionsList {
-  missions: Mission[] = [
-    {
-      reference: 'OM-2026-0042',
-      employeeName: 'Mohamed Ali',
-      employeeInitials: 'MA',
-      destination: 'El Mouradi Gammarth',
-      dateDebut: '2026-06-18',
-      dateFin: '2026-06-20',
-      dateStr: '18 Juin - 20 Juin',
-      status: 'EN_COURS'
-    },
-    {
-      reference: 'OM-2026-0041',
-      employeeName: 'Yassine Ben Amor',
-      employeeInitials: 'YA',
-      destination: 'El Mouradi Sousse',
-      dateDebut: '2026-06-18',
-      dateFin: '2026-06-19',
-      dateStr: '18 Juin - 19 Juin',
-      status: 'PLANIFIE'
-    },
-    {
-      reference: 'OM-2026-0040',
-      employeeName: 'Amel Trabelsi',
-      employeeInitials: 'AT',
-      destination: 'El Mouradi Hammamet',
-      dateDebut: '2026-06-17',
-      dateFin: '2026-06-17',
-      dateStr: '17 Juin 2026',
-      status: 'TERMINE'
-    },
-    {
-      reference: 'OM-2026-0039',
-      employeeName: 'Ridha Mansour',
-      employeeInitials: 'RM',
-      destination: 'El Mouradi Djerba',
-      dateDebut: '2026-06-16',
-      dateFin: '2026-06-20',
-      dateStr: '16 Juin - 20 Juin',
-      status: 'TERMINE'
-    },
-    {
-      reference: 'OM-2026-0038',
-      employeeName: 'Sami Ben Salem',
-      employeeInitials: 'SS',
-      destination: 'El Mouradi Port El Kantaoui',
-      dateDebut: '2026-06-15',
-      dateFin: '2026-06-16',
-      dateStr: '15 Juin - 16 Juin',
-      status: 'ANNULE'
-    },
-    {
-      reference: 'OM-2026-0037',
-      employeeName: 'Salim Gharbi',
-      employeeInitials: 'SG',
-      destination: 'El Mouradi Mahdia',
-      dateDebut: '2026-06-12',
-      dateFin: '2026-06-14',
-      dateStr: '12 Juin - 14 Juin',
-      status: 'TERMINE'
-    },
-    {
-      reference: 'OM-2026-0036',
-      employeeName: 'Mariem Toumi',
-      employeeInitials: 'MT',
-      destination: 'El Mouradi Gammarth',
-      dateDebut: '2026-06-10',
-      dateFin: '2026-06-10',
-      dateStr: '10 Juin 2026',
-      status: 'TERMINE'
-    },
-    {
-      reference: 'OM-2026-0035',
-      employeeName: 'Kais Azaiez',
-      employeeInitials: 'KA',
-      destination: 'El Mouradi Skanes',
-      dateDebut: '2026-06-08',
-      dateFin: '2026-06-09',
-      dateStr: '08 Juin - 09 Juin',
-      status: 'PLANIFIE'
-    }
-  ];
+export class MissionsList implements OnInit {
+  private ordreMissionService = inject(OrdreMissionService);
+  private chauffeurService = inject(ChauffeurService);
+  private vehiculeService = inject(VehiculeService);
+  private destinationService = inject(DestinationService);
+  private objetMissionService = inject(ObjetMissionService);
+  private printService = inject(PrintService);
+
+  missions: Mission[] = [];
 
   // Filters state
   searchQuery = '';
@@ -117,6 +57,72 @@ export class MissionsList {
   // Pagination state
   currentPage = 1;
   pageSize = 5;
+
+  // Modals state
+  isDetailModalOpen = false;
+  isEditModalOpen = false;
+  selectedMission: Mission | null = null;
+  formData: any = {};
+
+  // Form lists
+  drivers: Chauffeur[] = [];
+  vehicles: Vehicule[] = [];
+  destinations: Destination[] = [];
+  objets: ObjetMission[] = [];
+
+  ngOnInit() {
+    this.loadMissions();
+    this.loadEditReferenceData();
+  }
+
+  loadMissions() {
+    this.ordreMissionService.getAll().subscribe({
+      next: (data) => {
+        this.missions = data.map(m => this.mapToViewModel(m));
+        // Refresh details modal object reference if it was open
+        if (this.selectedMission) {
+          const updated = this.missions.find(m => m.id === this.selectedMission!.id);
+          if (updated) this.selectedMission = updated;
+        }
+      },
+      error: (err) => console.error('Error fetching missions:', err)
+    });
+  }
+
+  loadEditReferenceData() {
+    this.chauffeurService.getAll().subscribe(data => this.drivers = data);
+    this.vehiculeService.getAll().subscribe(data => this.vehicles = data);
+    this.destinationService.getAll().subscribe(data => this.destinations = data);
+    this.objetMissionService.getAll().subscribe(data => this.objets = data.filter(o => o.actif));
+  }
+
+  private mapToViewModel(m: OrdreMission): Mission {
+    const emp = m.employe;
+    const empName = emp ? `${emp.prenom} ${emp.nom}` : 'N/A';
+    const initials = emp ? `${emp.prenom[0]}${emp.nom[0]}`.toUpperCase() : 'N/A';
+    const dest = m.destination ? m.destination.nom : 'N/A';
+
+    const start = new Date(m.dateDebut);
+    const end = m.dateFin ? new Date(m.dateFin) : null;
+
+    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' };
+    const dateStr = end && start.getTime() !== end.getTime()
+      ? `${start.toLocaleDateString('fr-FR', options)} - ${end.toLocaleDateString('fr-FR', { ...options, year: 'numeric' })}`
+      : `${start.toLocaleDateString('fr-FR', { ...options, year: 'numeric' })}`;
+
+    return {
+      id: m.id,
+      reference: m.reference,
+      employeeName: empName,
+      employeeInitials: initials,
+      destination: dest,
+      dateDebut: m.dateDebut.split('T')[0],
+      dateFin: m.dateFin ? m.dateFin.split('T')[0] : m.dateDebut.split('T')[0],
+      dateStr: dateStr,
+      status: m.statut,
+      raw: m
+    };
+  }
 
   get filteredMissions(): Mission[] {
     return this.missions.filter(m => {
@@ -203,79 +209,117 @@ export class MissionsList {
   }
 
   viewMission(ref: string) {
-    console.log('Viewing details of', ref);
+    const m = this.missions.find(x => x.reference === ref);
+    if (!m) return;
+    this.selectedMission = m;
+    this.isDetailModalOpen = true;
+  }
+
+  closeDetailsModal() {
+    this.isDetailModalOpen = false;
+    this.selectedMission = null;
+  }
+
+  updateStatus(status: 'EN_COURS' | 'TERMINE' | 'ANNULE') {
+    if (!this.selectedMission) return;
+    
+    this.ordreMissionService.update(this.selectedMission.id, { statut: status }).subscribe({
+      next: () => {
+        this.loadMissions();
+      },
+      error: (err) => {
+        console.error('Error updating mission status:', err);
+        alert(err.error?.message || 'Erreur lors de la mise à jour du statut.');
+      }
+    });
   }
 
   editMission(ref: string) {
-    console.log('Editing mission', ref);
-  }
-
-  private printService = inject(PrintService);
-
-  private getMockEmployeeFunction(name: string): string {
-    const funcs: Record<string, string> = {
-      'Mohamed Ali': 'Auditeur Interne Senior',
-      'Yassine Ben Amor': 'Ingénieur Réseaux & Télécoms',
-      'Amel Trabelsi': 'Directeur Marketing Regional',
-      'Ridha Mansour': 'Directeur Technique Général',
-      'Sami Ben Salem': 'Contrôleur de Gestion',
-      'Salim Gharbi': 'Inspecteur Qualité et Normes',
-      'Mariem Toumi': 'Chef Comptable',
-      'Kais Azaiez': 'Responsable Logistique'
+    const m = this.missions.find(x => x.reference === ref);
+    if (!m) return;
+    if (m.status === 'EN_COURS' || m.status === 'TERMINE') {
+      alert("Impossible de modifier les détails d'une mission en cours ou terminée.");
+      return;
+    }
+    
+    this.selectedMission = m;
+    this.formData = {
+      dateDebut: m.raw.dateDebut.split('T')[0],
+      dateFin: m.raw.dateFin ? m.raw.dateFin.split('T')[0] : '',
+      heureDepart: m.raw.heureDepart,
+      heureRetour: m.raw.heureRetour || '',
+      chauffeurId: m.raw.chauffeurId,
+      vehiculeId: m.raw.vehiculeId,
+      destinationId: m.raw.destinationId,
+      objetMissionId: m.raw.objetMissionId,
+      itineraire: m.raw.itineraire || '',
+      fraisParticipation: m.raw.fraisParticipation || 0,
+      fraisMission: m.raw.fraisMission || 0,
+      notes: m.raw.notes || ''
     };
-    return funcs[name] || 'Collaborateur';
+    
+    this.isEditModalOpen = true;
   }
 
-  private getMockVehicle(ref: string): string {
-    const vehicles = [
-      'Toyota Hilux (142 TUN 3854)',
-      'Volkswagen Passat (204 TUN 8891)',
-      'Hyundai H1 (190 TUN 1205)'
-    ];
-    const idx = ref.charCodeAt(ref.length - 1) % vehicles.length;
-    return vehicles[idx];
+  closeEditModal() {
+    this.isEditModalOpen = false;
+    this.formData = {};
+    this.selectedMission = null;
   }
 
-  private getMockChauffeur(ref: string): string {
-    const chauffeurs = [
-      'Samir Zorgatti (1041)',
-      'Ali Ben Salem (1042)',
-      'Salah Mejri (3981)'
-    ];
-    const idx = ref.charCodeAt(ref.length - 1) % chauffeurs.length;
-    return chauffeurs[idx];
+  saveEdit() {
+    if (!this.selectedMission) return;
+    
+    // Valider la cohérence des dates
+    if (this.formData.dateFin && this.formData.dateFin < this.formData.dateDebut) {
+      alert("La date de retour ne peut pas être avant la date de départ.");
+      return;
+    }
+
+    // Valider la cohérence des heures si le voyage se fait le même jour
+    if ((!this.formData.dateFin || this.formData.dateDebut === this.formData.dateFin) && this.formData.heureRetour) {
+      const [hDep, mDep] = this.formData.heureDepart.split(':').map(Number);
+      const [hRet, mRet] = this.formData.heureRetour.split(':').map(Number);
+      if (!isNaN(hDep) && !isNaN(hRet)) {
+        if (hDep > hRet || (hDep === hRet && mDep >= mRet)) {
+          alert("L'heure de retour doit être après l'heure de départ.");
+          return;
+        }
+      }
+    }
+
+    const payload = {
+      ...this.formData,
+      chauffeurId: Number(this.formData.chauffeurId),
+      vehiculeId: Number(this.formData.vehiculeId),
+      destinationId: Number(this.formData.destinationId),
+      objetMissionId: Number(this.formData.objetMissionId),
+      fraisParticipation: Number(this.formData.fraisParticipation) || 0,
+      fraisMission: Number(this.formData.fraisMission) || 0,
+      dateFin: this.formData.dateFin || undefined,
+      heureRetour: this.formData.heureRetour || undefined
+    };
+
+    this.ordreMissionService.update(this.selectedMission.id, payload).subscribe({
+      next: () => {
+        this.loadMissions();
+        this.closeEditModal();
+      },
+      error: (err) => {
+        console.error('Error saving mission edits:', err);
+        alert(err.error?.message || 'Erreur lors de la sauvegarde des modifications.');
+      }
+    });
   }
 
-  private getMockAccompagnateurs(ref: string): string[] {
-    const accs = [
-      [],
-      ['Salim Gharbi (8971)'],
-      ['Amel Trabelsi (1029)', 'Yassine Ben Amor (4392)'],
-      ['Mohamed Ali (1030)']
-    ];
-    const idx = ref.charCodeAt(ref.length - 1) % accs.length;
-    return accs[idx];
-  }
 
   printMission(ref: string) {
-    const mission = this.missions.find(m => m.reference === ref);
-    if (!mission) return;
+    const m = this.missions.find(x => x.reference === ref);
+    if (!m) return;
 
-    const mles: Record<string, string> = {
-      'Mohamed Ali': '1030',
-      'Yassine Ben Amor': '4392',
-      'Amel Trabelsi': '1029',
-      'Ridha Mansour': '7104',
-      'Sami Ben Salem': '5821',
-      'Salim Gharbi': '8971',
-      'Mariem Toumi': '3194',
-      'Kais Azaiez': '6284'
-    };
-
-    // Coherent creation date (mocked as 1 day before departure)
-    const departureDate = new Date(mission.dateDebut);
-    const creationDate = new Date(departureDate);
-    creationDate.setDate(departureDate.getDate() - 1);
+    const raw = m.raw;
+    const departureDate = new Date(raw.dateDebut);
+    const creationDate = new Date(raw.createdAt || departureDate);
     const dateEmission = creationDate.toLocaleDateString('fr-FR', {
       day: 'numeric',
       month: 'long',
@@ -283,25 +327,26 @@ export class MissionsList {
     });
 
     const printDetails = {
-      reference: mission.reference,
-      employeeName: mission.employeeName,
-      mle: mles[mission.employeeName] || '8971',
-      fonction: this.getMockEmployeeFunction(mission.employeeName),
-      hotelAffectation: 'El Mouradi Gammarth',
-      destination: mission.destination,
-      dateDebut: mission.dateDebut.split('-').reverse().join('/'),
-      dateFin: mission.dateFin.split('-').reverse().join('/'),
-      heureDepart: '08:30',
-      heureRetour: '18:00',
-      objet: 'Inspection et Audit de Routine',
-      itineraire: `Tunis -> ${mission.destination.replace('El Mouradi ', '')} -> Tunis`,
-      vehicule: this.getMockVehicle(mission.reference),
-      chauffeur: this.getMockChauffeur(mission.reference),
-      accompagnateurs: this.getMockAccompagnateurs(mission.reference),
-      notes: 'Véhicule de service affecté. Assurer le respect des consignes de sécurité routière.',
+      reference: raw.reference,
+      employeeName: m.employeeName,
+      mle: raw.employe?.mle || '',
+      fonction: raw.employe?.fonction || '',
+      hotelAffectation: raw.employe?.hotelAffectation || '',
+      destination: m.destination,
+      dateDebut: raw.dateDebut ? new Date(raw.dateDebut).toLocaleDateString('fr-FR') : '',
+      dateFin: raw.dateFin ? new Date(raw.dateFin).toLocaleDateString('fr-FR') : '',
+      heureDepart: raw.heureDepart || '08:00',
+      heureRetour: raw.heureRetour || '',
+      objet: raw.objetMission?.libelle || '',
+      itineraire: raw.itineraire || `Tunis -> ${m.destination.replace('El Mouradi ', '')} -> Tunis`,
+      vehicule: raw.vehicule ? `${raw.vehicule.marque} ${raw.vehicule.modele} (${raw.vehicule.immatriculation})` : '',
+      chauffeur: raw.chauffeur ? `${raw.chauffeur.prenom} ${raw.chauffeur.nom} (${raw.chauffeur.mle})` : '',
+      accompagnateurs: raw.accompagnateurs?.map(a => `${a.employe.prenom} ${a.employe.nom} (${a.employe.mle})`) || [],
+      notes: raw.notes || '',
       dateEmission: dateEmission
     };
 
     this.printService.printOrdreMission(printDetails);
   }
 }
+

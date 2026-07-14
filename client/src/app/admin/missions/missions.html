@@ -108,7 +108,7 @@
                   <button class="icon-btn" (click)="viewMission(mission.reference)" title="Détails">
                     <iconify-icon icon="lucide:eye"></iconify-icon>
                   </button>
-                  <button class="icon-btn" (click)="editMission(mission.reference)" title="Modifier">
+                  <button class="icon-btn" [disabled]="mission.status === 'EN_COURS' || mission.status === 'TERMINE'" [style.opacity]="(mission.status === 'EN_COURS' || mission.status === 'TERMINE') ? 0.4 : 1" (click)="editMission(mission.reference)" title="Modifier">
                     <iconify-icon icon="lucide:edit-2"></iconify-icon>
                   </button>
                   <button class="icon-btn" (click)="printMission(mission.reference)" title="Imprimer">
@@ -141,5 +141,219 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- Details Modal Overlay -->
+  <div class="modal-backdrop" *ngIf="isDetailModalOpen && selectedMission">
+    <div class="modal-card animate-in" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>Détails de l'ordre de mission — {{ selectedMission.reference }}</h3>
+        <button class="modal-close-btn" (click)="closeDetailsModal()">
+          <iconify-icon icon="lucide:x"></iconify-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h4 class="details-section-title">
+          <iconify-icon icon="lucide:user"></iconify-icon> Collaborateur
+        </h4>
+        <div class="details-grid">
+          <div class="details-item">
+            <span class="details-label">Employé</span>
+            <span class="details-value">{{ selectedMission.employeeName }}</span>
+          </div>
+          <div class="details-item">
+            <span class="details-label">Matricule (MLE)</span>
+            <span class="details-value">{{ selectedMission.raw.employe?.mle }}</span>
+          </div>
+          <div class="details-item">
+            <span class="details-label">Fonction</span>
+            <span class="details-value">{{ selectedMission.raw.employe?.fonction }}</span>
+          </div>
+          <div class="details-item">
+            <span class="details-label">Hôtel d'affectation</span>
+            <span class="details-value">{{ selectedMission.raw.employe?.hotelAffectation }}</span>
+          </div>
+        </div>
+
+        <h4 class="details-section-title">
+          <iconify-icon icon="lucide:truck"></iconify-icon> Logistique
+        </h4>
+        <div class="details-grid">
+          <div class="details-item">
+            <span class="details-label">Chauffeur</span>
+            <span class="details-value">
+              {{ selectedMission.raw.chauffeur ? selectedMission.raw.chauffeur.prenom + ' ' + selectedMission.raw.chauffeur.nom : 'Aucun' }}
+              <span *ngIf="selectedMission.raw.chauffeur?.mle" style="color:#8a92a8; font-size:11px;">({{ selectedMission.raw.chauffeur?.mle }})</span>
+            </span>
+          </div>
+          <div class="details-item">
+            <span class="details-label">Véhicule</span>
+            <span class="details-value">
+              {{ selectedMission.raw.vehicule ? selectedMission.raw.vehicule.marque + ' ' + selectedMission.raw.vehicule.modele : 'Aucun' }}
+              <span *ngIf="selectedMission.raw.vehicule?.immatriculation" style="color:#8a92a8; font-size:11px;">({{ selectedMission.raw.vehicule?.immatriculation }})</span>
+            </span>
+          </div>
+        </div>
+
+        <h4 class="details-section-title">
+          <iconify-icon icon="lucide:map-pin"></iconify-icon> Déplacement
+        </h4>
+        <div class="details-grid">
+          <div class="details-item">
+            <span class="details-label">Destination</span>
+            <span class="details-value">{{ selectedMission.destination }}</span>
+          </div>
+          <div class="details-item">
+            <span class="details-label">Objet de la mission</span>
+            <span class="details-value">{{ selectedMission.raw.objetMission?.libelle }}</span>
+          </div>
+          <div class="details-item">
+            <span class="details-label">Itinéraire</span>
+            <span class="details-value">{{ selectedMission.raw.itineraire || 'Non défini' }}</span>
+          </div>
+          <div class="details-item">
+            <span class="details-label">Période</span>
+            <span class="details-value">{{ selectedMission.dateStr }} (Départ {{ selectedMission.raw.heureDepart }}<span *ngIf="selectedMission.raw.heureRetour"> — Retour {{ selectedMission.raw.heureRetour }}</span>)</span>
+          </div>
+        </div>
+
+        <h4 class="details-section-title" *ngIf="selectedMission.raw.accompagnateurs && selectedMission.raw.accompagnateurs.length > 0">
+          <iconify-icon icon="lucide:users"></iconify-icon> Co-accompagnateurs
+        </h4>
+        <div class="details-grid" *ngIf="selectedMission.raw.accompagnateurs && selectedMission.raw.accompagnateurs.length > 0">
+          <div class="details-item span-2">
+            <span class="details-value">
+              <span *ngFor="let acc of selectedMission.raw.accompagnateurs; let last = last" style="display:inline-block; margin-right:8px; background:#f0f2f7; padding:4px 8px; border-radius:4px; font-size:12px;">
+                {{ acc.employe.prenom }} {{ acc.employe.nom }} ({{ acc.employe.mle }})
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <h4 class="details-section-title">
+          <iconify-icon icon="lucide:dollar-sign"></iconify-icon> Frais & Notes
+        </h4>
+        <div class="details-grid">
+          <div class="details-item">
+            <span class="details-label">Frais de participation</span>
+            <span class="details-value">{{ selectedMission.raw.fraisParticipation }} TND</span>
+          </div>
+          <div class="details-item">
+            <span class="details-label">Frais de mission</span>
+            <span class="details-value">{{ selectedMission.raw.fraisMission }} TND</span>
+          </div>
+          <div class="details-item span-2" *ngIf="selectedMission.raw.notes">
+            <span class="details-label">Remarques / Notes</span>
+            <span class="details-value notes-box">{{ selectedMission.raw.notes }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; gap:8px;">
+          <!-- Status Transitions based on current state -->
+          <button *ngIf="selectedMission.status === 'PLANIFIE'" class="btn-primary" (click)="updateStatus('EN_COURS')" style="background:#d97706; border-color:#d97706; color:#ffffff;">
+            Démarrer la mission
+          </button>
+          <button *ngIf="selectedMission.status === 'EN_COURS'" class="btn-primary" (click)="updateStatus('TERMINE')" style="background:#16a34a; border-color:#16a34a; color:#ffffff;">
+            Clôturer la mission
+          </button>
+          <button *ngIf="selectedMission.status === 'PLANIFIE'" class="btn-ghost" (click)="updateStatus('ANNULE')" style="color:#dc2626; border-color:#fecaca;">
+            Annuler la mission
+          </button>
+        </div>
+        <button class="btn-ghost" (click)="closeDetailsModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal Overlay -->
+  <div class="modal-backdrop" *ngIf="isEditModalOpen && selectedMission">
+    <div class="modal-card animate-in" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>Modifier l'ordre de mission — {{ selectedMission.reference }}</h3>
+        <button class="modal-close-btn" (click)="closeEditModal()">
+          <iconify-icon icon="lucide:x"></iconify-icon>
+        </button>
+      </div>
+      <div class="modal-body" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        
+        <div class="form-group">
+          <label>Destination</label>
+          <select class="form-control" [(ngModel)]="formData.destinationId">
+            <option *ngFor="let dest of destinations" [value]="dest.id">{{ dest.nom }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Objet de mission</label>
+          <select class="form-control" [(ngModel)]="formData.objetMissionId">
+            <option *ngFor="let obj of objets" [value]="obj.id">{{ obj.libelle }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Chauffeur</label>
+          <select class="form-control" [(ngModel)]="formData.chauffeurId">
+            <option *ngFor="let ch of drivers" [value]="ch.id">
+              {{ ch.prenom }} {{ ch.nom }} ({{ ch.mle }}){{ !ch.disponible ? ' - (Occupé)' : '' }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Véhicule</label>
+          <select class="form-control" [(ngModel)]="formData.vehiculeId">
+            <option *ngFor="let v of vehicles" [value]="v.id">
+              {{ v.marque }} {{ v.modele }} ({{ v.immatriculation }}){{ !v.disponible && v.immatriculation !== 'Lui-même' ? ' - (Occupé)' : '' }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Date Départ</label>
+          <input type="date" class="form-control" [(ngModel)]="formData.dateDebut" />
+        </div>
+
+        <div class="form-group">
+          <label>Date Retour</label>
+          <input type="date" class="form-control" [(ngModel)]="formData.dateFin" />
+        </div>
+
+        <div class="form-group">
+          <label>Heure Départ</label>
+          <input type="text" class="form-control" placeholder="Ex: 08:00" [(ngModel)]="formData.heureDepart" />
+        </div>
+
+        <div class="form-group">
+          <label>Heure Retour</label>
+          <input type="text" class="form-control" placeholder="Ex: 18:00" [(ngModel)]="formData.heureRetour" />
+        </div>
+
+        <div class="form-group">
+          <label>Frais de participation (TND)</label>
+          <input type="number" class="form-control" [(ngModel)]="formData.fraisParticipation" />
+        </div>
+
+        <div class="form-group">
+          <label>Frais de mission (TND)</label>
+          <input type="number" class="form-control" [(ngModel)]="formData.fraisMission" />
+        </div>
+
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Itinéraire détaillé</label>
+          <input type="text" class="form-control" [(ngModel)]="formData.itineraire" />
+        </div>
+
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Notes / Remarques</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="formData.notes"></textarea>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeEditModal()">Annuler</button>
+        <button class="btn-primary" (click)="saveEdit()">Enregistrer</button>
+      </div>
+    </div>
   </div>
 </div>

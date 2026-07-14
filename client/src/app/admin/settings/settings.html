@@ -91,7 +91,7 @@
                 <tr *ngFor="let item of chauffeurs">
                   <td><span class="mono-field">{{ item.mle }}</span></td>
                   <td style="font-weight: 500;">{{ item.prenom }} {{ item.nom }}</td>
-                  <td>{{ item.telephone }}</td>
+                  <td>{{ item.telephone || '—' }}</td>
                   <td>
                     <span class="badge" [ngClass]="item.disponible ? 'badge-active' : 'badge-inactive'">
                       {{ item.disponible ? 'Disponible' : 'Occupé / En mission' }}
@@ -396,7 +396,7 @@
       <div *ngIf="activeTab === 'utilisateurs'">
         <div class="form-group">
           <label>Adresse Email</label>
-          <input type="email" class="form-control" placeholder="Ex: nom@elmouradi.tn" [(ngModel)]="formData.email" />
+          <input type="email" class="form-control" placeholder="Ex: nom@elmouradi.com" [(ngModel)]="formData.email" />
         </div>
         <div class="form-group" *ngIf="modalMode === 'add'">
           <label>Mot de passe</label>

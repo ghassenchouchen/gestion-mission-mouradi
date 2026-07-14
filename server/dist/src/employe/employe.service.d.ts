@@ -3,18 +3,18 @@ export declare class EmployeService {
     private prisma;
     constructor(prisma: PrismaService);
     findAll(): Promise<{
-        id: number;
         nom: string;
         prenom: string;
+        id: number;
         mle: string;
         actif: boolean;
         fonction: string;
         hotelAffectation: string;
     }[]>;
     findOne(id: number): Promise<{
-        id: number;
         nom: string;
         prenom: string;
+        id: number;
         mle: string;
         actif: boolean;
         fonction: string;
@@ -27,9 +27,9 @@ export declare class EmployeService {
         fonction: string;
         hotelAffectation: string;
     }): Promise<{
-        id: number;
         nom: string;
         prenom: string;
+        id: number;
         mle: string;
         actif: boolean;
         fonction: string;
@@ -43,18 +43,18 @@ export declare class EmployeService {
         hotelAffectation?: string;
         actif?: boolean;
     }): Promise<{
-        id: number;
         nom: string;
         prenom: string;
+        id: number;
         mle: string;
         actif: boolean;
         fonction: string;
         hotelAffectation: string;
     }>;
     remove(id: number): Promise<{
-        id: number;
         nom: string;
         prenom: string;
+        id: number;
         mle: string;
         actif: boolean;
         fonction: string;

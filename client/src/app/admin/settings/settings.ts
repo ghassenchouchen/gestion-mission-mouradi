@@ -1,15 +1,21 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Sidebar } from '../sidebar/sidebar';
-
-// Reference types
-interface Chauffeur { id: number; mle: string; nom: string; prenom: string; telephone: string; disponible: boolean; }
-interface Vehicule { id: number; immatriculation: string; marque: string; modele: string; type: string; disponible: boolean; }
-interface Objet { id: number; libelle: string; actif: boolean; }
-interface Destination { id: number; nom: string; ville: string; }
-interface Employe { id: number; mle: string; nom: string; prenom: string; fonction: string; hotelAffectation: string; actif: boolean; }
-interface Utilisateur { id: number; email: string; nom: string; prenom: string; role: 'ADMIN' | 'HR'; }
+import { 
+  ChauffeurService, 
+  VehiculeService, 
+  ObjetMissionService, 
+  DestinationService, 
+  EmployeService, 
+  Chauffeur, 
+  Vehicule, 
+  ObjetMission, 
+  Destination, 
+  Employe,
+  UtilisateurService,
+  Utilisateur
+} from '../../services/api.service';
 
 @Component({
   selector: 'app-settings',
@@ -19,7 +25,14 @@ interface Utilisateur { id: number; email: string; nom: string; prenom: string; 
   templateUrl: './settings.html',
   styleUrl: './settings.css'
 })
-export class Settings {
+export class Settings implements OnInit {
+  private chauffeurService = inject(ChauffeurService);
+  private vehiculeService = inject(VehiculeService);
+  private objetMissionService = inject(ObjetMissionService);
+  private destinationService = inject(DestinationService);
+  private employeService = inject(EmployeService);
+  private utilisateurService = inject(UtilisateurService);
+
   activeTab: 'chauffeurs' | 'vehicules' | 'objets' | 'destinations' | 'employes' | 'utilisateurs' = 'chauffeurs';
 
   hotelsList = [
@@ -39,43 +52,12 @@ export class Settings {
   ];
 
   // Data stores
-  chauffeurs: Chauffeur[] = [
-    { id: 1, mle: '1041', nom: 'Jlassi', prenom: 'Hedi', telephone: '+216 98 123 456', disponible: true },
-    { id: 2, mle: '1042', nom: 'Amdouni', prenom: 'Kais', telephone: '+216 97 654 321', disponible: true },
-    { id: 3, mle: '3981', nom: 'Mejri', prenom: 'Salah', telephone: '+216 95 333 444', disponible: false }
-  ];
-
-  vehicules: Vehicule[] = [
-    { id: 1, immatriculation: '142 TUN 3854', marque: 'Toyota', modele: 'Hilux', type: 'Utilitaire', disponible: true },
-    { id: 2, immatriculation: '204 TUN 8891', marque: 'Volkswagen', modele: 'Passat', type: 'Voiture', disponible: true },
-    { id: 3, immatriculation: '190 TUN 1205', marque: 'Hyundai', modele: 'H1', type: 'Bus', disponible: false }
-  ];
-
-  objets: Objet[] = [
-    { id: 1, libelle: 'Audit Interne', actif: true },
-    { id: 2, libelle: 'Réunion Régionale', actif: true },
-    { id: 3, libelle: 'Maintenance Serveur', actif: true },
-    { id: 4, libelle: 'Livraison Équipements', actif: false }
-  ];
-
-  destinations: Destination[] = [
-    { id: 1, nom: 'El Mouradi Gammarth', ville: 'Tunis' },
-    { id: 2, nom: 'El Mouradi Sousse', ville: 'Sousse' },
-    { id: 3, nom: 'El Mouradi Hammamet', ville: 'Hammamet' },
-    { id: 4, nom: 'El Mouradi Djerba', ville: 'Djerba' }
-  ];
-
-  employes: Employe[] = [
-    { id: 1, mle: '8971', nom: 'Gharbi', prenom: 'Salim', fonction: 'Contrôleur de Gestion', hotelAffectation: 'El Mouradi Gammarth', actif: true },
-    { id: 2, mle: '1029', nom: 'Trabelsi', prenom: 'Amel', fonction: 'Directeur Marketing', hotelAffectation: 'El Mouradi Sousse', actif: true },
-    { id: 3, mle: '1030', nom: 'Ali', prenom: 'Mohamed', fonction: 'Auditeur Senior', hotelAffectation: 'El Mouradi Hammamet', actif: true },
-    { id: 4, mle: '4392', nom: 'Ben Amor', prenom: 'Yassine', fonction: 'Ingénieur Système', hotelAffectation: 'El Mouradi Port El Kantaoui', actif: false }
-  ];
-
-  utilisateurs: Utilisateur[] = [
-    { id: 1, email: 'admin@elmouradi.tn', nom: 'Admin', prenom: 'El Mouradi', role: 'ADMIN' },
-    { id: 2, email: 'hr@elmouradi.tn', nom: 'HR', prenom: 'El Mouradi', role: 'HR' }
-  ];
+  chauffeurs: Chauffeur[] = [];
+  vehicules: Vehicule[] = [];
+  objets: ObjetMission[] = [];
+  destinations: Destination[] = [];
+  employes: Employe[] = [];
+  utilisateurs: Utilisateur[] = [];
 
   // Modal State
   isModalOpen = false;
@@ -84,6 +66,37 @@ export class Settings {
 
   // Form Fields (Union of all possible fields)
   formData: any = {};
+
+  ngOnInit() {
+    this.loadAllData();
+  }
+
+  loadAllData() {
+    this.chauffeurService.getAll().subscribe({
+      next: (data) => this.chauffeurs = data,
+      error: (err) => console.error('Error loading chauffeurs:', err)
+    });
+    this.vehiculeService.getAll().subscribe({
+      next: (data) => this.vehicules = data,
+      error: (err) => console.error('Error loading vehicles:', err)
+    });
+    this.objetMissionService.getAll().subscribe({
+      next: (data) => this.objets = data,
+      error: (err) => console.error('Error loading objects:', err)
+    });
+    this.destinationService.getAll().subscribe({
+      next: (data) => this.destinations = data,
+      error: (err) => console.error('Error loading destinations:', err)
+    });
+    this.employeService.getAll().subscribe({
+      next: (data) => this.employes = data,
+      error: (err) => console.error('Error loading employees:', err)
+    });
+    this.utilisateurService.getAll().subscribe({
+      next: (data) => this.utilisateurs = data,
+      error: (err) => console.error('Error loading users:', err)
+    });
+  }
 
   switchTab(tab: 'chauffeurs' | 'vehicules' | 'objets' | 'destinations' | 'employes' | 'utilisateurs') {
     this.activeTab = tab;
@@ -132,38 +145,92 @@ export class Settings {
   }
 
   saveItem() {
-    const list = this.getCurrentList();
+    const service = this.getServiceForActiveTab();
+    if (!service) return;
+
     if (this.modalMode === 'add') {
-      const newId = list.length > 0 ? Math.max(...list.map((i: any) => i.id)) + 1 : 1;
-      const newItem = { id: newId, ...this.formData };
-      list.push(newItem);
-    } else {
-      const idx = list.findIndex((i: any) => i.id === this.editingId);
-      if (idx !== -1) {
-        list[idx] = { id: this.editingId, ...this.formData };
+      // Validate form payload
+      if (this.activeTab === 'utilisateurs' && (!this.formData.email || !this.formData.nom || !this.formData.prenom || !this.formData.password)) {
+        alert('Veuillez remplir tous les champs obligatoires.');
+        return;
       }
+      if (this.activeTab === 'chauffeurs' && (!this.formData.mle || !this.formData.nom || !this.formData.prenom)) {
+        alert('Veuillez remplir tous les champs obligatoires.');
+        return;
+      }
+      if (this.activeTab === 'vehicules' && (!this.formData.immatriculation || !this.formData.marque || !this.formData.modele)) {
+        alert('Veuillez remplir tous les champs obligatoires.');
+        return;
+      }
+      if (this.activeTab === 'objets' && !this.formData.libelle) {
+        alert('Libellé est obligatoire.');
+        return;
+      }
+      if (this.activeTab === 'destinations' && (!this.formData.nom || !this.formData.ville)) {
+        alert('Nom et ville sont obligatoires.');
+        return;
+      }
+      if (this.activeTab === 'employes' && (!this.formData.mle || !this.formData.nom || !this.formData.prenom || !this.formData.fonction || !this.formData.hotelAffectation)) {
+        alert('Veuillez remplir tous les champs obligatoires.');
+        return;
+      }
+
+      service.create(this.formData).subscribe({
+        next: () => {
+          this.loadAllData();
+          this.closeModal();
+        },
+        error: (err: any) => {
+          console.error('Error creating setting:', err);
+          alert(err.error?.message || 'Erreur lors de la création de l\'élément. Vérifiez l\'unicité des clés (matricule, immatriculation, libelle, etc.)');
+        }
+      });
+    } else {
+      service.update(this.editingId!, this.formData).subscribe({
+        next: () => {
+          this.loadAllData();
+          this.closeModal();
+        },
+        error: (err: any) => {
+          console.error('Error updating setting:', err);
+          alert(err.error?.message || 'Erreur lors de la mise à jour de l\'élément.');
+        }
+      });
     }
-    this.closeModal();
   }
 
   deleteItem(id: number) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
-      const list = this.getCurrentList();
-      const idx = list.findIndex((i: any) => i.id === id);
-      if (idx !== -1) {
-        list.splice(idx, 1);
-      }
+      const service = this.getServiceForActiveTab();
+      if (!service) return;
+
+      service.delete(id).subscribe({
+        next: () => {
+          this.loadAllData();
+        },
+        error: (err: any) => {
+          console.error('Error deleting setting:', err);
+          // Standard check for constraint violations (Restrict)
+          if (err.status === 409 || err.status === 400 || (err.error?.message && err.error.message.includes('Foreign key'))) {
+            alert('Impossible de supprimer cet élément car il est actuellement référencé dans un ordre de mission.');
+          } else {
+            alert('Impossible de supprimer cet élément. Il est probablement associé à un ordre de mission existant (contrainte d\'intégrité).');
+          }
+        }
+      });
     }
   }
 
-  private getCurrentList(): any[] {
+  private getServiceForActiveTab(): any {
     switch (this.activeTab) {
-      case 'chauffeurs': return this.chauffeurs;
-      case 'vehicules': return this.vehicules;
-      case 'objets': return this.objets;
-      case 'destinations': return this.destinations;
-      case 'employes': return this.employes;
-      case 'utilisateurs': return this.utilisateurs;
+      case 'chauffeurs': return this.chauffeurService;
+      case 'vehicules': return this.vehiculeService;
+      case 'objets': return this.objetMissionService;
+      case 'destinations': return this.destinationService;
+      case 'employes': return this.employeService;
+      case 'utilisateurs': return this.utilisateurService;
+      default: return null;
     }
   }
 }
+

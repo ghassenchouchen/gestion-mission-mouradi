@@ -1,42 +1,23 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { HttpClient } from '@angular/common/http';
-
-interface EmployeMock {
-  id: number;
-  mle: string;
-  nom: string;
-  prenom: string;
-  fonction: string;
-}
-
-interface DestinationMock {
-  id: number;
-  nom: string;
-  ville: string;
-}
-
-interface ObjetMock {
-  id: number;
-  libelle: string;
-}
-
-interface ChauffeurMock {
-  id: number;
-  mle: string;
-  nom: string;
-  prenom: string;
-}
-
-interface VehiculeMock {
-  id: number;
-  immatriculation: string;
-  marque: string;
-  modele: string;
-}
+import { 
+  EmployeService, 
+  DestinationService, 
+  ObjetMissionService, 
+  ChauffeurService, 
+  VehiculeService, 
+  OrdreMissionService, 
+  Employe, 
+  Destination, 
+  ObjetMission, 
+  Chauffeur, 
+  Vehicule 
+} from '../../services/api.service';
+import { PrintService } from '../../services/print.service';
 
 @Component({
   selector: 'app-nouvelle-mission',
@@ -46,46 +27,21 @@ interface VehiculeMock {
   templateUrl: './nouvelle-mission.html',
   styleUrl: './nouvelle-mission.css'
 })
-export class NouvelleMission {
+export class NouvelleMission implements OnInit {
   private http = inject(HttpClient);
+  private employeService = inject(EmployeService);
+  private destinationService = inject(DestinationService);
+  private objetMissionService = inject(ObjetMissionService);
+  private chauffeurService = inject(ChauffeurService);
+  private vehiculeService = inject(VehiculeService);
+  private ordreMissionService = inject(OrdreMissionService);
+  private printService = inject(PrintService);
 
-  // Mock reference data with 4-digit matricules (matching DB seeds)
-  employes: EmployeMock[] = [
-    { id: 1, mle: '8971', nom: 'Gharbi', prenom: 'Salim', fonction: 'Contrôleur de Gestion' },
-    { id: 2, mle: '1029', nom: 'Trabelsi', prenom: 'Amel', fonction: 'Directeur Marketing' },
-    { id: 3, mle: '1030', nom: 'Ali', prenom: 'Mohamed', fonction: 'Auditeur Senior' },
-    { id: 4, mle: '4392', nom: 'Ben Amor', prenom: 'Yassine', fonction: 'Ingénieur Système' },
-    { id: 5, mle: '7104', nom: 'Mansour', prenom: 'Ridha', fonction: 'Directeur Technique' }
-  ];
-
-  destinations: DestinationMock[] = [
-    { id: 1, nom: 'El Mouradi Gammarth', ville: 'Tunis' },
-    { id: 2, nom: 'El Mouradi Sousse', ville: 'Sousse' },
-    { id: 3, nom: 'El Mouradi Hammamet', ville: 'Hammamet' },
-    { id: 4, nom: 'El Mouradi Djerba Menzel', ville: 'Djerba' },
-    { id: 5, nom: 'El Mouradi Port El Kantaoui', ville: 'Sousse' }
-  ];
-
-  objets: ObjetMock[] = [
-    { id: 1, libelle: 'Audit Interne' },
-    { id: 2, libelle: 'Réunion Régionale' },
-    { id: 3, libelle: 'Maintenance Serveur' },
-    { id: 4, libelle: 'Inspection Qualité' },
-    { id: 5, libelle: 'Livraison Équipements' }
-  ];
-
-  chauffeurs: ChauffeurMock[] = [
-    { id: 1, mle: '1041', nom: 'Jlassi', prenom: 'Hedi' },
-    { id: 2, mle: '1042', nom: 'Amdouni', prenom: 'Kais' },
-    { id: 3, mle: '3981', nom: 'Mejri', prenom: 'Salah' }
-  ];
-
-  vehicules: VehiculeMock[] = [
-    { id: 1, immatriculation: '142 TUN 3854', marque: 'Toyota', modele: 'Hilux' },
-    { id: 2, immatriculation: '204 TUN 8891', marque: 'Volkswagen', modele: 'Passat' },
-    { id: 3, immatriculation: '190 TUN 1205', marque: 'Hyundai', modele: 'H1' },
-    { id: 4, immatriculation: 'Lui-même', marque: 'Lui-même (chauffeur)', modele: '' }
-  ];
+  employes: Employe[] = [];
+  destinations: Destination[] = [];
+  objets: ObjetMission[] = [];
+  chauffeurs: Chauffeur[] = [];
+  vehicules: Vehicule[] = [];
 
   hotelsList = [
     'Direction générale',
@@ -105,7 +61,7 @@ export class NouvelleMission {
 
   // Form states
   selectedEmployeId: string | null = null;
-  selectedEmploye: EmployeMock | null = null;
+  selectedEmploye: Employe | null = null;
 
   // New employee creation form state
   showAddEmployeForm = false;
@@ -114,6 +70,13 @@ export class NouvelleMission {
   newEmployePrenom = '';
   newEmployeFonction = '';
   newEmployeHotel = 'Direction générale';
+
+  // New chauffeur creation form state
+  showAddChauffeurForm = false;
+  newChauffeurMle = '';
+  newChauffeurNom = '';
+  newChauffeurPrenom = '';
+  newChauffeurTelephone = '';
 
   destinationId: number | null = null;
   objetId: number | null = null; // Optional
@@ -128,7 +91,7 @@ export class NouvelleMission {
   vehiculeId: number | null = null;
   immatriculation = '';
 
-  accompagnateurs: EmployeMock[] = [];
+  accompagnateurs: Employe[] = [];
   selectedAccompagnateurId = '';
 
   fraisSectionExpanded = false;
@@ -140,6 +103,49 @@ export class NouvelleMission {
   successMessage = '';
 
   constructor(private router: Router) {}
+
+  ngOnInit() {
+    this.loadReferenceData();
+  }
+
+  loadReferenceData() {
+    this.employeService.getAll().subscribe({
+      next: (data) => {
+        this.employes = data.filter(e => e.actif);
+      },
+      error: (err) => console.error('Error loading employees:', err)
+    });
+
+    this.destinationService.getAll().subscribe({
+      next: (data) => {
+        this.destinations = data;
+      },
+      error: (err) => console.error('Error loading destinations:', err)
+    });
+
+    this.objetMissionService.getAll().subscribe({
+      next: (data) => {
+        this.objets = data.filter(o => o.actif);
+      },
+      error: (err) => console.error('Error loading object missions:', err)
+    });
+
+    this.chauffeurService.getAll().subscribe({
+      next: (data) => {
+        // Show only available drivers
+        this.chauffeurs = data.filter(c => c.disponible);
+      },
+      error: (err) => console.error('Error loading chauffeurs:', err)
+    });
+
+    this.vehiculeService.getAll().subscribe({
+      next: (data) => {
+        // Show only available vehicles or the "Lui-même" option
+        this.vehicules = data.filter(v => v.disponible || v.immatriculation === 'Lui-même');
+      },
+      error: (err) => console.error('Error loading vehicles:', err)
+    });
+  }
 
   // Selection change
   onEmployeChange() {
@@ -168,51 +174,107 @@ export class NouvelleMission {
       nom: this.newEmployeNom,
       prenom: this.newEmployePrenom,
       fonction: this.newEmployeFonction,
-      hotelAffectation: this.newEmployeHotel
+      hotelAffectation: this.newEmployeHotel,
+      actif: true
     };
 
-    // Locally add to array to refresh dropdown immediately
-    const nextId = this.employes.length > 0 ? Math.max(...this.employes.map(e => e.id)) + 1 : 1;
-    const addedEmp = { id: nextId, ...newEmp };
-    this.employes.push(addedEmp);
-    this.selectedEmployeId = nextId.toString();
-    this.onEmployeChange();
-
-    // Call REST endpoint to save in backend SQLite database
-    this.http.post('http://localhost:3000/employes', newEmp).subscribe({
+    // Call REST endpoint to save in backend database
+    this.employeService.create(newEmp).subscribe({
       next: (res: any) => {
-        console.log('Employee saved in database:', res);
-        if (res && res.id) {
-          const index = this.employes.findIndex(e => e.mle === res.mle);
-          if (index !== -1) {
-            this.employes[index] = res;
-            this.selectedEmployeId = res.id.toString();
-            this.onEmployeChange();
-          }
-        }
+        this.employes.push(res);
+        this.selectedEmployeId = res.id.toString();
+        this.onEmployeChange();
+        
+        // Reset and close form only on success (Fix M4)
+        this.showAddEmployeForm = false;
+        this.newEmployeMle = '';
+        this.newEmployeNom = '';
+        this.newEmployePrenom = '';
+        this.newEmployeFonction = '';
+        this.newEmployeHotel = 'Direction générale';
       },
       error: (err) => {
         console.error('Failed to post employee to database:', err);
+        alert(err.error?.message || 'Erreur lors de la création de l\'accompagnateur.');
       }
     });
-
-    // Reset and close form
-    this.showAddEmployeForm = false;
-    this.newEmployeMle = '';
-    this.newEmployeNom = '';
-    this.newEmployePrenom = '';
-    this.newEmployeFonction = '';
-    this.newEmployeHotel = 'Direction générale';
   }
 
-  // Vehicle change auto-fill
+  // Add new chauffeur directly to NestJS backend database
+  saveNewChauffeur() {
+    if (!this.newChauffeurNom || !this.newChauffeurPrenom) {
+      alert('Veuillez remplir le nom et le prénom du chauffeur.');
+      return;
+    }
+    if (this.newChauffeurMle) {
+      const mleRegex = /^\d{4}$/;
+      if (!mleRegex.test(this.newChauffeurMle)) {
+        alert('Le matricule du chauffeur doit être composé de 4 chiffres exactement (ex: 1045).');
+        return;
+      }
+    }
+
+    const newCh: any = {
+      nom: this.newChauffeurNom,
+      prenom: this.newChauffeurPrenom,
+      telephone: this.newChauffeurTelephone || undefined,
+      disponible: true
+    };
+    if (this.newChauffeurMle) {
+      newCh.mle = this.newChauffeurMle;
+    }
+
+    this.chauffeurService.create(newCh).subscribe({
+      next: (res: any) => {
+        this.chauffeurs.push(res);
+        this.chauffeurId = res.id;
+        
+        // Reset and close form on success
+        this.showAddChauffeurForm = false;
+        this.newChauffeurMle = '';
+        this.newChauffeurNom = '';
+        this.newChauffeurPrenom = '';
+        this.newChauffeurTelephone = '';
+      },
+      error: (err) => {
+        console.error('Failed to post chauffeur to database:', err);
+        alert(err.error?.message || 'Erreur lors de la création du chauffeur.');
+      }
+    });
+  }
+
+  // When chauffeur changes, auto-select their default vehicle
+  onChauffeurChange() {
+    if (this.chauffeurId) {
+      const ch = this.chauffeurs.find(c => c.id === Number(this.chauffeurId));
+      if (ch && ch.vehiculeParDefautId) {
+        const defaultVeh = this.vehicules.find(v => v.id === ch.vehiculeParDefautId);
+        if (defaultVeh) {
+          this.vehiculeId = defaultVeh.id;
+          this.immatriculation = defaultVeh.immatriculation;
+        }
+      }
+    }
+  }
+
+  // When vehicle changes, auto-select the chauffeur assigned to it (if any)
   onVehiculeChange() {
     const veh = this.vehicules.find(v => v.id === Number(this.vehiculeId));
     if (veh) {
       this.immatriculation = veh.immatriculation;
+      // Reverse lookup: find the chauffeur whose default vehicle is this one
+      const matchingChauffeur = this.chauffeurs.find(c => c.vehiculeParDefautId === veh.id);
+      if (matchingChauffeur && !this.chauffeurId) {
+        this.chauffeurId = matchingChauffeur.id;
+      }
     } else {
       this.immatriculation = '';
     }
+  }
+
+  isPropreMoyenSelected(): boolean {
+    const veh = this.vehicules.find(v => v.id === Number(this.vehiculeId));
+    return veh ? (veh.immatriculation === 'Lui-même' || veh.immatriculation === 'Aucun') : false;
   }
 
   // Accompagnateurs list logic
@@ -244,7 +306,7 @@ export class NouvelleMission {
     this.accompagnateurs = this.accompagnateurs.filter(a => a.id !== empId);
   }
 
-  get availableAccompagnateurs(): EmployeMock[] {
+  get availableAccompagnateurs(): Employe[] {
     return this.employes.filter(e => 
       (!this.selectedEmploye || e.id !== this.selectedEmploye.id) &&
       !this.accompagnateurs.some(a => a.id === e.id)
@@ -255,27 +317,107 @@ export class NouvelleMission {
     this.fraisSectionExpanded = !this.fraisSectionExpanded;
   }
 
+  printCreatedMission(res: any) {
+    const emp = this.employes.find(e => e.id === Number(this.selectedEmployeId));
+    const dest = this.destinations.find(d => d.id === Number(this.destinationId));
+    const obj = this.objets.find(o => o.id === Number(this.objetId));
+    const ch = this.chauffeurs.find(c => c.id === Number(this.chauffeurId));
+    const veh = this.vehicules.find(v => v.id === Number(this.vehiculeId));
+
+    const printDetails = {
+      reference: res.reference,
+      employeeName: emp ? `${emp.prenom} ${emp.nom}` : '',
+      mle: emp ? emp.mle : '',
+      fonction: emp ? emp.fonction : '',
+      hotelAffectation: emp ? emp.hotelAffectation : '',
+      destination: dest ? dest.nom : '',
+      dateDebut: this.dateDebut.split('-').reverse().join('/'),
+      dateFin: this.dateFin ? this.dateFin.split('-').reverse().join('/') : '',
+      heureDepart: this.heureDepart,
+      heureRetour: this.heureRetour || '',
+      objet: obj ? obj.libelle : '',
+      itineraire: this.itineraire || `Tunis -> ${dest ? dest.nom.replace('El Mouradi ', '') : ''} -> Tunis`,
+      vehicule: veh ? `${veh.marque} ${veh.modele} (${veh.immatriculation})` : '',
+      chauffeur: ch ? `${ch.prenom} ${ch.nom} (${ch.mle})` : '',
+      accompagnateurs: this.accompagnateurs.map(a => `${a.prenom} ${a.nom} (${a.mle})`),
+      notes: this.notes || '',
+      dateEmission: new Date(res.createdAt).toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })
+    };
+
+    this.printService.printOrdreMission(printDetails);
+  }
+
   // Submit form
   save(printAfter: boolean = false) {
-    // Note: this.objetId is now optional
-    if (!this.selectedEmploye || !this.destinationId || !this.dateDebut || !this.dateFin || !this.heureDepart || !this.heureRetour || !this.chauffeurId || !this.vehiculeId) {
+    if (!this.selectedEmploye || !this.destinationId || !this.dateDebut || !this.heureDepart || !this.chauffeurId || !this.vehiculeId) {
       alert('Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
+    // Valider la cohérence des dates
+    if (this.dateFin && this.dateFin < this.dateDebut) {
+      alert("La date de retour ne peut pas être avant la date de départ.");
+      return;
+    }
+
+    // Valider la cohérence des heures si le voyage se fait le même jour
+    if ((!this.dateFin || this.dateDebut === this.dateFin) && this.heureRetour) {
+      const [hDep, mDep] = this.heureDepart.split(':').map(Number);
+      const [hRet, mRet] = this.heureRetour.split(':').map(Number);
+      if (!isNaN(hDep) && !isNaN(hRet)) {
+        if (hDep > hRet || (hDep === hRet && mDep >= mRet)) {
+          alert("L'heure de retour doit être après l'heure de départ.");
+          return;
+        }
+      }
+    }
+
     this.isSubmitting = true;
     
-    // Simulating API call
-    setTimeout(() => {
-      this.isSubmitting = false;
-      this.successMessage = printAfter 
-        ? 'Ordre de mission enregistré avec succès. Impression en cours...' 
-        : 'Ordre de mission enregistré avec succès !';
-      
-      setTimeout(() => {
-        this.successMessage = '';
-        this.router.navigate(['/admin/dashboard']);
-      }, 2000);
-    }, 1200);
+    const payload = {
+      employeId: Number(this.selectedEmployeId),
+      destinationId: Number(this.destinationId),
+      chauffeurId: Number(this.chauffeurId),
+      vehiculeId: Number(this.vehiculeId),
+      objetMissionId: Number(this.objetId || 1), // Optional but default to 1 if empty
+      dateDebut: this.dateDebut,
+      dateFin: this.dateFin || undefined,
+      heureDepart: this.heureDepart,
+      heureRetour: this.heureRetour || undefined,
+      itineraire: this.itineraire || undefined,
+      fraisParticipation: Number(this.fraisParticipation) || 0,
+      fraisMission: Number(this.fraisMission) || 0,
+      notes: this.notes || undefined,
+      accompagnateurs: this.accompagnateurs.map(a => a.id),
+      statut: 'PLANIFIE'
+    };
+
+    this.ordreMissionService.create(payload).subscribe({
+      next: (res) => {
+        this.isSubmitting = false;
+        this.successMessage = printAfter 
+          ? 'Ordre de mission enregistré avec succès. Impression en cours...' 
+          : 'Ordre de mission enregistré avec succès !';
+        
+        if (printAfter) {
+          this.printCreatedMission(res);
+        }
+
+        setTimeout(() => {
+          this.successMessage = '';
+          this.router.navigate(['/admin/dashboard']);
+        }, 2000);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        console.error('Failed to create mission order:', err);
+        alert(err.error?.message || 'Erreur lors de la création de l\'ordre de mission.');
+      }
+    });
   }
 }
+

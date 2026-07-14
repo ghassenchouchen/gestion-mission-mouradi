@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = environment.apiUrl;
 
 // === interfaces / Types ===
 
@@ -18,11 +19,12 @@ export interface Employe {
 
 export interface Chauffeur {
   id: number;
-  mle: string;
+  mle?: string | null;
   nom: string;
   prenom: string;
   telephone?: string | null;
   disponible: boolean;
+  vehiculeParDefautId?: number | null;
 }
 
 export interface Vehicule {
@@ -277,6 +279,43 @@ export class OrdreMissionService {
     retourReel?: string;
   }): Observable<OrdreMission> {
     return this.http.put<OrdreMission>(`${this.url}/${id}`, data);
+  }
+
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.url}/${id}`);
+  }
+}
+
+export interface Utilisateur {
+  id: number;
+  email: string;
+  nom: string;
+  prenom: string;
+  role: 'ADMIN' | 'HR';
+  password?: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class UtilisateurService {
+  private http = inject(HttpClient);
+  private url = `${API_BASE}/utilisateurs`;
+
+  getAll(): Observable<Utilisateur[]> {
+    return this.http.get<Utilisateur[]>(this.url);
+  }
+
+  getOne(id: number): Observable<Utilisateur> {
+    return this.http.get<Utilisateur>(`${this.url}/${id}`);
+  }
+
+  create(data: Omit<Utilisateur, 'id'>): Observable<Utilisateur> {
+    return this.http.post<Utilisateur>(this.url, data);
+  }
+
+  update(id: number, data: Partial<Utilisateur>): Observable<Utilisateur> {
+    return this.http.put<Utilisateur>(`${this.url}/${id}`, data);
   }
 
   delete(id: number): Observable<any> {

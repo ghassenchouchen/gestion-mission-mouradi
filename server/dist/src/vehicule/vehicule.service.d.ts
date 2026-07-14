@@ -4,19 +4,19 @@ export declare class VehiculeService {
     constructor(prisma: PrismaService);
     findAll(): Promise<{
         id: number;
-        disponible: boolean;
         immatriculation: string;
         marque: string;
         modele: string;
         type: string;
+        disponible: boolean;
     }[]>;
     findOne(id: number): Promise<{
         id: number;
-        disponible: boolean;
         immatriculation: string;
         marque: string;
         modele: string;
         type: string;
+        disponible: boolean;
     }>;
     create(data: {
         immatriculation: string;
@@ -25,11 +25,11 @@ export declare class VehiculeService {
         type: string;
     }): Promise<{
         id: number;
-        disponible: boolean;
         immatriculation: string;
         marque: string;
         modele: string;
         type: string;
+        disponible: boolean;
     }>;
     update(id: number, data: {
         immatriculation?: string;
@@ -39,18 +39,18 @@ export declare class VehiculeService {
         disponible?: boolean;
     }): Promise<{
         id: number;
-        disponible: boolean;
         immatriculation: string;
         marque: string;
         modele: string;
         type: string;
+        disponible: boolean;
     }>;
     remove(id: number): Promise<{
         id: number;
-        disponible: boolean;
         immatriculation: string;
         marque: string;
         modele: string;
         type: string;
+        disponible: boolean;
     }>;
 }

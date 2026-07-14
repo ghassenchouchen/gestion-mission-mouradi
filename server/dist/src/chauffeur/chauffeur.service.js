@@ -20,11 +20,13 @@ let ChauffeurService = class ChauffeurService {
     async findAll() {
         return this.prisma.chauffeur.findMany({
             orderBy: { nom: 'asc' },
+            include: { vehiculeParDefaut: true },
         });
     }
     async findOne(id) {
         const chauffeur = await this.prisma.chauffeur.findUnique({
             where: { id },
+            include: { vehiculeParDefaut: true },
         });
         if (!chauffeur) {
             throw new common_1.NotFoundException(`Chauffeur avec ID ${id} introuvable`);
@@ -32,11 +34,13 @@ let ChauffeurService = class ChauffeurService {
         return chauffeur;
     }
     async create(data) {
-        const existing = await this.prisma.chauffeur.findUnique({
-            where: { mle: data.mle },
-        });
-        if (existing) {
-            throw new common_1.ConflictException(`Un chauffeur avec le matricule ${data.mle} existe déjà`);
+        if (data.mle) {
+            const existing = await this.prisma.chauffeur.findUnique({
+                where: { mle: data.mle },
+            });
+            if (existing) {
+                throw new common_1.ConflictException(`Un chauffeur avec le matricule ${data.mle} existe déjà`);
+            }
         }
         return this.prisma.chauffeur.create({ data });
     }

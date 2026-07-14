@@ -1,7 +1,8 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Sidebar } from '../../admin/sidebar/sidebar';
+import { ChauffeurService, OrdreMissionService } from '../../services/api.service';
 
 interface ChauffeurMission {
   missionRef: string;
@@ -14,7 +15,7 @@ interface ChauffeurMission {
 
 interface ChauffeurSchedule {
   id: number;
-  mle: string;
+  mle?: string | null;
   nom: string;
   prenom: string;
   telephone: string;
@@ -29,68 +30,58 @@ interface ChauffeurSchedule {
   templateUrl: './calendrier-chauffeurs.html',
   styleUrl: './calendrier-chauffeurs.css'
 })
-export class CalendrierChauffeurs {
+export class CalendrierChauffeurs implements OnInit {
+  private chauffeurService = inject(ChauffeurService);
+  private ordreMissionService = inject(OrdreMissionService);
+
   searchQuery = '';
   filterStatus: 'all' | 'en-mission' | 'disponible' = 'all';
   selectedMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
 
-  chauffeurs: ChauffeurSchedule[] = [
-    {
-      id: 1, mle: '1041', nom: 'Jlassi', prenom: 'Hedi', telephone: '+216 98 123 456',
-      missions: [
-        {
-          missionRef: 'OM-2026-041',
-          employeeName: 'Salim Gharbi',
-          destination: 'El Mouradi Gammarth',
-          dateDebut: '2026-07-03',
-          dateFin: '2026-07-06',
-          status: 'EN_COURS'
-        },
-        {
-          missionRef: 'OM-2026-038',
-          employeeName: 'Amel Trabelsi',
-          destination: 'El Mouradi Hammamet',
-          dateDebut: '2026-06-25',
-          dateFin: '2026-06-27',
-          status: 'TERMINE'
-        },
-        {
-          missionRef: 'OM-2026-035',
-          employeeName: 'Nabil Mahrouk',
-          destination: 'El Mouradi Palace',
-          dateDebut: '2026-07-15',
-          dateFin: '2026-07-17',
-          status: 'PLANIFIE'
-        }
-      ]
-    },
-    {
-      id: 2, mle: '1042', nom: 'Amdouni', prenom: 'Kais', telephone: '+216 97 654 321',
-      missions: [
-        {
-          missionRef: 'OM-2026-043',
-          employeeName: 'Mohamed Ali',
-          destination: 'El Mouradi Djerba Menzel',
-          dateDebut: '2026-07-05',
-          dateFin: '2026-07-09',
-          status: 'EN_COURS'
-        }
-      ]
-    },
-    {
-      id: 3, mle: '3981', nom: 'Mejri', prenom: 'Salah', telephone: '+216 95 333 444',
-      missions: [
-        {
-          missionRef: 'OM-2026-036',
-          employeeName: 'Ridha Mansour',
-          destination: 'El Mouradi Tozeur',
-          dateDebut: '2026-06-20',
-          dateFin: '2026-06-24',
-          status: 'TERMINE'
-        }
-      ]
-    }
-  ];
+  chauffeurs: ChauffeurSchedule[] = [];
+
+  ngOnInit() {
+    this.loadSchedules();
+  }
+
+  loadSchedules() {
+    // 1. Fetch drivers and missions in parallel or sequentially
+    this.chauffeurService.getAll().subscribe({
+      next: (drivers) => {
+        this.ordreMissionService.getAll().subscribe({
+          next: (missions) => {
+            this.chauffeurs = drivers.map(d => {
+              // Get all missions assigned to this chauffeur
+              const chauffeurMissions: ChauffeurMission[] = missions
+                .filter(m => m.chauffeurId === d.id && m.statut !== 'ANNULE') // Exclude cancelled ones
+                .map(m => {
+                  const empName = m.employe ? `${m.employe.prenom} ${m.employe.nom}` : 'N/A';
+                  return {
+                    missionRef: m.reference,
+                    employeeName: empName,
+                    destination: m.destination?.nom || 'N/A',
+                    dateDebut: m.dateDebut.split('T')[0],
+                    dateFin: m.dateFin ? m.dateFin.split('T')[0] : m.dateDebut.split('T')[0],
+                    status: m.statut === 'ANNULE' ? 'TERMINE' : m.statut as any // Fallback
+                  };
+                });
+
+              return {
+                id: d.id,
+                mle: d.mle,
+                nom: d.nom,
+                prenom: d.prenom,
+                telephone: d.telephone || '',
+                missions: chauffeurMissions
+              };
+            });
+          },
+          error: (err) => console.error('Error fetching missions for schedules:', err)
+        });
+      },
+      error: (err) => console.error('Error fetching drivers for schedules:', err)
+    });
+  }
 
   get selectedMonthLabel(): string {
     const [y, m] = this.selectedMonth.split('-');
@@ -119,7 +110,7 @@ export class CalendrierChauffeurs {
       result = result.filter(c =>
         c.nom.toLowerCase().includes(q) ||
         c.prenom.toLowerCase().includes(q) ||
-        c.mle.includes(q)
+        (c.mle && c.mle.includes(q))
       );
     }
 
@@ -282,3 +273,4 @@ export class CalendrierChauffeurs {
     setTimeout(() => printWindow.print(), 500);
   }
 }
+

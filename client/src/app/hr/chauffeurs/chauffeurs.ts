@@ -1,16 +1,8 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Sidebar } from '../../admin/sidebar/sidebar';
-
-interface Chauffeur {
-  id: number;
-  mle: string;
-  nom: string;
-  prenom: string;
-  telephone: string;
-  disponible: boolean;
-}
+import { ChauffeurService, Chauffeur } from '../../services/api.service';
 
 @Component({
   selector: 'app-hr-chauffeurs',
@@ -18,16 +10,24 @@ interface Chauffeur {
   imports: [CommonModule, FormsModule, Sidebar],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './chauffeurs.html',
-  styleUrl: '../../admin/missions/missions.css' // Reusing missions table CSS directly
+  styleUrl: '../../admin/missions/missions.css' 
 })
-export class HrChauffeursList {
-  chauffeurs: Chauffeur[] = [
-    { id: 1, mle: '1041', nom: 'Jlassi', prenom: 'Hedi', telephone: '+216 98 123 456', disponible: true },
-    { id: 2, mle: '1042', nom: 'Amdouni', prenom: 'Kais', telephone: '+216 97 654 321', disponible: true },
-    { id: 3, mle: '3981', nom: 'Mejri', prenom: 'Salah', telephone: '+216 95 333 444', disponible: false }
-  ];
+export class HrChauffeursList implements OnInit {
+  private chauffeurService = inject(ChauffeurService);
 
+  chauffeurs: Chauffeur[] = [];
   searchQuery = '';
+
+  ngOnInit() {
+    this.loadChauffeurs();
+  }
+
+  loadChauffeurs() {
+    this.chauffeurService.getAll().subscribe({
+      next: (data) => this.chauffeurs = data,
+      error: (err) => console.error('Error fetching chauffeurs for HR:', err)
+    });
+  }
 
   get filteredChauffeurs(): Chauffeur[] {
     if (!this.searchQuery) return this.chauffeurs;
@@ -35,7 +35,8 @@ export class HrChauffeursList {
     return this.chauffeurs.filter(c => 
       c.nom.toLowerCase().includes(q) || 
       c.prenom.toLowerCase().includes(q) || 
-      c.mle.toLowerCase().includes(q)
+      (c.mle && c.mle.toLowerCase().includes(q))
     );
   }
 }
+

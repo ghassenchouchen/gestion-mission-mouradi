@@ -1,4 +1,4 @@
-import { PrismaClient } from '../generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as bcrypt from 'bcryptjs';
@@ -21,14 +21,14 @@ async function main() {
   await prisma.objetMission.deleteMany({});
   await prisma.destination.deleteMany({});
 
-  // 2. Create Users
+  // 2. Create Admin & HR Users
   const salt = await bcrypt.genSalt(10);
   const adminPasswordHash = await bcrypt.hash('admin123', salt);
   const hrPasswordHash = await bcrypt.hash('hr123', salt);
 
   const admin = await prisma.utilisateur.create({
     data: {
-      email: 'admin@elmouradi.tn',
+      email: 'admin@elmouradi.com',
       passwordHash: adminPasswordHash,
       nom: 'Administrateur',
       prenom: 'El Mouradi',
@@ -38,7 +38,7 @@ async function main() {
 
   const hr = await prisma.utilisateur.create({
     data: {
-      email: 'hr@elmouradi.tn',
+      email: 'hr@elmouradi.com',
       passwordHash: hrPasswordHash,
       nom: 'RH',
       prenom: 'Service',
@@ -48,57 +48,61 @@ async function main() {
 
   console.log('✅ Created Users:', admin.email, hr.email);
 
-  // 3. Create Employees
-  const empList = [
-    { mle: '1029', nom: 'Bouguerra', prenom: 'Abdelhak', fonction: 'Technicien', hotelAffectation: 'El Mouradi Port El Kantaoui' },
-    { mle: '1030', nom: 'Mahrouk', prenom: 'Nabil', fonction: 'DC', hotelAffectation: 'El Mouradi Palace' },
-    { mle: '4392', nom: 'Ben Amor', prenom: 'Yassine', fonction: 'Auditeur', hotelAffectation: 'Direction générale' },
-    { mle: '7104', nom: 'Mansour', prenom: 'Ridha', fonction: 'Responsable Maintenance', hotelAffectation: 'El Mouradi Djerba Menzel' },
-    { mle: '5821', nom: 'Ben Salem', prenom: 'Sami', fonction: 'Contrôleur de Gestion', hotelAffectation: 'Direction générale' },
-    { mle: '8971', nom: 'Gharbi', prenom: 'Salim', fonction: 'Directeur Financier', hotelAffectation: 'Direction générale' },
-    { mle: '3194', nom: 'Toumi', prenom: 'Mariem', fonction: 'Assistante RH', hotelAffectation: 'Direction générale' },
-    { mle: '6284', nom: 'Azaiez', prenom: 'Kais', fonction: 'Chef de Projet', hotelAffectation: 'El Mouradi Gammarth' }
+  // 3. Create Vehicles FIRST (needed for chauffeur default vehicle references)
+  const vehicleList = [
+    { immatriculation: '7094 TU 109', marque: 'Isuzu', modele: 'D-Max', type: 'Utilitaire', disponible: true },
+    { immatriculation: '3588 TU 213', marque: 'Citroen', modele: 'Berlingo', type: 'Utilitaire', disponible: true },
+    { immatriculation: '3968 TU 129', marque: 'PEUGEOT', modele: 'Partner', type: 'Utilitaire', disponible: true },
+    { immatriculation: '3597 TU 213', marque: 'Citroen', modele: 'Berlingo', type: 'Utilitaire', disponible: true },
+    { immatriculation: '8090 TU 145', marque: 'Mercedes', modele: 'Axor', type: 'Poids Lourd', disponible: true },
+    { immatriculation: '2187 TU 73', marque: 'Renault', modele: 'CLR 230', type: 'Poids Lourd', disponible: true },
+    { immatriculation: '5079 TU 59', marque: 'Renault', modele: 'CL R 220', type: 'Poids Lourd', disponible: true },
+    { immatriculation: '8572 TU 100', marque: 'Isuzu', modele: 'D-Max', type: 'Utilitaire', disponible: true },
+    { immatriculation: '5388 TU 130', marque: 'Isuzu', modele: 'DMAX', type: 'Utilitaire', disponible: true },
+    { immatriculation: '1016 TU 113', marque: 'Peugeot', modele: 'Partner', type: 'Utilitaire', disponible: true },
+    { immatriculation: '7285 TU 197', marque: 'FIAT', modele: 'QUBO', type: 'Voiture', disponible: true },
+    { immatriculation: '3398 TU 206', marque: 'Citroen', modele: 'C ELYSEE', type: 'Voiture', disponible: true },
+    { immatriculation: '7292 TU 197', marque: 'FIAT', modele: 'QUBO', type: 'Voiture', disponible: true },
+    { immatriculation: 'Lui-même', marque: 'N/A', modele: 'Propre moyen', type: 'Aucun', disponible: true }
   ];
 
-  const dbEmployees = [];
-  for (const emp of empList) {
-    const dbEmp = await prisma.employe.create({ data: emp });
-    dbEmployees.push(dbEmp);
+  const dbVehicles: Record<string, any> = {};
+  for (const v of vehicleList) {
+    const dbV = await prisma.vehicule.create({ data: v });
+    dbVehicles[v.immatriculation] = dbV;
   }
-  console.log(`✅ Created ${dbEmployees.length} Employees`);
+  console.log(`✅ Created ${Object.keys(dbVehicles).length} Vehicles`);
 
-  // 4. Create Chauffeurs
+  // 4. Create Chauffeurs with default vehicle assignments
+  // Based on the real chauffeur-vehicle pairing table
   const chauffeurList = [
-    { mle: '1041', nom: 'Zorgatti', prenom: 'Samir', telephone: '+216 98 123 456', disponible: true },
-    { mle: '1042', nom: 'Ben Salem', prenom: 'Ali', telephone: '+216 98 654 321', disponible: true },
-    { mle: '3981', nom: 'Mejri', prenom: 'Salah', telephone: '+216 95 333 444', disponible: true },
-    { mle: '2756', nom: 'Hamdi', prenom: 'Nizar', telephone: '+216 97 111 222', disponible: true }
+    { nom: 'LAKTI', prenom: 'Samir', disponible: true, vehicleImmat: '7094 TU 109' },
+    { nom: 'Bousnina', prenom: 'Samir', disponible: true, vehicleImmat: '3588 TU 213' },
+    { nom: 'Timoomi', prenom: 'Yassin', disponible: true, vehicleImmat: '3968 TU 129' },
+    { nom: 'Tayeri', prenom: 'Bechir', disponible: true, vehicleImmat: '3597 TU 213' },
+    { nom: 'Jelidi', prenom: 'Jamel', disponible: true, vehicleImmat: '8090 TU 145' },
+    { nom: 'Sawalmi', prenom: 'Anis', disponible: true, vehicleImmat: '2187 TU 73' },
+    { nom: 'Kaomsi', prenom: 'Bel Hassen', disponible: true, vehicleImmat: '5079 TU 59' },
+    { nom: 'Ghannen', prenom: 'Omar', disponible: true, vehicleImmat: '8572 TU 100' },
+    { nom: 'HAJ Mbarek', prenom: 'Faycel', disponible: true, vehicleImmat: '5388 TU 130' },
+    { nom: 'Guesmi', prenom: 'Mounir', disponible: true, vehicleImmat: '7292 TU 197' }
   ];
 
   const dbChauffeurs = [];
   for (const ch of chauffeurList) {
-    const dbCh = await prisma.chauffeur.create({ data: ch });
+    const { vehicleImmat, ...chauffeurData } = ch;
+    const defaultVehicle = dbVehicles[vehicleImmat];
+    const dbCh = await prisma.chauffeur.create({
+      data: {
+        ...chauffeurData,
+        vehiculeParDefautId: defaultVehicle ? defaultVehicle.id : undefined,
+      },
+    });
     dbChauffeurs.push(dbCh);
   }
   console.log(`✅ Created ${dbChauffeurs.length} Chauffeurs`);
 
-  // 5. Create Vehicles
-  const vehicleList = [
-    { immatriculation: '210 TUN 1234', marque: 'Peugeot', modele: 'Partner', type: 'Utilitaire', disponible: true },
-    { immatriculation: '142 TUN 3854', marque: 'Toyota', modele: 'Hilux', type: 'Utilitaire', disponible: true },
-    { immatriculation: '198 TUN 7721', marque: 'Hyundai', modele: 'H1', type: 'Bus', disponible: true },
-    { immatriculation: '210 TUN 5589', marque: 'Toyota', modele: 'Hilux', type: 'Utilitaire', disponible: true },
-    { immatriculation: 'Lui-même', marque: 'N/A', modele: 'Propre moyen', type: 'Aucun', disponible: true }
-  ];
-
-  const dbVehicles = [];
-  for (const v of vehicleList) {
-    const dbV = await prisma.vehicule.create({ data: v });
-    dbVehicles.push(dbV);
-  }
-  console.log(`✅ Created ${dbVehicles.length} Vehicles`);
-
-  // 6. Create Mission Objectives
+  // 5. Create Mission Objectives
   const objList = [
     { libelle: 'Travaux', actif: true },
     { libelle: 'Réunion', actif: true },
@@ -114,7 +118,7 @@ async function main() {
   }
   console.log(`✅ Created ${dbObjects.length} ObjetMissions`);
 
-  // 7. Create Destinations
+  // 6. Create Destinations
   const destList = [
     { nom: 'El Mouradi Port El Kantaoui', ville: 'Sousse' },
     { nom: 'El Mouradi Palace', ville: 'Sousse' },
@@ -124,7 +128,7 @@ async function main() {
     { nom: 'El Mouradi Mahdia', ville: 'Mahdia' },
     { nom: 'El Mouradi Tozeur', ville: 'Tozeur' },
     { nom: 'El Mouradi Douz', ville: 'Douz' },
-    { nom: 'Direction générale', ville: 'Tunis' }
+    { nom: 'Direction générale', ville: 'Sousse' }
   ];
 
   const dbDestinations = [];
@@ -134,103 +138,10 @@ async function main() {
   }
   console.log(`✅ Created ${dbDestinations.length} Destinations`);
 
-  // 8. Create Sample Missions (PLANIFIE, EN_COURS, TERMINE, ANNULE)
-  const today = new Date();
-  
-  const tomorrowStart = new Date(today);
-  tomorrowStart.setDate(today.getDate() + 1);
-  const tomorrowEnd = new Date(today);
-  tomorrowEnd.setDate(today.getDate() + 3);
+  // NOTE: No mock employees or sample missions are seeded.
+  // Employees should be added through the application UI.
+  // Missions will be created by users through the "Nouvelle Mission" form.
 
-  const yesterdayStart = new Date(today);
-  yesterdayStart.setDate(today.getDate() - 3);
-  const yesterdayEnd = new Date(today);
-  yesterdayEnd.setDate(today.getDate() - 1);
-
-  // Planned Mission
-  const m1 = await prisma.ordreMission.create({
-    data: {
-      reference: 'OM-2026-0001',
-      employeId: dbEmployees.find(e => e.mle === '8971')!.id, // Salim Gharbi
-      destinationId: dbDestinations.find(d => d.nom === 'El Mouradi Gammarth')!.id,
-      chauffeurId: dbChauffeurs.find(c => c.mle === '1042')!.id, // Ali Ben Salem
-      vehiculeId: dbVehicles.find(v => v.immatriculation === '198 TUN 7721')!.id, // Hyundai H1
-      objetMissionId: dbObjects.find(o => o.libelle === 'Inspection et Audit')!.id,
-      creeParId: admin.id,
-      dateDebut: tomorrowStart,
-      dateFin: tomorrowEnd,
-      heureDepart: '08:30',
-      heureRetour: '17:30',
-      statut: 'PLANIFIE',
-      itineraire: 'Tunis -> Gammarth -> Tunis',
-      notes: 'Visite d\'audit financier de fin de trimestre.'
-    }
-  });
-
-  // Active / En cours Mission
-  const m2 = await prisma.ordreMission.create({
-    data: {
-      reference: 'OM-2026-0002',
-      employeId: dbEmployees.find(e => e.mle === '1029')!.id, // Abdelhak Bouguerra
-      destinationId: dbDestinations.find(d => d.nom === 'El Mouradi Hammamet')!.id,
-      chauffeurId: dbChauffeurs.find(c => c.mle === '1041')!.id, // Samir Zorgatti (Mark unavailable)
-      vehiculeId: dbVehicles.find(v => v.immatriculation === '210 TUN 1234')!.id, // Peugeot Partner (Mark unavailable)
-      objetMissionId: dbObjects.find(o => o.libelle === 'Travaux')!.id,
-      creeParId: admin.id,
-      dateDebut: today,
-      dateFin: tomorrowStart,
-      heureDepart: '07:30',
-      heureRetour: '18:00',
-      statut: 'EN_COURS',
-      itineraire: 'Tunis -> Hammamet -> Tunis',
-      notes: 'Maintenance préventive des serveurs locaux.'
-    }
-  });
-  // Mark chauffeur & vehicle as busy
-  await prisma.chauffeur.update({ where: { mle: '1041' }, data: { disponible: false } });
-  await prisma.vehicule.update({ where: { immatriculation: '210 TUN 1234' }, data: { disponible: false } });
-
-  // Finished / Terminated Mission
-  const m3 = await prisma.ordreMission.create({
-    data: {
-      reference: 'OM-2026-0003',
-      employeId: dbEmployees.find(e => e.mle === '1030')!.id, // Nabil Mahrouk
-      destinationId: dbDestinations.find(d => d.nom === 'El Mouradi Palace')!.id,
-      chauffeurId: dbChauffeurs.find(c => c.mle === '3981')!.id, // Salah Mejri
-      vehiculeId: dbVehicles.find(v => v.immatriculation === 'Lui-même')!.id,
-      objetMissionId: dbObjects.find(o => o.libelle === 'Réunion')!.id,
-      creeParId: admin.id,
-      dateDebut: yesterdayStart,
-      dateFin: yesterdayEnd,
-      heureDepart: '09:00',
-      heureRetour: '16:00',
-      statut: 'TERMINE',
-      itineraire: 'Tunis -> Sousse -> Tunis',
-      notes: 'Réunion régionale des directeurs.'
-    }
-  });
-
-  // Cancelled Mission
-  const m4 = await prisma.ordreMission.create({
-    data: {
-      reference: 'OM-2026-0004',
-      employeId: dbEmployees.find(e => e.mle === '5821')!.id, // Sami Ben Salem
-      destinationId: dbDestinations.find(d => d.nom === 'El Mouradi Port El Kantaoui')!.id,
-      chauffeurId: dbChauffeurs.find(c => c.mle === '2756')!.id, // Nizar Hamdi
-      vehiculeId: dbVehicles.find(v => v.immatriculation === 'Lui-même')!.id,
-      objetMissionId: dbObjects.find(o => o.libelle === 'Formation')!.id,
-      creeParId: admin.id,
-      dateDebut: yesterdayStart,
-      dateFin: yesterdayEnd,
-      heureDepart: '08:30',
-      heureRetour: '18:00',
-      statut: 'ANNULE',
-      itineraire: 'Tunis -> Sousse -> Tunis',
-      notes: 'Formation annulée pour cause d\'intempéries.'
-    }
-  });
-
-  console.log('✅ Created Sample Missions');
   console.log('\n🎉 Seeding finished successfully!');
 }
 

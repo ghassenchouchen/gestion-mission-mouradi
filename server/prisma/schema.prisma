@@ -30,23 +30,26 @@ model Employe {
 }
 
 model Chauffeur {
-  id         Int            @id @default(autoincrement())
-  mle        String         @unique
-  nom        String
-  prenom     String
-  telephone  String?
-  disponible Boolean        @default(true)
-  missions   OrdreMission[]
+  id                  Int            @id @default(autoincrement())
+  mle                 String?        @unique
+  nom                 String
+  prenom              String
+  telephone           String?
+  disponible          Boolean        @default(true)
+  vehiculeParDefautId Int?           @unique
+  vehiculeParDefaut   Vehicule?      @relation("ChauffeurVehiculeDefaut", fields: [vehiculeParDefautId], references: [id])
+  missions            OrdreMission[]
 }
 
 model Vehicule {
-  id              Int            @id @default(autoincrement())
-  immatriculation String         @unique
-  marque          String
-  modele          String
-  type            String         // "Voiture" | "Utilitaire" | "Aucun"
-  disponible      Boolean        @default(true)
-  missions        OrdreMission[]
+  id                Int            @id @default(autoincrement())
+  immatriculation   String         @unique
+  marque            String
+  modele            String
+  type              String         // "Voiture" | "Utilitaire" | "Aucun"
+  disponible        Boolean        @default(true)
+  chauffeurParDefaut Chauffeur?    @relation("ChauffeurVehiculeDefaut")
+  missions          OrdreMission[]
 }
 
 model ObjetMission {

@@ -33,7 +33,7 @@ async function test() {
   // 1. Test login
   console.log('1. POST /auth/login (admin)');
   const login = await request('POST', '/auth/login', {
-    email: 'admin@elmouradi.tn',
+    email: 'admin@elmouradi.com',
     password: 'admin123',
   });
   console.log(`   Status: ${login.status}`);
@@ -125,7 +125,7 @@ async function test() {
   // 8. Test HR login
   console.log('\n8. POST /auth/login (HR)');
   const hrLogin = await request('POST', '/auth/login', {
-    email: 'hr@elmouradi.tn',
+    email: 'hr@elmouradi.com',
     password: 'hr123',
   });
   console.log(`   Status: ${hrLogin.status}`);

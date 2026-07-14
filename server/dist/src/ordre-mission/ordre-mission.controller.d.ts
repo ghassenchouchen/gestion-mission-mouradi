@@ -19,8 +19,8 @@ export declare class OrdreMissionController {
         accompagnateurs?: number[];
         statut?: string;
     }): Promise<{
-        id: number;
         createdAt: Date;
+        id: number;
         reference: string;
         dateDebut: Date;
         dateFin: Date | null;
@@ -41,30 +41,22 @@ export declare class OrdreMissionController {
         creeParId: number;
     }>;
     findAll(): Promise<({
-        employe: {
-            id: number;
-            nom: string;
-            prenom: string;
-            mle: string;
-            actif: boolean;
-            fonction: string;
-            hotelAffectation: string;
-        };
-        chauffeur: {
-            id: number;
-            nom: string;
-            prenom: string;
-            mle: string;
-            telephone: string | null;
-            disponible: boolean;
-        };
         vehicule: {
             id: number;
-            disponible: boolean;
             immatriculation: string;
             marque: string;
             modele: string;
             type: string;
+            disponible: boolean;
+        };
+        chauffeur: {
+            nom: string;
+            prenom: string;
+            id: number;
+            disponible: boolean;
+            mle: string | null;
+            telephone: string | null;
+            vehiculeParDefautId: number | null;
         };
         objetMission: {
             id: number;
@@ -72,21 +64,30 @@ export declare class OrdreMissionController {
             actif: boolean;
         };
         destination: {
-            id: number;
             nom: string;
+            id: number;
             ville: string;
         };
-        creePar: {
+        employe: {
+            nom: string;
+            prenom: string;
             id: number;
+            mle: string;
+            actif: boolean;
+            fonction: string;
+            hotelAffectation: string;
+        };
+        creePar: {
             email: string;
             nom: string;
             prenom: string;
+            id: number;
         };
         accompagnateurs: ({
             employe: {
-                id: number;
                 nom: string;
                 prenom: string;
+                id: number;
                 mle: string;
                 actif: boolean;
                 fonction: string;
@@ -98,8 +99,8 @@ export declare class OrdreMissionController {
             ordreMissionId: number;
         })[];
     } & {
-        id: number;
         createdAt: Date;
+        id: number;
         reference: string;
         dateDebut: Date;
         dateFin: Date | null;
@@ -120,30 +121,22 @@ export declare class OrdreMissionController {
         creeParId: number;
     })[]>;
     findOne(id: number): Promise<{
-        employe: {
-            id: number;
-            nom: string;
-            prenom: string;
-            mle: string;
-            actif: boolean;
-            fonction: string;
-            hotelAffectation: string;
-        };
-        chauffeur: {
-            id: number;
-            nom: string;
-            prenom: string;
-            mle: string;
-            telephone: string | null;
-            disponible: boolean;
-        };
         vehicule: {
             id: number;
-            disponible: boolean;
             immatriculation: string;
             marque: string;
             modele: string;
             type: string;
+            disponible: boolean;
+        };
+        chauffeur: {
+            nom: string;
+            prenom: string;
+            id: number;
+            disponible: boolean;
+            mle: string | null;
+            telephone: string | null;
+            vehiculeParDefautId: number | null;
         };
         objetMission: {
             id: number;
@@ -151,21 +144,30 @@ export declare class OrdreMissionController {
             actif: boolean;
         };
         destination: {
-            id: number;
             nom: string;
+            id: number;
             ville: string;
         };
-        creePar: {
+        employe: {
+            nom: string;
+            prenom: string;
             id: number;
+            mle: string;
+            actif: boolean;
+            fonction: string;
+            hotelAffectation: string;
+        };
+        creePar: {
             email: string;
             nom: string;
             prenom: string;
+            id: number;
         };
         accompagnateurs: ({
             employe: {
-                id: number;
                 nom: string;
                 prenom: string;
+                id: number;
                 mle: string;
                 actif: boolean;
                 fonction: string;
@@ -177,8 +179,8 @@ export declare class OrdreMissionController {
             ordreMissionId: number;
         })[];
     } & {
-        id: number;
         createdAt: Date;
+        id: number;
         reference: string;
         dateDebut: Date;
         dateFin: Date | null;
@@ -216,8 +218,8 @@ export declare class OrdreMissionController {
         departReel?: string;
         retourReel?: string;
     }): Promise<{
-        id: number;
         createdAt: Date;
+        id: number;
         reference: string;
         dateDebut: Date;
         dateFin: Date | null;
@@ -238,8 +240,8 @@ export declare class OrdreMissionController {
         creeParId: number;
     }>;
     remove(id: number): Promise<{
-        id: number;
         createdAt: Date;
+        id: number;
         reference: string;
         dateDebut: Date;
         dateFin: Date | null;

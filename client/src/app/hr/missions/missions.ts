@@ -1,9 +1,11 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Sidebar } from '../../admin/sidebar/sidebar';
+import { OrdreMissionService, OrdreMission } from '../../services/api.service';
 
 interface Mission {
+  id: number;
   reference: string;
   employeeName: string;
   employeeInitials: string;
@@ -12,6 +14,7 @@ interface Mission {
   dateFin: string;
   dateStr: string;
   status: 'PLANIFIE' | 'EN_COURS' | 'TERMINE' | 'ANNULE';
+  raw: OrdreMission;
 }
 
 @Component({
@@ -22,59 +25,10 @@ interface Mission {
   templateUrl: './missions.html',
   styleUrl: '../../admin/missions/missions.css' // Reusing missions list CSS directly
 })
-export class HrMissionsList {
-  missions: Mission[] = [
-    {
-      reference: 'OM-2026-0042',
-      employeeName: 'Mohamed Ali',
-      employeeInitials: 'MA',
-      destination: 'El Mouradi Gammarth',
-      dateDebut: '2026-06-18',
-      dateFin: '2026-06-20',
-      dateStr: '18 Juin - 20 Juin',
-      status: 'EN_COURS'
-    },
-    {
-      reference: 'OM-2026-0041',
-      employeeName: 'Yassine Ben Amor',
-      employeeInitials: 'YA',
-      destination: 'El Mouradi Sousse',
-      dateDebut: '2026-06-18',
-      dateFin: '2026-06-19',
-      dateStr: '18 Juin - 19 Juin',
-      status: 'PLANIFIE'
-    },
-    {
-      reference: 'OM-2026-0040',
-      employeeName: 'Amel Trabelsi',
-      employeeInitials: 'AT',
-      destination: 'El Mouradi Hammamet',
-      dateDebut: '2026-06-17',
-      dateFin: '2026-06-17',
-      dateStr: '17 Juin 2026',
-      status: 'TERMINE'
-    },
-    {
-      reference: 'OM-2026-0039',
-      employeeName: 'Ridha Mansour',
-      employeeInitials: 'RM',
-      destination: 'El Mouradi Djerba',
-      dateDebut: '2026-06-16',
-      dateFin: '2026-06-20',
-      dateStr: '16 Juin - 20 Juin',
-      status: 'TERMINE'
-    },
-    {
-      reference: 'OM-2026-0038',
-      employeeName: 'Sami Ben Salem',
-      employeeInitials: 'SS',
-      destination: 'El Mouradi Port El Kantaoui',
-      dateDebut: '2026-06-15',
-      dateFin: '2026-06-16',
-      dateStr: '15 Juin - 16 Juin',
-      status: 'ANNULE'
-    }
-  ];
+export class HrMissionsList implements OnInit {
+  private ordreMissionService = inject(OrdreMissionService);
+
+  missions: Mission[] = [];
 
   // Filters state
   searchQuery = '';
@@ -85,6 +39,47 @@ export class HrMissionsList {
   // Pagination state
   currentPage = 1;
   pageSize = 5;
+
+  ngOnInit() {
+    this.loadMissions();
+  }
+
+  loadMissions() {
+    this.ordreMissionService.getAll().subscribe({
+      next: (data) => {
+        this.missions = data.map(m => this.mapToViewModel(m));
+      },
+      error: (err) => console.error('Error fetching missions for HR:', err)
+    });
+  }
+
+  private mapToViewModel(m: OrdreMission): Mission {
+    const emp = m.employe;
+    const empName = emp ? `${emp.prenom} ${emp.nom}` : 'N/A';
+    const initials = emp ? `${emp.prenom[0]}${emp.nom[0]}`.toUpperCase() : 'N/A';
+    const dest = m.destination ? m.destination.nom : 'N/A';
+
+    const start = new Date(m.dateDebut);
+    const end = m.dateFin ? new Date(m.dateFin) : null;
+
+    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' };
+    const dateStr = end && start.getTime() !== end.getTime()
+      ? `${start.toLocaleDateString('fr-FR', options)} - ${end.toLocaleDateString('fr-FR', { ...options, year: 'numeric' })}`
+      : `${start.toLocaleDateString('fr-FR', { ...options, year: 'numeric' })}`;
+
+    return {
+      id: m.id,
+      reference: m.reference,
+      employeeName: empName,
+      employeeInitials: initials,
+      destination: dest,
+      dateDebut: m.dateDebut.split('T')[0],
+      dateFin: m.dateFin ? m.dateFin.split('T')[0] : m.dateDebut.split('T')[0],
+      dateStr: dateStr,
+      status: m.statut,
+      raw: m
+    };
+  }
 
   get filteredMissions(): Mission[] {
     return this.missions.filter(m => {
@@ -171,7 +166,20 @@ export class HrMissionsList {
     alert("Exportation des ordres de mission vers Excel initiée !");
   }
 
+  // Modals state
+  isDetailModalOpen = false;
+  selectedMission: Mission | null = null;
+
   viewDetails(ref: string) {
-    alert(`Détails de l'ordre de mission ${ref}:\nDestination: El Mouradi Gammarth\nDates: 18 Juin - 20 Juin\nChauffeur: Hedi Jlassi`);
+    const m = this.missions.find(x => x.reference === ref);
+    if (!m) return;
+    this.selectedMission = m;
+    this.isDetailModalOpen = true;
+  }
+
+  closeDetailsModal() {
+    this.isDetailModalOpen = false;
+    this.selectedMission = null;
   }
 }
+

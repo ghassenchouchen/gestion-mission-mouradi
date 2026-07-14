@@ -18,18 +18,28 @@ let OrdreMissionService = class OrdreMissionService {
         this.prisma = prisma;
     }
     async create(userId, dto) {
-        const year = new Date().getFullYear();
-        const count = await this.prisma.ordreMission.count({
-            where: {
-                reference: {
-                    startsWith: `OM-${year}-`
-                }
-            }
-        });
-        const refNum = String(count + 1).padStart(4, '0');
-        const reference = `OM-${year}-${refNum}`;
         const statut = dto.statut || 'PLANIFIE';
         return this.prisma.$transaction(async (tx) => {
+            const year = new Date().getFullYear();
+            const lastMission = await tx.ordreMission.findFirst({
+                where: {
+                    reference: {
+                        startsWith: `OM-${year}-`
+                    }
+                },
+                orderBy: {
+                    reference: 'desc'
+                }
+            });
+            let nextNum = 1;
+            if (lastMission) {
+                const parts = lastMission.reference.split('-');
+                const lastNum = parseInt(parts[parts.length - 1], 10);
+                if (!isNaN(lastNum)) {
+                    nextNum = lastNum + 1;
+                }
+            }
+            const reference = `OM-${year}-${String(nextNum).padStart(4, '0')}`;
             const order = await tx.ordreMission.create({
                 data: {
                     reference,
@@ -59,6 +69,14 @@ let OrdreMissionService = class OrdreMissionService {
                 });
             }
             if (statut === 'EN_COURS') {
+                const chauffeur = await tx.chauffeur.findUnique({ where: { id: dto.chauffeurId } });
+                if (!chauffeur || !chauffeur.disponible) {
+                    throw new common_1.ConflictException("Le chauffeur sélectionné n'est pas disponible.");
+                }
+                const vehicule = await tx.vehicule.findUnique({ where: { id: dto.vehiculeId } });
+                if (!vehicule || !vehicule.disponible) {
+                    throw new common_1.ConflictException("Le véhicule sélectionné n'est pas disponible.");
+                }
                 await tx.chauffeur.update({
                     where: { id: dto.chauffeurId },
                     data: { disponible: false }
@@ -180,6 +198,14 @@ let OrdreMissionService = class OrdreMissionService {
                 const cId = dto.chauffeurId || current.chauffeurId;
                 const vId = dto.vehiculeId || current.vehiculeId;
                 if (newStatut === 'EN_COURS') {
+                    const chauffeur = await tx.chauffeur.findUnique({ where: { id: cId } });
+                    if (!chauffeur || !chauffeur.disponible) {
+                        throw new common_1.ConflictException("Le chauffeur sélectionné n'est pas disponible.");
+                    }
+                    const vehicule = await tx.vehicule.findUnique({ where: { id: vId } });
+                    if (!vehicule || !vehicule.disponible) {
+                        throw new common_1.ConflictException("Le véhicule sélectionné n'est pas disponible.");
+                    }
                     await tx.chauffeur.update({ where: { id: cId }, data: { disponible: false } });
                     await tx.vehicule.update({ where: { id: vId }, data: { disponible: false } });
                 }

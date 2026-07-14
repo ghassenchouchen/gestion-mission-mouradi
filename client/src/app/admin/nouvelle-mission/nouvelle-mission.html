@@ -109,12 +109,45 @@
             <div class="form-grid grid-2">
               <div class="form-group">
                 <label>Chauffeur <span>*</span></label>
-                <select class="form-control" [(ngModel)]="chauffeurId" name="chauffeurId">
-                  <option [value]="null" disabled selected>Choisir un chauffeur...</option>
-                  <option *ngFor="let ch of chauffeurs" [value]="ch.id">
-                    {{ ch.prenom }} {{ ch.nom }} ({{ ch.mle }})
-                  </option>
-                </select>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <select class="form-control" [(ngModel)]="chauffeurId" name="chauffeurId" (change)="onChauffeurChange()" style="flex: 1;">
+                    <option [value]="null" disabled selected>Choisir un chauffeur...</option>
+                    <option *ngFor="let ch of chauffeurs" [value]="ch.id">
+                      {{ ch.prenom }} {{ ch.nom }}{{ ch.mle ? ' (' + ch.mle + ')' : '' }}
+                    </option>
+                  </select>
+                  <button type="button" class="btn-primary" (click)="showAddChauffeurForm = true" style="padding: 10px 14px; font-size: 13px; height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: none;">
+                    <iconify-icon icon="lucide:plus"></iconify-icon>
+                    Nouveau
+                  </button>
+                </div>
+              </div>
+
+              <!-- Inline Chauffeur Creation Form -->
+              <div class="form-card" *ngIf="showAddChauffeurForm" style="margin-top: 20px; grid-column: span 2; background: #f8f9fc; border: 1px dashed #d0d4e0; padding: 20px; border-radius: 8px; box-shadow: none;">
+                <h3 style="font-size: 14px; font-weight: 600; color: #1a1f36; margin-bottom: 12px;">Ajouter un nouveau chauffeur</h3>
+                <div class="form-grid grid-2" style="margin-bottom: 16px;">
+                  <div class="form-group">
+                    <label>Matricule (MLE) - 4 chiffres (Optionnel)</label>
+                    <input type="text" class="form-control" placeholder="Ex: 1045" [(ngModel)]="newChauffeurMle" name="newChauffeurMle" maxlength="4" />
+                  </div>
+                  <div class="form-group">
+                    <label>Prénom <span>*</span></label>
+                    <input type="text" class="form-control" placeholder="Ex: Ali" [(ngModel)]="newChauffeurPrenom" name="newChauffeurPrenom" />
+                  </div>
+                  <div class="form-group">
+                    <label>Nom <span>*</span></label>
+                    <input type="text" class="form-control" placeholder="Ex: Ben Salem" [(ngModel)]="newChauffeurNom" name="newChauffeurNom" />
+                  </div>
+                  <div class="form-group">
+                    <label>Numéro de Téléphone (Optionnel)</label>
+                    <input type="text" class="form-control" placeholder="Ex: +216 98 999 999" [(ngModel)]="newChauffeurTelephone" name="newChauffeurTelephone" />
+                  </div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                  <button type="button" class="btn-ghost" (click)="showAddChauffeurForm = false" style="padding: 8px 16px; font-size: 13px; height: 32px;">Annuler</button>
+                  <button type="button" class="btn-primary" (click)="saveNewChauffeur()" style="padding: 8px 16px; font-size: 13px; height: 32px;">Enregistrer</button>
+                </div>
               </div>
 
               <div class="form-group">
@@ -130,7 +163,7 @@
               <div class="form-group">
                 <label>Immatriculation</label>
                 <input type="text" class="form-control" [(ngModel)]="immatriculation" name="immatriculation"
-                  [disabled]="vehiculeId !== 4" [placeholder]="vehiculeId === 4 ? 'Optionnelle (Ex: Propre moyen)' : 'Auto-rempli...'" />
+                  [disabled]="!isPropreMoyenSelected()" [placeholder]="isPropreMoyenSelected() ? 'Optionnelle (Ex: Propre moyen)' : 'Auto-rempli...'" />
               </div>
             </div>
           </div>
@@ -166,11 +199,7 @@
                 </select>
               </div>
 
-              <div class="form-group" style="grid-column: span 2;">
-                <label>Itinéraire détaillé (Optionnel)</label>
-                <textarea class="form-control" rows="2" placeholder="Ex: Tunis -> Sousse -> Tunis..."
-                  [(ngModel)]="itineraire" name="itineraire"></textarea>
-              </div>
+
             </div>
           </div>
 

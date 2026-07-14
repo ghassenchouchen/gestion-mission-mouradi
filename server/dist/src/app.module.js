@@ -18,6 +18,7 @@ const objet_mission_module_1 = require("./objet-mission/objet-mission.module");
 const destination_module_1 = require("./destination/destination.module");
 const employe_module_1 = require("./employe/employe.module");
 const ordre_mission_module_1 = require("./ordre-mission/ordre-mission.module");
+const utilisateur_module_1 = require("./utilisateur/utilisateur.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -31,7 +32,8 @@ exports.AppModule = AppModule = __decorate([
             objet_mission_module_1.ObjetMissionModule,
             destination_module_1.DestinationModule,
             employe_module_1.EmployeModule,
-            ordre_mission_module_1.OrdreMissionModule
+            ordre_mission_module_1.OrdreMissionModule,
+            utilisateur_module_1.UtilisateurModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

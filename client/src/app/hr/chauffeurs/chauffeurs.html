@@ -59,7 +59,7 @@
                 </td>
                 <td style="font-weight: 500;">{{ item.prenom }}</td>
                 <td style="font-weight: 500;">{{ item.nom }}</td>
-                <td>{{ item.telephone }}</td>
+                <td>{{ item.telephone || '—' }}</td>
                 <td>
                   <span class="badge" [ngClass]="item.disponible ? 'badge-termine' : 'badge-encours'">
                     {{ item.disponible ? 'Disponible' : 'En mission' }}

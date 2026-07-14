@@ -3,18 +3,18 @@ export declare class EmployeController {
     private readonly employeService;
     constructor(employeService: EmployeService);
     findAll(): Promise<{
-        id: number;
         nom: string;
         prenom: string;
+        id: number;
         mle: string;
         actif: boolean;
         fonction: string;
         hotelAffectation: string;
     }[]>;
     findOne(id: number): Promise<{
-        id: number;
         nom: string;
         prenom: string;
+        id: number;
         mle: string;
         actif: boolean;
         fonction: string;
@@ -27,9 +27,9 @@ export declare class EmployeController {
         fonction: string;
         hotelAffectation: string;
     }): Promise<{
-        id: number;
         nom: string;
         prenom: string;
+        id: number;
         mle: string;
         actif: boolean;
         fonction: string;
@@ -43,18 +43,18 @@ export declare class EmployeController {
         hotelAffectation?: string;
         actif?: boolean;
     }): Promise<{
-        id: number;
         nom: string;
         prenom: string;
+        id: number;
         mle: string;
         actif: boolean;
         fonction: string;
         hotelAffectation: string;
     }>;
     remove(id: number): Promise<{
-        id: number;
         nom: string;
         prenom: string;
+        id: number;
         mle: string;
         actif: boolean;
         fonction: string;
