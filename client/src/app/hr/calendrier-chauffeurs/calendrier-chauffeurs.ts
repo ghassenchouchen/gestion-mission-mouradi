@@ -193,7 +193,7 @@ export class CalendrierChauffeurs implements OnInit {
           <td>${r.chauffeurName} <span style="color: #8a92a8; font-size: 10px;">(${r.chauffeurMle})</span></td>
           <td>${r.employeeName}</td>
           <td>${r.destination}</td>
-          <td>${new Date(r.dateDebut).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} — ${new Date(r.dateFin).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</td>
+          <td>${new Date(r.dateDebut).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} - ${new Date(r.dateFin).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</td>
           <td>${this.getDurationDays(r.dateDebut, r.dateFin)}j</td>
           <td><span style="padding: 2px 8px; border-radius: 100px; font-size: 10px; font-weight: 600;
             background: ${r.status === 'EN_COURS' ? '#fffbeb' : r.status === 'TERMINE' ? '#f0fdf4' : '#eff6ff'};
@@ -213,7 +213,7 @@ export class CalendrierChauffeurs implements OnInit {
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Rapport Mensuel Missions Chauffeurs — ${monthLabel}</title>
+        <title>Rapport Mensuel Missions Chauffeurs - ${monthLabel}</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <style>
           @page { size: A4 landscape; margin: 15mm; }
@@ -238,7 +238,7 @@ export class CalendrierChauffeurs implements OnInit {
         <div class="header">
           <img src="${logoUrl}" alt="El Mouradi Hotels" />
           <div class="header-title">
-            <h1>Rapport Mensuel — Missions des Chauffeurs</h1>
+            <h1>Rapport Mensuel - Missions des Chauffeurs</h1>
             <p>${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)}</p>
           </div>
         </div>
@@ -264,7 +264,7 @@ export class CalendrierChauffeurs implements OnInit {
           </tbody>
         </table>
         <div class="footer">
-          Rapport généré le ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} — El Mouradi Hotels — Direction Générale
+          Rapport généré le ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} - El Mouradi Hotels - Direction Générale
         </div>
       </body>
       </html>

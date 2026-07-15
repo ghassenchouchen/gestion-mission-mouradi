@@ -93,7 +93,7 @@
                   <span class="mono-ref">{{ ch.mle }}</span>
                   <span class="detail-sep">•</span>
                   <iconify-icon icon="lucide:phone" style="font-size: 12px;"></iconify-icon>
-                  {{ ch.telephone || '—' }}
+                  {{ ch.telephone || '-' }}
                 </div>
               </div>
             </div>
@@ -115,7 +115,7 @@
               <iconify-icon icon="lucide:navigation"></iconify-icon>
             </div>
             <div class="banner-content">
-              <div class="banner-title">Mission en cours — <strong>{{ mission.missionRef }}</strong></div>
+              <div class="banner-title">Mission en cours - <strong>{{ mission.missionRef }}</strong></div>
               <div class="banner-detail">
                 <span>
                   <iconify-icon icon="lucide:user" style="font-size: 12px;"></iconify-icon>
@@ -129,7 +129,7 @@
                 <span class="detail-sep">•</span>
                 <span>
                   <iconify-icon icon="lucide:calendar" style="font-size: 12px;"></iconify-icon>
-                  {{ formatDate(mission.dateDebut) }} — {{ formatDate(mission.dateFin) }}
+                  {{ formatDate(mission.dateDebut) }} - {{ formatDate(mission.dateFin) }}
                   ({{ getDurationDays(mission.dateDebut, mission.dateFin) }}j)
                 </span>
               </div>
@@ -139,7 +139,7 @@
           <!-- Mission History Table (filtered by selected month) -->
           <div class="mission-history">
             <div class="history-header">
-              <h4>Missions — {{ selectedMonthLabel }}</h4>
+              <h4>Missions - {{ selectedMonthLabel }}</h4>
               <span class="history-count">{{ getMissionsForMonth(ch).length }} mission(s)</span>
             </div>
             <div class="history-table-wrap" *ngIf="getMissionsForMonth(ch).length > 0">
@@ -164,7 +164,7 @@
                         {{ m.destination }}
                       </div>
                     </td>
-                    <td>{{ formatDate(m.dateDebut) }} — {{ formatDate(m.dateFin) }}</td>
+                    <td>{{ formatDate(m.dateDebut) }} - {{ formatDate(m.dateFin) }}</td>
                     <td>{{ getDurationDays(m.dateDebut, m.dateFin) }} jour(s)</td>
                     <td>
                       <span class="badge" [ngClass]="getStatusBadgeClass(m.status)">
