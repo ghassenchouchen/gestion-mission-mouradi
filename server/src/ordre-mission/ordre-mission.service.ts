@@ -1,9 +1,116 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
-export class OrdreMissionService {
+export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(OrdreMissionService.name);
+  private autoStartInterval: ReturnType<typeof setInterval>;
+
   constructor(private readonly prisma: PrismaService) {}
+
+  onModuleInit() {
+    this.logger.log('Auto-scheduler initialized — checking start/termination every 30 seconds');
+    // Run immediately on startup, then every 30 seconds
+    this.runSchedulerTasks();
+    this.autoStartInterval = setInterval(() => {
+      this.runSchedulerTasks();
+    }, 30_000);
+  }
+
+  onModuleDestroy() {
+    if (this.autoStartInterval) {
+      clearInterval(this.autoStartInterval);
+    }
+  }
+
+  private async runSchedulerTasks() {
+    await this.autoStartMissions();
+    await this.autoTerminateMissions();
+  }
+
+  /**
+   * Background task: automatically transitions PLANIFIE missions to EN_COURS
+   * when their scheduled dateDebut + heureDepart has been reached.
+   *
+   * dateDebut is stored as UTC midnight (e.g. 2026-07-20T00:00:00.000Z).
+   * heureDepart is stored as "HH:mm" in local time.
+   * We reconstruct the intended local start time and compare it to Date.now().
+   */
+  private async autoStartMissions() {
+    try {
+      const now = new Date();
+
+      const planified = await this.prisma.ordreMission.findMany({
+        where: { statut: 'PLANIFIE' },
+        select: { id: true, reference: true, dateDebut: true, heureDepart: true },
+      });
+
+      for (const m of planified) {
+        const d = new Date(m.dateDebut);
+        const year  = d.getUTCFullYear();
+        const month = d.getUTCMonth();
+        const day   = d.getUTCDate();
+
+        const [hours, minutes] = m.heureDepart.split(':').map(Number);
+
+        const scheduledStart = new Date(year, month, day, hours, minutes, 0);
+
+        if (now >= scheduledStart) {
+          const result = await this.prisma.ordreMission.updateMany({
+            where: { id: m.id, statut: 'PLANIFIE' },
+            data: {
+              statut: 'EN_COURS',
+              departReel: now,          
+            },
+          });
+          
+          if (result.count > 0) {
+            this.logger.log(`⏩ Mission ${m.reference} auto-started (scheduled ${m.heureDepart})`);
+          }
+        }
+      }
+    } catch (err) {
+      this.logger.error('Auto-start check failed', err);
+    }
+  }
+
+  /**
+   * Background task: automatically transitions EN_COURS missions to TERMINE
+   * when their scheduled dateFin + heureRetour has been reached.
+   */
+  private async autoTerminateMissions() {
+    try {
+      const now = new Date();
+
+      const enCours = await this.prisma.ordreMission.findMany({
+        where: { statut: 'EN_COURS' },
+        select: { id: true, reference: true, dateFin: true, heureRetour: true },
+      });
+
+      for (const m of enCours) {
+        if (!m.dateFin || !m.heureRetour) continue;
+
+        const d = new Date(m.dateFin);
+        const year  = d.getUTCFullYear();
+        const month = d.getUTCMonth();
+        const day   = d.getUTCDate();
+
+        const [hours, minutes] = m.heureRetour.split(':').map(Number);
+
+        const scheduledEnd = new Date(year, month, day, hours, minutes, 0);
+
+        if (now >= scheduledEnd) {
+          await this.update(m.id, {
+            statut: 'TERMINE',
+            retourReel: now.toISOString(),
+          });
+          this.logger.log(`🏁 Mission ${m.reference} auto-terminated (scheduled ${m.heureRetour})`);
+        }
+      }
+    } catch (err) {
+      this.logger.error('Auto-terminate check failed', err);
+    }
+  }
 
   async create(userId: number, dto: {
     employeId: number;
@@ -25,7 +132,6 @@ export class OrdreMissionService {
     const statut = dto.statut || 'PLANIFIE';
 
     return this.prisma.$transaction(async (tx) => {
-      // Safe unique reference generation (e.g. OM-2026-0001)
       const year = new Date().getFullYear();
       const lastMission = await tx.ordreMission.findFirst({
         where: {
@@ -69,7 +175,6 @@ export class OrdreMissionService {
         }
       });
 
-      // Add Accompagnateurs
       if (dto.accompagnateurs && dto.accompagnateurs.length > 0) {
         await tx.accompagnateur.createMany({
           data: dto.accompagnateurs.map(empId => ({
@@ -79,8 +184,7 @@ export class OrdreMissionService {
         });
       }
 
-      // If status is EN_COURS, check availability and mark chauffeur and vehicle as unavailable
-      if (statut === 'EN_COURS') {
+      if (statut === 'PLANIFIE' || statut === 'EN_COURS') {
         const chauffeur = await tx.chauffeur.findUnique({ where: { id: dto.chauffeurId } });
         if (!chauffeur || !chauffeur.disponible) {
           throw new ConflictException("Le chauffeur sélectionné n'est pas disponible.");
@@ -170,31 +274,36 @@ export class OrdreMissionService {
     departReel?: string;
     retourReel?: string;
   }) {
-    const current = await this.findOne(id);
-
-    if (current.statut === 'EN_COURS' || current.statut === 'TERMINE') {
-      const detailsModified =
-        dto.employeId !== undefined ||
-        dto.destinationId !== undefined ||
-        dto.chauffeurId !== undefined ||
-        dto.vehiculeId !== undefined ||
-        dto.objetMissionId !== undefined ||
-        dto.dateDebut !== undefined ||
-        dto.dateFin !== undefined ||
-        dto.heureDepart !== undefined ||
-        dto.heureRetour !== undefined ||
-        dto.itineraire !== undefined ||
-        dto.fraisParticipation !== undefined ||
-        dto.fraisMission !== undefined;
-
-      if (detailsModified) {
-        throw new ConflictException(
-          "Impossible de modifier les détails d'une mission en cours ou terminée.",
-        );
-      }
-    }
-
     return this.prisma.$transaction(async (tx) => {
+      const current = await tx.ordreMission.findUnique({
+        where: { id }
+      });
+      if (!current) {
+        throw new NotFoundException(`Ordre de mission #${id} introuvable`);
+      }
+
+      if (current.statut === 'EN_COURS' || current.statut === 'TERMINE') {
+        const detailsModified =
+          dto.employeId !== undefined ||
+          dto.destinationId !== undefined ||
+          dto.chauffeurId !== undefined ||
+          dto.vehiculeId !== undefined ||
+          dto.objetMissionId !== undefined ||
+          dto.dateDebut !== undefined ||
+          dto.dateFin !== undefined ||
+          dto.heureDepart !== undefined ||
+          dto.heureRetour !== undefined ||
+          dto.itineraire !== undefined ||
+          dto.fraisParticipation !== undefined ||
+          dto.fraisMission !== undefined;
+
+        if (detailsModified) {
+          throw new ConflictException(
+            "Impossible de modifier les détails d'une mission en cours ou terminée.",
+          );
+        }
+      }
+
       // Build update payload
       const data: any = {};
       if (dto.employeId !== undefined) data.employeId = dto.employeId;
@@ -219,36 +328,74 @@ export class OrdreMissionService {
         data
       });
 
-      // Handle chauffeur/vehicule availability modifications based on status transitions
       const oldStatut = current.statut;
-      const newStatut = dto.statut;
+      const newStatut = dto.statut !== undefined ? dto.statut : current.statut;
 
-      if (newStatut && oldStatut !== newStatut) {
-        const cId = dto.chauffeurId || current.chauffeurId;
-        const vId = dto.vehiculeId || current.vehiculeId;
+      const wasOldActive = oldStatut === 'PLANIFIE' || oldStatut === 'EN_COURS';
+      const willNewActive = newStatut === 'PLANIFIE' || newStatut === 'EN_COURS';
 
-        if (newStatut === 'EN_COURS') {
-          // Check availability before marking as unavailable
-          const chauffeur = await tx.chauffeur.findUnique({ where: { id: cId } });
-          if (!chauffeur || !chauffeur.disponible) {
+      const oldChauffeurId = current.chauffeurId;
+      const newChauffeurId = dto.chauffeurId !== undefined ? dto.chauffeurId : current.chauffeurId;
+
+      if (oldChauffeurId !== newChauffeurId) {
+        // Driver changed
+        if (wasOldActive) {
+          // Release old chauffeur
+          await tx.chauffeur.update({ where: { id: oldChauffeurId }, data: { disponible: true } });
+        }
+        if (willNewActive) {
+          // Book new chauffeur 
+          const newChauffeur = await tx.chauffeur.findUnique({ where: { id: newChauffeurId } });
+          if (!newChauffeur || !newChauffeur.disponible) {
             throw new ConflictException("Le chauffeur sélectionné n'est pas disponible.");
           }
-          const vehicule = await tx.vehicule.findUnique({ where: { id: vId } });
-          if (!vehicule || !vehicule.disponible) {
+          await tx.chauffeur.update({ where: { id: newChauffeurId }, data: { disponible: false } });
+        }
+      } else {
+        // Driver remained same
+        if (wasOldActive && !willNewActive) {
+          // Mission became inactive: release driver
+          await tx.chauffeur.update({ where: { id: oldChauffeurId }, data: { disponible: true } });
+        } else if (!wasOldActive && willNewActive) {
+          // Mission became active: book driver (check availability first)
+          const newChauffeur = await tx.chauffeur.findUnique({ where: { id: oldChauffeurId } });
+          if (!newChauffeur || !newChauffeur.disponible) {
+            throw new ConflictException("Le chauffeur sélectionné n'est pas disponible.");
+          }
+          await tx.chauffeur.update({ where: { id: oldChauffeurId }, data: { disponible: false } });
+        }
+      }
+
+      // Vehicule availability logic
+      const oldVehiculeId = current.vehiculeId;
+      const newVehiculeId = dto.vehiculeId !== undefined ? dto.vehiculeId : current.vehiculeId;
+
+      if (oldVehiculeId !== newVehiculeId) {
+        // Vehicle changed
+        if (wasOldActive) {
+          // Release old vehicle
+          await tx.vehicule.update({ where: { id: oldVehiculeId }, data: { disponible: true } });
+        }
+        if (willNewActive) {
+          // Book new vehicle (check availability first)
+          const newVehicule = await tx.vehicule.findUnique({ where: { id: newVehiculeId } });
+          if (!newVehicule || !newVehicule.disponible) {
             throw new ConflictException("Le véhicule sélectionné n'est pas disponible.");
           }
-
-          // Mark as unavailable
-          await tx.chauffeur.update({ where: { id: cId }, data: { disponible: false } });
-          await tx.vehicule.update({ where: { id: vId }, data: { disponible: false } });
-        } else if (newStatut === 'TERMINE' || newStatut === 'ANNULE') {
-          // Release
-          await tx.chauffeur.update({ where: { id: cId }, data: { disponible: true } });
-          await tx.vehicule.update({ where: { id: vId }, data: { disponible: true } });
-        } else if (oldStatut === 'EN_COURS' && newStatut === 'PLANIFIE') {
-          // Rollback to planned: release chauffeur/vehicle
-          await tx.chauffeur.update({ where: { id: cId }, data: { disponible: true } });
-          await tx.vehicule.update({ where: { id: vId }, data: { disponible: true } });
+          await tx.vehicule.update({ where: { id: newVehiculeId }, data: { disponible: false } });
+        }
+      } else {
+        // Vehicle remained same
+        if (wasOldActive && !willNewActive) {
+          // Mission became inactive: release vehicle
+          await tx.vehicule.update({ where: { id: oldVehiculeId }, data: { disponible: true } });
+        } else if (!wasOldActive && willNewActive) {
+          // Mission became active: book vehicle (check availability first)
+          const newVehicule = await tx.vehicule.findUnique({ where: { id: oldVehiculeId } });
+          if (!newVehicule || !newVehicule.disponible) {
+            throw new ConflictException("Le véhicule sélectionné n'est pas disponible.");
+          }
+          await tx.vehicule.update({ where: { id: oldVehiculeId }, data: { disponible: false } });
         }
       }
 
@@ -257,11 +404,16 @@ export class OrdreMissionService {
   }
 
   async remove(id: number) {
-    const current = await this.findOne(id);
-
     return this.prisma.$transaction(async (tx) => {
-      // If the deleted mission was active/in-progress, release the chauffeur and vehicle first
-      if (current.statut === 'EN_COURS') {
+      const current = await tx.ordreMission.findUnique({
+        where: { id }
+      });
+      if (!current) {
+        throw new NotFoundException(`Ordre de mission #${id} introuvable`);
+      }
+
+      // If the deleted mission was active (PLANIFIE or EN_COURS), release the chauffeur and vehicle first
+      if (current.statut === 'PLANIFIE' || current.statut === 'EN_COURS') {
         await tx.chauffeur.update({
           where: { id: current.chauffeurId },
           data: { disponible: true }

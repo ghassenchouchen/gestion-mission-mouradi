@@ -308,10 +308,12 @@ export class PrintService {
                 <td class="label">Objet de la Mission :</td>
                 <td class="value">${details.objet}</td>
               </tr>
+              ${details.itineraire ? `
               <tr>
                 <td class="label">Itinéraire prévu :</td>
                 <td class="value">${details.itineraire}</td>
               </tr>
+              ` : ''}
             </table>
 
             <!-- Section 4: Période du Déplacement -->

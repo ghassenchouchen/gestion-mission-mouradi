@@ -336,7 +336,7 @@ export class NouvelleMission implements OnInit {
       heureDepart: this.heureDepart,
       heureRetour: this.heureRetour || '',
       objet: obj ? obj.libelle : '',
-      itineraire: this.itineraire || `Tunis -> ${dest ? dest.nom.replace('El Mouradi ', '') : ''} -> Tunis`,
+      itineraire: this.itineraire || '',
       vehicule: veh ? `${veh.marque} ${veh.modele} (${veh.immatriculation})` : '',
       chauffeur: ch ? `${ch.prenom} ${ch.nom} (${ch.mle})` : '',
       accompagnateurs: this.accompagnateurs.map(a => `${a.prenom} ${a.nom} (${a.mle})`),

@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -22,6 +22,7 @@ export class Login {
   constructor(
     private authService: AuthService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   togglePw() {
@@ -40,13 +41,15 @@ export class Login {
     this.authService.login(this.email, this.password).subscribe({
       next: (response) => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         // Redirect based on user role
         if (response.user.role === 'ADMIN') {
           this.router.navigate(['/admin']);
         } else if (response.user.role === 'HR') {
-          this.router.navigate(['/hr']);
+          this.router.navigate(['/hr/suivi-chauffeurs']);
         } else {
           this.errorMessage = 'Rôle non reconnu. Accès refusé.';
+          this.cdr.markForCheck();
         }
       },
       error: (err) => {
@@ -56,6 +59,7 @@ export class Login {
         } else {
           this.errorMessage = err.error?.message || 'Identifiants de connexion incorrects.';
         }
+        this.cdr.markForCheck();
       },
     });
   }

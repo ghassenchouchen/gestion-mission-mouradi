@@ -39,7 +39,7 @@
       <section class="table-card animate-in delay-3">
         <div class="table-header">
           <div>
-            <h2 class="section-title">Dernières missions d'ordre</h2>
+            <h2 class="section-title">Dernières missions</h2>
             <p class="section-sub">Aperçu rapide des missions récemment affectées</p>
           </div>
           <div class="table-actions">
@@ -85,12 +85,6 @@
                   </span>
                 </td>
                 <td style="text-align: right;">
-                  <button class="icon-btn" (click)="viewMission(mission.reference)" title="Détails">
-                    <iconify-icon icon="lucide:eye"></iconify-icon>
-                  </button>
-                  <button class="icon-btn" (click)="editMission(mission.reference)" title="Modifier">
-                    <iconify-icon icon="lucide:edit-2"></iconify-icon>
-                  </button>
                   <button class="icon-btn" (click)="printMission(mission.reference)" title="Imprimer">
                     <iconify-icon icon="lucide:printer"></iconify-icon>
                   </button>

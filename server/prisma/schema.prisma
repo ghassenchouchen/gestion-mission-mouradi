@@ -10,8 +10,8 @@ model Utilisateur {
   id           Int            @id @default(autoincrement())
   email        String         @unique
   passwordHash String
-  nom          String
-  prenom       String
+  nom          String?
+  prenom       String?
   role         String         // "ADMIN" | "HR"
   createdAt    DateTime       @default(now())
   missions     OrdreMission[]

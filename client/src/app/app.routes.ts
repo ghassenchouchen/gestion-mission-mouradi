@@ -61,7 +61,7 @@ export const routes: Routes = [
     data: { roles: ['HR'] }
   },
   { path: 'admin', redirectTo: 'admin/dashboard', pathMatch: 'full' },
-  { path: 'hr', redirectTo: 'hr/dashboard', pathMatch: 'full' },
+  { path: 'hr', redirectTo: 'hr/suivi-chauffeurs', pathMatch: 'full' },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
 ];

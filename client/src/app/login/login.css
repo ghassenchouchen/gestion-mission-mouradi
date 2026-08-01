@@ -332,16 +332,23 @@
 }
 
 /* Error message styling */
+@keyframes errorSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .error-message {
-  padding: 10px 14px;
-  background-color: #fef2f2;
-  border: 1px solid #fee2e2;
-  border-radius: 8px;
-  color: #991b1b;
-  font-size: 13px;
+  padding: 12px 16px;
+  background-color: #fff5f5;
+  border: 1.5px solid #ffc9c9;
+  border-radius: 9px;
+  color: #c92a2a;
+  font-size: 13.5px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(201, 42, 42, 0.06);
+  animation: errorSlideIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* Footer Section */

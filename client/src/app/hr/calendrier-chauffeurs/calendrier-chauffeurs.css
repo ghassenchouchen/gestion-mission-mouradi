@@ -463,3 +463,28 @@ select.filter-control {
 .animate-in {
   animation: fadeSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* ── Buttons ── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  background: #d4a853;
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(212,168,83,0.35);
+}
+
+.btn-primary:hover {
+  background: #c49940;
+  box-shadow: 0 4px 16px rgba(212,168,83,0.4);
+  transform: translateY(-1px);
+}
+

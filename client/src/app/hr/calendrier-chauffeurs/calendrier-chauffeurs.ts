@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Sidebar } from '../../admin/sidebar/sidebar';
@@ -33,6 +33,7 @@ interface ChauffeurSchedule {
 export class CalendrierChauffeurs implements OnInit {
   private chauffeurService = inject(ChauffeurService);
   private ordreMissionService = inject(OrdreMissionService);
+  private cdr = inject(ChangeDetectorRef);
 
   searchQuery = '';
   filterStatus: 'all' | 'en-mission' | 'disponible' = 'all';
@@ -75,6 +76,7 @@ export class CalendrierChauffeurs implements OnInit {
                 missions: chauffeurMissions
               };
             });
+            this.cdr.markForCheck();
           },
           error: (err) => console.error('Error fetching missions for schedules:', err)
         });
@@ -190,7 +192,7 @@ export class CalendrierChauffeurs implements OnInit {
       ? rows.map(r => `
         <tr>
           <td style="font-family: monospace; font-size: 11px; background: #f8f9fc; padding: 2px 6px; border-radius: 3px;">${r.missionRef}</td>
-          <td>${r.chauffeurName} <span style="color: #8a92a8; font-size: 10px;">(${r.chauffeurMle})</span></td>
+          <td>${r.chauffeurName}${r.chauffeurMle ? ` <span style="color: #8a92a8; font-size: 10px;">(${r.chauffeurMle})</span>` : ''}</td>
           <td>${r.employeeName}</td>
           <td>${r.destination}</td>
           <td>${new Date(r.dateDebut).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} - ${new Date(r.dateFin).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</td>

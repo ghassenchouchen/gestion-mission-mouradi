@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
@@ -36,6 +36,7 @@ export class AdminDashboard implements OnInit {
   private ordreMissionService = inject(OrdreMissionService);
   private chauffeurService = inject(ChauffeurService);
   private printService = inject(PrintService);
+  private cdr = inject(ChangeDetectorRef);
 
   stats: StatCard[] = [
     {
@@ -76,7 +77,7 @@ export class AdminDashboard implements OnInit {
         // 1. Calculate missions this month
         const currentYearMonth = new Date().toISOString().substring(0, 7); // "YYYY-MM"
         const missionsThisMonth = missions.filter(m => {
-          return m.dateDebut.substring(0, 7) === currentYearMonth;
+          return m.statut !== 'ANNULE' && m.dateDebut.substring(0, 7) === currentYearMonth;
         });
         this.stats[0].value = missionsThisMonth.length;
         this.stats[0].label = `Missions pour ${new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`;
@@ -85,8 +86,9 @@ export class AdminDashboard implements OnInit {
         const activeMissions = missions.filter(m => m.statut === 'EN_COURS');
         this.stats[1].value = activeMissions.length;
 
-        // 3. Populate recent missions (top 5 sorted by date)
+        // 3. Populate recent missions (top 5 sorted by date, excluding cancelled)
         this.recentMissions = missions
+          .filter(m => m.statut !== 'ANNULE')
           .slice(0, 5)
           .map(m => {
             const start = new Date(m.dateDebut);
@@ -102,6 +104,7 @@ export class AdminDashboard implements OnInit {
               raw: m
             };
           });
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error fetching dashboard missions:', err)
     });
@@ -113,6 +116,7 @@ export class AdminDashboard implements OnInit {
         const total = chauffeurs.length || 1;
         const rate = Math.round((availableChauffeurs.length / total) * 100);
         this.stats[2].badgeText = `${rate}%`;
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error fetching drivers:', err)
     });
@@ -186,7 +190,7 @@ export class AdminDashboard implements OnInit {
       heureDepart: raw.heureDepart || '08:00',
       heureRetour: raw.heureRetour || '',
       objet: raw.objetMission?.libelle || '',
-      itineraire: raw.itineraire || `Tunis -> ${mission.destination.replace('El Mouradi ', '')} -> Tunis`,
+      itineraire: raw.itineraire || '',
       vehicule: raw.vehicule ? `${raw.vehicule.marque} ${raw.vehicule.modele} (${raw.vehicule.immatriculation})` : '',
       chauffeur: raw.chauffeur ? `${raw.chauffeur.prenom} ${raw.chauffeur.nom} (${raw.chauffeur.mle})` : '',
       accompagnateurs: raw.accompagnateurs?.map(a => `${a.employe.prenom} ${a.employe.nom} (${a.employe.mle})`) || [],

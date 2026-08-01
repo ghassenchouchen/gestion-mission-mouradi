@@ -26,17 +26,13 @@
 
     <!-- HR Navigation -->
     <ng-container *ngIf="currentUser()?.role === 'HR'">
-      <a routerLink="/hr/dashboard" class="nav-item" [class.active]="activeItem === 'dashboard'">
-        <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
-        Tableau de bord
+      <a routerLink="/hr/suivi-chauffeurs" class="nav-item" [class.active]="activeItem === 'suivi-chauffeurs'">
+        <iconify-icon icon="lucide:calendar-clock"></iconify-icon>
+        Suivi Chauffeurs
       </a>
       <a routerLink="/hr/missions" class="nav-item" [class.active]="activeItem === 'missions'">
         <iconify-icon icon="lucide:file-text"></iconify-icon>
         Missions
-      </a>
-      <a routerLink="/hr/suivi-chauffeurs" class="nav-item" [class.active]="activeItem === 'suivi-chauffeurs'">
-        <iconify-icon icon="lucide:calendar-clock"></iconify-icon>
-        Suivi Chauffeurs
       </a>
       <a routerLink="/hr/chauffeurs" class="nav-item" [class.active]="activeItem === 'chauffeurs'">
         <iconify-icon icon="lucide:user-check"></iconify-icon>

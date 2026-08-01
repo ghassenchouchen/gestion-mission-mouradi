@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Sidebar } from '../sidebar/sidebar';
@@ -32,6 +32,7 @@ export class Settings implements OnInit {
   private destinationService = inject(DestinationService);
   private employeService = inject(EmployeService);
   private utilisateurService = inject(UtilisateurService);
+  private cdr = inject(ChangeDetectorRef);
 
   activeTab: 'chauffeurs' | 'vehicules' | 'objets' | 'destinations' | 'employes' | 'utilisateurs' = 'chauffeurs';
 
@@ -73,27 +74,27 @@ export class Settings implements OnInit {
 
   loadAllData() {
     this.chauffeurService.getAll().subscribe({
-      next: (data) => this.chauffeurs = data,
+      next: (data) => { this.chauffeurs = data; this.cdr.markForCheck(); },
       error: (err) => console.error('Error loading chauffeurs:', err)
     });
     this.vehiculeService.getAll().subscribe({
-      next: (data) => this.vehicules = data,
+      next: (data) => { this.vehicules = data; this.cdr.markForCheck(); },
       error: (err) => console.error('Error loading vehicles:', err)
     });
     this.objetMissionService.getAll().subscribe({
-      next: (data) => this.objets = data,
+      next: (data) => { this.objets = data; this.cdr.markForCheck(); },
       error: (err) => console.error('Error loading objects:', err)
     });
     this.destinationService.getAll().subscribe({
-      next: (data) => this.destinations = data,
+      next: (data) => { this.destinations = data; this.cdr.markForCheck(); },
       error: (err) => console.error('Error loading destinations:', err)
     });
     this.employeService.getAll().subscribe({
-      next: (data) => this.employes = data,
+      next: (data) => { this.employes = data; this.cdr.markForCheck(); },
       error: (err) => console.error('Error loading employees:', err)
     });
     this.utilisateurService.getAll().subscribe({
-      next: (data) => this.utilisateurs = data,
+      next: (data) => { this.utilisateurs = data; this.cdr.markForCheck(); },
       error: (err) => console.error('Error loading users:', err)
     });
   }
@@ -150,12 +151,12 @@ export class Settings implements OnInit {
 
     if (this.modalMode === 'add') {
       // Validate form payload
-      if (this.activeTab === 'utilisateurs' && (!this.formData.email || !this.formData.nom || !this.formData.prenom || !this.formData.password)) {
-        alert('Veuillez remplir tous les champs obligatoires.');
+      if (this.activeTab === 'utilisateurs' && (!this.formData.email || !this.formData.password)) {
+        alert('Veuillez remplir l\'email et le mot de passe.');
         return;
       }
-      if (this.activeTab === 'chauffeurs' && (!this.formData.mle || !this.formData.nom || !this.formData.prenom)) {
-        alert('Veuillez remplir tous les champs obligatoires.');
+      if (this.activeTab === 'chauffeurs' && (!this.formData.nom || !this.formData.prenom)) {
+        alert('Veuillez remplir le nom et le prénom du chauffeur.');
         return;
       }
       if (this.activeTab === 'vehicules' && (!this.formData.immatriculation || !this.formData.marque || !this.formData.modele)) {

@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Sidebar } from '../../admin/sidebar/sidebar';
@@ -33,6 +33,7 @@ interface ActiveMission {
 })
 export class HrDashboard implements OnInit {
   private ordreMissionService = inject(OrdreMissionService);
+  private cdr = inject(ChangeDetectorRef);
 
   stats: StatCard[] = [
     {
@@ -74,7 +75,7 @@ export class HrDashboard implements OnInit {
         const currentYearMonth = new Date().toISOString().substring(0, 7); // "YYYY-MM"
 
         // 1. Calculate missions today
-        const missionsToday = missions.filter(m => m.dateDebut.substring(0, 10) === todayStr);
+        const missionsToday = missions.filter(m => m.statut !== 'ANNULE' && m.dateDebut.substring(0, 10) === todayStr);
         this.stats[0].value = missionsToday.length;
 
         // 2. Count active employees in mission (statut is EN_COURS)
@@ -82,7 +83,7 @@ export class HrDashboard implements OnInit {
         this.stats[1].value = activeMissions.length;
 
         // 3. Count total missions this month
-        const missionsThisMonth = missions.filter(m => m.dateDebut.substring(0, 7) === currentYearMonth);
+        const missionsThisMonth = missions.filter(m => m.statut !== 'ANNULE' && m.dateDebut.substring(0, 7) === currentYearMonth);
         this.stats[2].value = missionsThisMonth.length;
         this.stats[2].badgeText = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 
@@ -102,6 +103,7 @@ export class HrDashboard implements OnInit {
               raw: m
             };
           });
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error loading HR dashboard data:', err)
     });

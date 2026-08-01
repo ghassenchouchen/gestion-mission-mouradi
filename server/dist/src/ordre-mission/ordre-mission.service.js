@@ -8,14 +8,94 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var OrdreMissionService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrdreMissionService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
-let OrdreMissionService = class OrdreMissionService {
+let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
     prisma;
+    logger = new common_1.Logger(OrdreMissionService_1.name);
+    autoStartInterval;
     constructor(prisma) {
         this.prisma = prisma;
+    }
+    onModuleInit() {
+        this.logger.log('Auto-scheduler initialized — checking start/termination every 30 seconds');
+        this.runSchedulerTasks();
+        this.autoStartInterval = setInterval(() => {
+            this.runSchedulerTasks();
+        }, 30_000);
+    }
+    onModuleDestroy() {
+        if (this.autoStartInterval) {
+            clearInterval(this.autoStartInterval);
+        }
+    }
+    async runSchedulerTasks() {
+        await this.autoStartMissions();
+        await this.autoTerminateMissions();
+    }
+    async autoStartMissions() {
+        try {
+            const now = new Date();
+            const planified = await this.prisma.ordreMission.findMany({
+                where: { statut: 'PLANIFIE' },
+                select: { id: true, reference: true, dateDebut: true, heureDepart: true },
+            });
+            for (const m of planified) {
+                const d = new Date(m.dateDebut);
+                const year = d.getUTCFullYear();
+                const month = d.getUTCMonth();
+                const day = d.getUTCDate();
+                const [hours, minutes] = m.heureDepart.split(':').map(Number);
+                const scheduledStart = new Date(year, month, day, hours, minutes, 0);
+                if (now >= scheduledStart) {
+                    const result = await this.prisma.ordreMission.updateMany({
+                        where: { id: m.id, statut: 'PLANIFIE' },
+                        data: {
+                            statut: 'EN_COURS',
+                            departReel: now,
+                        },
+                    });
+                    if (result.count > 0) {
+                        this.logger.log(`⏩ Mission ${m.reference} auto-started (scheduled ${m.heureDepart})`);
+                    }
+                }
+            }
+        }
+        catch (err) {
+            this.logger.error('Auto-start check failed', err);
+        }
+    }
+    async autoTerminateMissions() {
+        try {
+            const now = new Date();
+            const enCours = await this.prisma.ordreMission.findMany({
+                where: { statut: 'EN_COURS' },
+                select: { id: true, reference: true, dateFin: true, heureRetour: true },
+            });
+            for (const m of enCours) {
+                if (!m.dateFin || !m.heureRetour)
+                    continue;
+                const d = new Date(m.dateFin);
+                const year = d.getUTCFullYear();
+                const month = d.getUTCMonth();
+                const day = d.getUTCDate();
+                const [hours, minutes] = m.heureRetour.split(':').map(Number);
+                const scheduledEnd = new Date(year, month, day, hours, minutes, 0);
+                if (now >= scheduledEnd) {
+                    await this.update(m.id, {
+                        statut: 'TERMINE',
+                        retourReel: now.toISOString(),
+                    });
+                    this.logger.log(`🏁 Mission ${m.reference} auto-terminated (scheduled ${m.heureRetour})`);
+                }
+            }
+        }
+        catch (err) {
+            this.logger.error('Auto-terminate check failed', err);
+        }
     }
     async create(userId, dto) {
         const statut = dto.statut || 'PLANIFIE';
@@ -68,7 +148,7 @@ let OrdreMissionService = class OrdreMissionService {
                     }))
                 });
             }
-            if (statut === 'EN_COURS') {
+            if (statut === 'PLANIFIE' || statut === 'EN_COURS') {
                 const chauffeur = await tx.chauffeur.findUnique({ where: { id: dto.chauffeurId } });
                 if (!chauffeur || !chauffeur.disponible) {
                     throw new common_1.ConflictException("Le chauffeur sélectionné n'est pas disponible.");
@@ -136,25 +216,30 @@ let OrdreMissionService = class OrdreMissionService {
         return order;
     }
     async update(id, dto) {
-        const current = await this.findOne(id);
-        if (current.statut === 'EN_COURS' || current.statut === 'TERMINE') {
-            const detailsModified = dto.employeId !== undefined ||
-                dto.destinationId !== undefined ||
-                dto.chauffeurId !== undefined ||
-                dto.vehiculeId !== undefined ||
-                dto.objetMissionId !== undefined ||
-                dto.dateDebut !== undefined ||
-                dto.dateFin !== undefined ||
-                dto.heureDepart !== undefined ||
-                dto.heureRetour !== undefined ||
-                dto.itineraire !== undefined ||
-                dto.fraisParticipation !== undefined ||
-                dto.fraisMission !== undefined;
-            if (detailsModified) {
-                throw new common_1.ConflictException("Impossible de modifier les détails d'une mission en cours ou terminée.");
-            }
-        }
         return this.prisma.$transaction(async (tx) => {
+            const current = await tx.ordreMission.findUnique({
+                where: { id }
+            });
+            if (!current) {
+                throw new common_1.NotFoundException(`Ordre de mission #${id} introuvable`);
+            }
+            if (current.statut === 'EN_COURS' || current.statut === 'TERMINE') {
+                const detailsModified = dto.employeId !== undefined ||
+                    dto.destinationId !== undefined ||
+                    dto.chauffeurId !== undefined ||
+                    dto.vehiculeId !== undefined ||
+                    dto.objetMissionId !== undefined ||
+                    dto.dateDebut !== undefined ||
+                    dto.dateFin !== undefined ||
+                    dto.heureDepart !== undefined ||
+                    dto.heureRetour !== undefined ||
+                    dto.itineraire !== undefined ||
+                    dto.fraisParticipation !== undefined ||
+                    dto.fraisMission !== undefined;
+                if (detailsModified) {
+                    throw new common_1.ConflictException("Impossible de modifier les détails d'une mission en cours ou terminée.");
+                }
+            }
             const data = {};
             if (dto.employeId !== undefined)
                 data.employeId = dto.employeId;
@@ -193,38 +278,73 @@ let OrdreMissionService = class OrdreMissionService {
                 data
             });
             const oldStatut = current.statut;
-            const newStatut = dto.statut;
-            if (newStatut && oldStatut !== newStatut) {
-                const cId = dto.chauffeurId || current.chauffeurId;
-                const vId = dto.vehiculeId || current.vehiculeId;
-                if (newStatut === 'EN_COURS') {
-                    const chauffeur = await tx.chauffeur.findUnique({ where: { id: cId } });
-                    if (!chauffeur || !chauffeur.disponible) {
+            const newStatut = dto.statut !== undefined ? dto.statut : current.statut;
+            const wasOldActive = oldStatut === 'PLANIFIE' || oldStatut === 'EN_COURS';
+            const willNewActive = newStatut === 'PLANIFIE' || newStatut === 'EN_COURS';
+            const oldChauffeurId = current.chauffeurId;
+            const newChauffeurId = dto.chauffeurId !== undefined ? dto.chauffeurId : current.chauffeurId;
+            if (oldChauffeurId !== newChauffeurId) {
+                if (wasOldActive) {
+                    await tx.chauffeur.update({ where: { id: oldChauffeurId }, data: { disponible: true } });
+                }
+                if (willNewActive) {
+                    const newChauffeur = await tx.chauffeur.findUnique({ where: { id: newChauffeurId } });
+                    if (!newChauffeur || !newChauffeur.disponible) {
                         throw new common_1.ConflictException("Le chauffeur sélectionné n'est pas disponible.");
                     }
-                    const vehicule = await tx.vehicule.findUnique({ where: { id: vId } });
-                    if (!vehicule || !vehicule.disponible) {
+                    await tx.chauffeur.update({ where: { id: newChauffeurId }, data: { disponible: false } });
+                }
+            }
+            else {
+                if (wasOldActive && !willNewActive) {
+                    await tx.chauffeur.update({ where: { id: oldChauffeurId }, data: { disponible: true } });
+                }
+                else if (!wasOldActive && willNewActive) {
+                    const newChauffeur = await tx.chauffeur.findUnique({ where: { id: oldChauffeurId } });
+                    if (!newChauffeur || !newChauffeur.disponible) {
+                        throw new common_1.ConflictException("Le chauffeur sélectionné n'est pas disponible.");
+                    }
+                    await tx.chauffeur.update({ where: { id: oldChauffeurId }, data: { disponible: false } });
+                }
+            }
+            const oldVehiculeId = current.vehiculeId;
+            const newVehiculeId = dto.vehiculeId !== undefined ? dto.vehiculeId : current.vehiculeId;
+            if (oldVehiculeId !== newVehiculeId) {
+                if (wasOldActive) {
+                    await tx.vehicule.update({ where: { id: oldVehiculeId }, data: { disponible: true } });
+                }
+                if (willNewActive) {
+                    const newVehicule = await tx.vehicule.findUnique({ where: { id: newVehiculeId } });
+                    if (!newVehicule || !newVehicule.disponible) {
                         throw new common_1.ConflictException("Le véhicule sélectionné n'est pas disponible.");
                     }
-                    await tx.chauffeur.update({ where: { id: cId }, data: { disponible: false } });
-                    await tx.vehicule.update({ where: { id: vId }, data: { disponible: false } });
+                    await tx.vehicule.update({ where: { id: newVehiculeId }, data: { disponible: false } });
                 }
-                else if (newStatut === 'TERMINE' || newStatut === 'ANNULE') {
-                    await tx.chauffeur.update({ where: { id: cId }, data: { disponible: true } });
-                    await tx.vehicule.update({ where: { id: vId }, data: { disponible: true } });
+            }
+            else {
+                if (wasOldActive && !willNewActive) {
+                    await tx.vehicule.update({ where: { id: oldVehiculeId }, data: { disponible: true } });
                 }
-                else if (oldStatut === 'EN_COURS' && newStatut === 'PLANIFIE') {
-                    await tx.chauffeur.update({ where: { id: cId }, data: { disponible: true } });
-                    await tx.vehicule.update({ where: { id: vId }, data: { disponible: true } });
+                else if (!wasOldActive && willNewActive) {
+                    const newVehicule = await tx.vehicule.findUnique({ where: { id: oldVehiculeId } });
+                    if (!newVehicule || !newVehicule.disponible) {
+                        throw new common_1.ConflictException("Le véhicule sélectionné n'est pas disponible.");
+                    }
+                    await tx.vehicule.update({ where: { id: oldVehiculeId }, data: { disponible: false } });
                 }
             }
             return updated;
         });
     }
     async remove(id) {
-        const current = await this.findOne(id);
         return this.prisma.$transaction(async (tx) => {
-            if (current.statut === 'EN_COURS') {
+            const current = await tx.ordreMission.findUnique({
+                where: { id }
+            });
+            if (!current) {
+                throw new common_1.NotFoundException(`Ordre de mission #${id} introuvable`);
+            }
+            if (current.statut === 'PLANIFIE' || current.statut === 'EN_COURS') {
                 await tx.chauffeur.update({
                     where: { id: current.chauffeurId },
                     data: { disponible: true }
@@ -241,7 +361,7 @@ let OrdreMissionService = class OrdreMissionService {
     }
 };
 exports.OrdreMissionService = OrdreMissionService;
-exports.OrdreMissionService = OrdreMissionService = __decorate([
+exports.OrdreMissionService = OrdreMissionService = OrdreMissionService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], OrdreMissionService);

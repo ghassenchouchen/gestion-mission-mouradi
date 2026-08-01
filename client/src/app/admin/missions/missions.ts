@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -45,6 +45,7 @@ export class MissionsList implements OnInit {
   private destinationService = inject(DestinationService);
   private objetMissionService = inject(ObjetMissionService);
   private printService = inject(PrintService);
+  private cdr = inject(ChangeDetectorRef);
 
   missions: Mission[] = [];
 
@@ -78,22 +79,25 @@ export class MissionsList implements OnInit {
   loadMissions() {
     this.ordreMissionService.getAll().subscribe({
       next: (data) => {
-        this.missions = data.map(m => this.mapToViewModel(m));
+        this.missions = data
+          .filter(m => m.statut !== 'ANNULE')
+          .map(m => this.mapToViewModel(m));
         // Refresh details modal object reference if it was open
         if (this.selectedMission) {
           const updated = this.missions.find(m => m.id === this.selectedMission!.id);
           if (updated) this.selectedMission = updated;
         }
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error fetching missions:', err)
     });
   }
 
   loadEditReferenceData() {
-    this.chauffeurService.getAll().subscribe(data => this.drivers = data);
-    this.vehiculeService.getAll().subscribe(data => this.vehicles = data);
-    this.destinationService.getAll().subscribe(data => this.destinations = data);
-    this.objetMissionService.getAll().subscribe(data => this.objets = data.filter(o => o.actif));
+    this.chauffeurService.getAll().subscribe(data => { this.drivers = data; this.cdr.markForCheck(); });
+    this.vehiculeService.getAll().subscribe(data => { this.vehicles = data; this.cdr.markForCheck(); });
+    this.destinationService.getAll().subscribe(data => { this.destinations = data; this.cdr.markForCheck(); });
+    this.objetMissionService.getAll().subscribe(data => { this.objets = data.filter(o => o.actif); this.cdr.markForCheck(); });
   }
 
   private mapToViewModel(m: OrdreMission): Mission {
@@ -195,6 +199,7 @@ export class MissionsList implements OnInit {
       case 'TERMINE': return 'badge-termine';
       case 'ANNULE': return 'badge-annule';
       default: return 'badge-valide';
+      
     }
   }
 
@@ -338,7 +343,7 @@ export class MissionsList implements OnInit {
       heureDepart: raw.heureDepart || '08:00',
       heureRetour: raw.heureRetour || '',
       objet: raw.objetMission?.libelle || '',
-      itineraire: raw.itineraire || `Tunis -> ${m.destination.replace('El Mouradi ', '')} -> Tunis`,
+      itineraire: raw.itineraire || '',
       vehicule: raw.vehicule ? `${raw.vehicule.marque} ${raw.vehicule.modele} (${raw.vehicule.immatriculation})` : '',
       chauffeur: raw.chauffeur ? `${raw.chauffeur.prenom} ${raw.chauffeur.nom} (${raw.chauffeur.mle})` : '',
       accompagnateurs: raw.accompagnateurs?.map(a => `${a.employe.prenom} ${a.employe.nom} (${a.employe.mle})`) || [],

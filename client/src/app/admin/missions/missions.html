@@ -295,7 +295,7 @@
           <label>Chauffeur</label>
           <select class="form-control" [(ngModel)]="formData.chauffeurId">
             <option *ngFor="let ch of drivers" [value]="ch.id">
-              {{ ch.prenom }} {{ ch.nom }} ({{ ch.mle }}){{ !ch.disponible ? ' - (Occupé)' : '' }}
+              {{ ch.prenom }} {{ ch.nom }} ({{ ch.mle }}){{ !ch.disponible ? ' - (En mission)' : '' }}
             </option>
           </select>
         </div>
@@ -304,7 +304,7 @@
           <label>Véhicule</label>
           <select class="form-control" [(ngModel)]="formData.vehiculeId">
             <option *ngFor="let v of vehicles" [value]="v.id">
-              {{ v.marque }} {{ v.modele }} ({{ v.immatriculation }}){{ !v.disponible && v.immatriculation !== 'Lui-même' ? ' - (Occupé)' : '' }}
+              {{ v.marque }} {{ v.modele }} ({{ v.immatriculation }}){{ !v.disponible && v.immatriculation !== 'Lui-même' ? ' - (En mission)' : '' }}
             </option>
           </select>
         </div>

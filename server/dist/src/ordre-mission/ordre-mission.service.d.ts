@@ -1,7 +1,15 @@
+import { OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-export declare class OrdreMissionService {
+export declare class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
     private readonly prisma;
+    private readonly logger;
+    private autoStartInterval;
     constructor(prisma: PrismaService);
+    onModuleInit(): void;
+    onModuleDestroy(): void;
+    private runSchedulerTasks;
+    private autoStartMissions;
+    private autoTerminateMissions;
     create(userId: number, dto: {
         employeId: number;
         destinationId: number;

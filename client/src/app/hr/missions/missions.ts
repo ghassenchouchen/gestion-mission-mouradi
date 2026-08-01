@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Sidebar } from '../../admin/sidebar/sidebar';
@@ -27,6 +27,7 @@ interface Mission {
 })
 export class HrMissionsList implements OnInit {
   private ordreMissionService = inject(OrdreMissionService);
+  private cdr = inject(ChangeDetectorRef);
 
   missions: Mission[] = [];
 
@@ -47,7 +48,10 @@ export class HrMissionsList implements OnInit {
   loadMissions() {
     this.ordreMissionService.getAll().subscribe({
       next: (data) => {
-        this.missions = data.map(m => this.mapToViewModel(m));
+        this.missions = data
+          .filter(m => m.statut !== 'ANNULE')
+          .map(m => this.mapToViewModel(m));
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error fetching missions for HR:', err)
     });
@@ -163,7 +167,87 @@ export class HrMissionsList implements OnInit {
   }
 
   exportExcel() {
-    alert("Exportation des ordres de mission vers Excel initiée !");
+    const data = this.filteredMissions;
+    if (data.length === 0) {
+      alert('Aucune mission à exporter.');
+      return;
+    }
+
+    const headers = [
+      'Référence',
+      'Matricule Employé',
+      'Employé',
+      'Fonction',
+      'Hôtel d\'affectation',
+      'Destination',
+      'Objet de la Mission',
+      'Date Début',
+      'Heure Départ',
+      'Date Fin',
+      'Heure Retour',
+      'Chauffeur Désigné',
+      'Matricule Chauffeur',
+      'Moyen de Transport',
+      'Accompagnateurs',
+      'Itinéraire',
+      'Frais Participation (TND)',
+      'Frais Mission (TND)',
+      'Statut',
+      'Notes'
+    ];
+
+    const formatDateStr = (dStr?: string) => {
+      if (!dStr) return '';
+      const d = new Date(dStr);
+      return isNaN(d.getTime()) ? '' : d.toLocaleDateString('fr-FR');
+    };
+
+    const csvRows = [
+      headers.join(';'),
+      ...data.map(m => {
+        const raw = m.raw;
+        const emp = raw.employe;
+        const ch = raw.chauffeur;
+        const veh = raw.vehicule;
+        const obj = raw.objetMission;
+        const accs = raw.accompagnateurs?.map(a => `${a.employe.prenom} ${a.employe.nom}`).join(', ') || '';
+
+        const vehStr = veh ? `${veh.marque} ${veh.modele} (${veh.immatriculation})` : '';
+        const chName = ch ? `${ch.prenom} ${ch.nom}` : '';
+
+        return [
+          m.reference,
+          emp?.mle || '',
+          m.employeeName,
+          emp?.fonction || '',
+          emp?.hotelAffectation || '',
+          m.destination,
+          obj?.libelle || '',
+          formatDateStr(m.dateDebut),
+          raw.heureDepart || '',
+          formatDateStr(m.dateFin),
+          raw.heureRetour || '',
+          chName,
+          ch?.mle || '',
+          vehStr,
+          accs,
+          raw.itineraire || '',
+          raw.fraisParticipation ?? 0,
+          raw.fraisMission ?? 0,
+          this.getStatusLabel(m.status),
+          raw.notes || ''
+        ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';');
+      })
+    ];
+
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ordres_de_mission_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   // Modals state
