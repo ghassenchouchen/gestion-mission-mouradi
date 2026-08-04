@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -36,12 +36,20 @@ export class NouvelleMission implements OnInit {
   private vehiculeService = inject(VehiculeService);
   private ordreMissionService = inject(OrdreMissionService);
   private printService = inject(PrintService);
+  private cdr = inject(ChangeDetectorRef);
 
   employes: Employe[] = [];
   destinations: Destination[] = [];
   objets: ObjetMission[] = [];
   chauffeurs: Chauffeur[] = [];
   vehicules: Vehicule[] = [];
+
+  governorates = [
+    'Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa',
+    'Jendouba', 'Kairouan', 'Kasserine', 'Kébili', 'Le Kef', 'Mahdia',
+    'La Manouba', 'Médenine', 'Monastir', 'Nabeul', 'Sfax', 'Sidi Bouzid',
+    'Siliana', 'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan'
+  ];
 
   hotelsList = [
     'Direction générale',
@@ -78,6 +86,18 @@ export class NouvelleMission implements OnInit {
   newChauffeurPrenom = '';
   newChauffeurTelephone = '';
 
+  // New vehicule creation form state
+  showAddVehiculeForm = false;
+  newVehiculeImmatriculation = '';
+  newVehiculeMarque = '';
+  newVehiculeModele = '';
+  newVehiculeType = 'Voiture';
+
+  // New destination creation form state
+  showAddDestinationForm = false;
+  newDestinationNom = '';
+  newDestinationVille = 'Sousse';
+
   destinationId: number | null = null;
   objetId: number | null = null; // Optional
   itineraire = '';
@@ -94,9 +114,6 @@ export class NouvelleMission implements OnInit {
   accompagnateurs: Employe[] = [];
   selectedAccompagnateurId = '';
 
-  fraisSectionExpanded = false;
-  fraisParticipation = 0;
-  fraisMission = 0;
   notes = '';
 
   isSubmitting = false;
@@ -112,6 +129,7 @@ export class NouvelleMission implements OnInit {
     this.employeService.getAll().subscribe({
       next: (data) => {
         this.employes = data.filter(e => e.actif);
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error loading employees:', err)
     });
@@ -119,6 +137,7 @@ export class NouvelleMission implements OnInit {
     this.destinationService.getAll().subscribe({
       next: (data) => {
         this.destinations = data;
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error loading destinations:', err)
     });
@@ -126,6 +145,7 @@ export class NouvelleMission implements OnInit {
     this.objetMissionService.getAll().subscribe({
       next: (data) => {
         this.objets = data.filter(o => o.actif);
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error loading object missions:', err)
     });
@@ -134,6 +154,7 @@ export class NouvelleMission implements OnInit {
       next: (data) => {
         // Show only available drivers
         this.chauffeurs = data.filter(c => c.disponible);
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error loading chauffeurs:', err)
     });
@@ -142,6 +163,7 @@ export class NouvelleMission implements OnInit {
       next: (data) => {
         // Show only available vehicles or the "Lui-même" option
         this.vehicules = data.filter(v => v.disponible || v.immatriculation === 'Lui-même');
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error loading vehicles:', err)
     });
@@ -149,6 +171,12 @@ export class NouvelleMission implements OnInit {
 
   // Selection change
   onEmployeChange() {
+    if (String(this.selectedEmployeId) === 'NEW') {
+      this.showAddEmployeForm = true;
+      this.selectedEmployeId = null;
+      this.selectedEmploye = null;
+      return;
+    }
     if (this.selectedEmployeId) {
       const emp = this.employes.find(e => e.id === Number(this.selectedEmployeId));
       this.selectedEmploye = emp || null;
@@ -243,8 +271,77 @@ export class NouvelleMission implements OnInit {
     });
   }
 
+  // Add new vehicle directly to NestJS backend database
+  saveNewVehicule() {
+    if (!this.newVehiculeImmatriculation || !this.newVehiculeMarque || !this.newVehiculeModele) {
+      alert('Veuillez remplir l\'immatriculation, la marque et le modèle du véhicule.');
+      return;
+    }
+
+    const newVeh: any = {
+      immatriculation: this.newVehiculeImmatriculation,
+      marque: this.newVehiculeMarque,
+      modele: this.newVehiculeModele,
+      type: this.newVehiculeType,
+      disponible: true
+    };
+
+    this.vehiculeService.create(newVeh).subscribe({
+      next: (res: any) => {
+        this.vehicules.push(res);
+        this.vehiculeId = res.id;
+        this.immatriculation = res.immatriculation;
+        
+        // Reset and close form on success
+        this.showAddVehiculeForm = false;
+        this.newVehiculeImmatriculation = '';
+        this.newVehiculeMarque = '';
+        this.newVehiculeModele = '';
+        this.newVehiculeType = 'Voiture';
+      },
+      error: (err) => {
+        console.error('Failed to post vehicle to database:', err);
+        alert(err.error?.message || 'Erreur lors de la création du véhicule.');
+      }
+    });
+  }
+
+  // Add new destination directly to NestJS backend database
+  saveNewDestination() {
+    if (!this.newDestinationNom || !this.newDestinationVille) {
+      alert('Veuillez remplir le nom et le gouvernorat/ville de la destination.');
+      return;
+    }
+
+    const newDest = {
+      nom: this.newDestinationNom,
+      ville: this.newDestinationVille
+    };
+
+    this.destinationService.create(newDest).subscribe({
+      next: (res: any) => {
+        this.destinations.push(res);
+        this.destinationId = res.id;
+        
+        // Reset and close form on success
+        this.showAddDestinationForm = false;
+        this.newDestinationNom = '';
+        this.newDestinationVille = 'Sousse';
+      },
+      error: (err) => {
+        console.error('Failed to post destination to database:', err);
+        alert(err.error?.message || 'Erreur lors de la création de la destination.');
+      }
+    });
+  }
+
   // When chauffeur changes, auto-select their default vehicle
   onChauffeurChange() {
+    if (String(this.chauffeurId) === 'NEW') {
+      this.showAddChauffeurForm = true;
+      this.chauffeurId = null;
+      return;
+    }
     if (this.chauffeurId) {
       const ch = this.chauffeurs.find(c => c.id === Number(this.chauffeurId));
       if (ch && ch.vehiculeParDefautId) {
@@ -259,6 +356,11 @@ export class NouvelleMission implements OnInit {
 
   // When vehicle changes, auto-select the chauffeur assigned to it (if any)
   onVehiculeChange() {
+    if (String(this.vehiculeId) === 'NEW') {
+      this.showAddVehiculeForm = true;
+      this.vehiculeId = null;
+      return;
+    }
     const veh = this.vehicules.find(v => v.id === Number(this.vehiculeId));
     if (veh) {
       this.immatriculation = veh.immatriculation;
@@ -269,6 +371,14 @@ export class NouvelleMission implements OnInit {
       }
     } else {
       this.immatriculation = '';
+    }
+  }
+
+  onDestinationChange() {
+    if (String(this.destinationId) === 'NEW') {
+      this.showAddDestinationForm = true;
+      this.destinationId = null;
+      return;
     }
   }
 
@@ -313,10 +423,6 @@ export class NouvelleMission implements OnInit {
     );
   }
 
-  toggleFraisSection() {
-    this.fraisSectionExpanded = !this.fraisSectionExpanded;
-  }
-
   printCreatedMission(res: any) {
     const emp = this.employes.find(e => e.id === Number(this.selectedEmployeId));
     const dest = this.destinations.find(d => d.id === Number(this.destinationId));
@@ -329,17 +435,20 @@ export class NouvelleMission implements OnInit {
       employeeName: emp ? `${emp.prenom} ${emp.nom}` : '',
       mle: emp ? emp.mle : '',
       fonction: emp ? emp.fonction : '',
-      hotelAffectation: emp ? emp.hotelAffectation : '',
+      hotelAffectation: emp ? emp.hotelAffectation : 'Direction générale',
       destination: dest ? dest.nom : '',
       dateDebut: this.dateDebut.split('-').reverse().join('/'),
       dateFin: this.dateFin ? this.dateFin.split('-').reverse().join('/') : '',
       heureDepart: this.heureDepart,
       heureRetour: this.heureRetour || '',
       objet: obj ? obj.libelle : '',
-      itineraire: this.itineraire || '',
-      vehicule: veh ? `${veh.marque} ${veh.modele} (${veh.immatriculation})` : '',
-      chauffeur: ch ? `${ch.prenom} ${ch.nom} (${ch.mle})` : '',
-      accompagnateurs: this.accompagnateurs.map(a => `${a.prenom} ${a.nom} (${a.mle})`),
+      itineraire: '',
+      vehicule: veh ? `${veh.marque} ${veh.modele} ${veh.immatriculation}` : '',
+      vehiculeMarque: veh ? `${veh.marque} ${veh.modele}` : '',
+      vehiculeImmatriculation: veh ? veh.immatriculation : '',
+      chauffeurName: ch ? `${ch.prenom} ${ch.nom}` : '',
+      chauffeur: ch ? `${ch.prenom} ${ch.nom}` : '',
+      accompagnateurs: this.accompagnateurs.map(a => `${a.prenom} ${a.nom}`),
       notes: this.notes || '',
       dateEmission: new Date(res.createdAt).toLocaleDateString('fr-FR', {
         day: 'numeric',
@@ -389,8 +498,6 @@ export class NouvelleMission implements OnInit {
       heureDepart: this.heureDepart,
       heureRetour: this.heureRetour || undefined,
       itineraire: this.itineraire || undefined,
-      fraisParticipation: Number(this.fraisParticipation) || 0,
-      fraisMission: Number(this.fraisMission) || 0,
       notes: this.notes || undefined,
       accompagnateurs: this.accompagnateurs.map(a => a.id),
       statut: 'PLANIFIE'

@@ -1,7 +1,9 @@
 import { PrismaService } from '../prisma.service';
+import { MailService } from '../mail/mail.service';
 export declare class UtilisateurService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private mailService;
+    constructor(prisma: PrismaService, mailService: MailService);
     findAll(): Promise<{
         email: string;
         nom: string;

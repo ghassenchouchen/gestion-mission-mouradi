@@ -1,7 +1,7 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { PrintService } from '../../services/print.service';
 import { 
@@ -45,6 +45,7 @@ export class MissionsList implements OnInit {
   private destinationService = inject(DestinationService);
   private objetMissionService = inject(ObjetMissionService);
   private printService = inject(PrintService);
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
 
   missions: Mission[] = [];
@@ -52,6 +53,7 @@ export class MissionsList implements OnInit {
   // Filters state
   searchQuery = '';
   statusFilter = 'ALL';
+  chauffeurFilter: number | 'ALL' = 'ALL';
   startDateFilter = '';
   endDateFilter = '';
 
@@ -72,6 +74,16 @@ export class MissionsList implements OnInit {
   objets: ObjetMission[] = [];
 
   ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['filter'] === 'current_month') {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+        this.startDateFilter = `${year}-${month}-01`;
+        this.endDateFilter = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
+      }
+    });
     this.loadMissions();
     this.loadEditReferenceData();
   }
@@ -130,21 +142,18 @@ export class MissionsList implements OnInit {
 
   get filteredMissions(): Mission[] {
     return this.missions.filter(m => {
-      // Search text match
-      const query = this.searchQuery.toLowerCase();
-      const textMatches = !query || 
-        m.reference.toLowerCase().includes(query) ||
-        m.employeeName.toLowerCase().includes(query) ||
-        m.destination.toLowerCase().includes(query);
-
       // Status match
       const statusMatches = this.statusFilter === 'ALL' || m.status === this.statusFilter;
+
+      // Chauffeur match
+      const chauffeurMatches = this.chauffeurFilter === 'ALL' || 
+        (m.raw.chauffeurId && m.raw.chauffeurId === Number(this.chauffeurFilter));
 
       // Date matches
       const dateStartMatches = !this.startDateFilter || m.dateDebut >= this.startDateFilter;
       const dateEndMatches = !this.endDateFilter || m.dateFin <= this.endDateFilter;
 
-      return textMatches && statusMatches && dateStartMatches && dateEndMatches;
+      return statusMatches && chauffeurMatches && dateStartMatches && dateEndMatches;
     });
   }
 
@@ -181,8 +190,8 @@ export class MissionsList implements OnInit {
   }
 
   resetFilters() {
-    this.searchQuery = '';
     this.statusFilter = 'ALL';
+    this.chauffeurFilter = 'ALL';
     this.startDateFilter = '';
     this.endDateFilter = '';
     this.currentPage = 1;

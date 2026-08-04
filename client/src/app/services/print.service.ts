@@ -14,6 +14,9 @@ export interface PrintMissionDetails {
   objet: string;
   itineraire: string;
   vehicule: string;
+  chauffeurName?: string;
+  vehiculeMarque?: string;
+  vehiculeImmatriculation?: string;
   chauffeur: string;
   accompagnateurs: string[];
   notes?: string;
@@ -37,12 +40,35 @@ export class PrintService {
       year: 'numeric'
     });
 
-    const formatAccompagnateurs = () => {
+    // Build accompagnateurs section only if there are any
+    const buildAccompagnateursSection = () => {
       if (!details.accompagnateurs || details.accompagnateurs.length === 0) {
-        return 'Aucun';
+        return '';
       }
-      return details.accompagnateurs.join(', ');
+      return `
+        <tr>
+          <td class="label">Autres Accompagnateurs :</td>
+          <td class="value">${details.accompagnateurs.join(', ')}</td>
+        </tr>
+      `;
     };
+
+    // Use hotelAffectation for the upper-left entity name
+    const entityName = details.hotelAffectation || 'Direction Générale';
+
+    // Build chauffeur display (name only, no matricule)
+    const chauffeurDisplay = details.chauffeurName || details.chauffeur || 'N/A';
+
+    // Build véhicule display (marque + immatriculation on same line, informative)
+    const vehiculeDisplay = (() => {
+      if (details.vehiculeMarque && details.vehiculeImmatriculation) {
+        if (details.vehiculeImmatriculation === 'Lui-même' || details.vehiculeImmatriculation === 'Aucun') {
+          return details.vehiculeMarque;
+        }
+        return `${details.vehiculeMarque} - Immatriculation : ${details.vehiculeImmatriculation}`;
+      }
+      return details.vehicule || 'N/A';
+    })();
 
     const logoUrl = window.location.origin + '/El-mouradi.png';
 
@@ -258,7 +284,7 @@ export class PrintService {
           <div class="content-body">
             
             <div class="meta-row">
-              <div class="meta-left">Direction Générale</div>
+              <div class="meta-left">${entityName}</div>
               <div class="meta-right">Tunis, le ${dateEmission}</div>
             </div>
 
@@ -267,16 +293,16 @@ export class PrintService {
               <p class="doc-ref">Réf : ${details.reference}</p>
             </div>
 
-            <!-- Section 1: Chauffeur et Moyen de Transport -->
-            <div class="section-title">Chauffeur et Moyen de Transport</div>
+            <!-- Section 1: Chauffeur et Véhicule -->
+            <div class="section-title">Chauffeur et Véhicule</div>
             <table class="info-table">
               <tr>
-                <td class="label">Moyen de transport :</td>
-                <td class="value">${details.vehicule}</td>
+                <td class="label">Chauffeur désigné :</td>
+                <td class="value">${chauffeurDisplay}</td>
               </tr>
               <tr>
-                <td class="label">Chauffeur désigné :</td>
-                <td class="value">${details.chauffeur}</td>
+                <td class="label">Véhicule :</td>
+                <td class="value">${vehiculeDisplay}</td>
               </tr>
             </table>
 
@@ -285,16 +311,9 @@ export class PrintService {
             <table class="info-table">
               <tr>
                 <td class="label">Accompagnateur Principal :</td>
-                <td class="value">${details.employeeName} (MLE : ${details.mle} - ${details.fonction})</td>
+                <td class="value">${details.employeeName}</td>
               </tr>
-              <tr>
-                <td class="label">Hôtel d'affectation :</td>
-                <td class="value">${details.hotelAffectation}</td>
-              </tr>
-              <tr>
-                <td class="label">Autres Accompagnateurs :</td>
-                <td class="value">${formatAccompagnateurs()}</td>
-              </tr>
+              ${buildAccompagnateursSection()}
             </table>
 
             <!-- Section 3: Détails du Déplacement -->
@@ -308,12 +327,6 @@ export class PrintService {
                 <td class="label">Objet de la Mission :</td>
                 <td class="value">${details.objet}</td>
               </tr>
-              ${details.itineraire ? `
-              <tr>
-                <td class="label">Itinéraire prévu :</td>
-                <td class="value">${details.itineraire}</td>
-              </tr>
-              ` : ''}
             </table>
 
             <!-- Section 4: Période du Déplacement -->

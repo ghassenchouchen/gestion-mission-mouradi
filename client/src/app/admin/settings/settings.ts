@@ -17,6 +17,8 @@ import {
   Utilisateur
 } from '../../services/api.service';
 
+import { ActivatedRoute } from '@angular/router';
+
 @Component({
   selector: 'app-settings',
   standalone: true,
@@ -32,9 +34,17 @@ export class Settings implements OnInit {
   private destinationService = inject(DestinationService);
   private employeService = inject(EmployeService);
   private utilisateurService = inject(UtilisateurService);
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
 
   activeTab: 'chauffeurs' | 'vehicules' | 'objets' | 'destinations' | 'employes' | 'utilisateurs' = 'chauffeurs';
+
+  governorates = [
+    'Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa',
+    'Jendouba', 'Kairouan', 'Kasserine', 'Kébili', 'Le Kef', 'Mahdia',
+    'La Manouba', 'Médenine', 'Monastir', 'Nabeul', 'Sfax', 'Sidi Bouzid',
+    'Siliana', 'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan'
+  ];
 
   hotelsList = [
     'Direction générale',
@@ -69,6 +79,14 @@ export class Settings implements OnInit {
   formData: any = {};
 
   ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        const t = params['tab'];
+        if (['chauffeurs', 'vehicules', 'objets', 'destinations', 'employes', 'utilisateurs'].includes(t)) {
+          this.activeTab = t;
+        }
+      }
+    });
     this.loadAllData();
   }
 

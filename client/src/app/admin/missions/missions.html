@@ -20,11 +20,15 @@
     <main class="main-content">
       <!-- Filter Bar -->
       <section class="filter-card animate-in">
-        <div class="filter-grid">
+        <div class="filter-grid" style="grid-template-columns: repeat(4, 1fr) auto;">
           <div class="filter-group">
-            <label>Rechercher</label>
-            <input type="text" class="filter-control" placeholder="Référence, employé, destination..."
-              [(ngModel)]="searchQuery" (ngModelChange)="onFilterChange()" />
+            <label>Chauffeur</label>
+            <select class="filter-control" [(ngModel)]="chauffeurFilter" (ngModelChange)="onFilterChange()">
+              <option value="ALL">Tous les chauffeurs</option>
+              <option *ngFor="let ch of drivers" [value]="ch.id">
+                {{ ch.prenom }} {{ ch.nom }}
+              </option>
+            </select>
           </div>
 
           <div class="filter-group">
@@ -70,6 +74,7 @@
               <tr>
                 <th>Référence</th>
                 <th>Employé</th>
+                <th>Chauffeur</th>
                 <th>Destination</th>
                 <th>Période</th>
                 <th>Statut</th>
@@ -78,7 +83,7 @@
             </thead>
             <tbody>
               <tr *ngIf="paginatedMissions.length === 0">
-                <td colspan="6" style="text-align: center; color: #8a92a8; padding: 40px; font-style: italic;">
+                <td colspan="7" style="text-align: center; color: #8a92a8; padding: 40px; font-style: italic;">
                   Aucune mission trouvée pour ces filtres.
                 </td>
               </tr>
@@ -91,6 +96,13 @@
                     <div class="emp-avatar">{{ mission.employeeInitials }}</div>
                     <span class="emp-name">{{ mission.employeeName }}</span>
                   </div>
+                </td>
+                <td>
+                  <div class="dest-container" *ngIf="mission.raw.chauffeur">
+                    <iconify-icon icon="lucide:user" style="color: #d4a853;"></iconify-icon>
+                    <span>{{ mission.raw.chauffeur.prenom }} {{ mission.raw.chauffeur.nom }}</span>
+                  </div>
+                  <span *ngIf="!mission.raw.chauffeur" style="color: #8a92a8; font-style: italic;">N/A</span>
                 </td>
                 <td>
                   <div class="dest-container">

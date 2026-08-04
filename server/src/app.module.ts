@@ -10,6 +10,7 @@ import { DestinationModule } from './destination/destination.module';
 import { EmployeModule } from './employe/employe.module';
 import { OrdreMissionModule } from './ordre-mission/ordre-mission.module';
 import { UtilisateurModule } from './utilisateur/utilisateur.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { UtilisateurModule } from './utilisateur/utilisateur.module';
     DestinationModule,
     EmployeModule,
     OrdreMissionModule,
-    UtilisateurModule
+    UtilisateurModule,
+    MailModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { MailService } from '../mail/mail.service';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UtilisateurService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   async findAll() {
     return this.prisma.utilisateur.findMany({
@@ -51,7 +55,7 @@ export class UtilisateurService {
 
     const { password, ...rest } = data;
 
-    return this.prisma.utilisateur.create({
+    const user = await this.prisma.utilisateur.create({
       data: {
         ...rest,
         passwordHash,
@@ -65,6 +69,13 @@ export class UtilisateurService {
         createdAt: true,
       },
     });
+
+    // Send Welcome & Account Activation Notice email in background
+    this.mailService.sendWelcomeEmail(user).catch((err) => {
+      console.warn(`[UtilisateurService] Welcome email background dispatch note: ${err.message}`);
+    });
+
+    return user;
   }
 
   async update(id: number, data: { email?: string; password?: string; nom?: string; prenom?: string; role?: string }) {

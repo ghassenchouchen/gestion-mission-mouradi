@@ -45,11 +45,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UtilisateurService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
+const mail_service_1 = require("../mail/mail.service");
 const bcrypt = __importStar(require("bcryptjs"));
 let UtilisateurService = class UtilisateurService {
     prisma;
-    constructor(prisma) {
+    mailService;
+    constructor(prisma, mailService) {
         this.prisma = prisma;
+        this.mailService = mailService;
     }
     async findAll() {
         return this.prisma.utilisateur.findMany({
@@ -91,7 +94,7 @@ let UtilisateurService = class UtilisateurService {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(data.password || 'Mouradi2026!', salt);
         const { password, ...rest } = data;
-        return this.prisma.utilisateur.create({
+        const user = await this.prisma.utilisateur.create({
             data: {
                 ...rest,
                 passwordHash,
@@ -105,6 +108,10 @@ let UtilisateurService = class UtilisateurService {
                 createdAt: true,
             },
         });
+        this.mailService.sendWelcomeEmail(user).catch((err) => {
+            console.warn(`[UtilisateurService] Welcome email background dispatch note: ${err.message}`);
+        });
+        return user;
     }
     async update(id, data) {
         const user = await this.prisma.utilisateur.findUnique({ where: { id } });
@@ -159,6 +166,7 @@ let UtilisateurService = class UtilisateurService {
 exports.UtilisateurService = UtilisateurService;
 exports.UtilisateurService = UtilisateurService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        mail_service_1.MailService])
 ], UtilisateurService);
 //# sourceMappingURL=utilisateur.service.js.map

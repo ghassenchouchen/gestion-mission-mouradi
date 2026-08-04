@@ -349,12 +349,15 @@
       <!-- Destinations Fields -->
       <div *ngIf="activeTab === 'destinations'">
         <div class="form-group">
-          <label>Nom du lieu / hôtel</label>
+          <label>Nom du lieu / hôtel <span style="color:#e74c3c;">*</span></label>
           <input type="text" class="form-control" placeholder="Ex: El Mouradi Palace" [(ngModel)]="formData.nom" />
         </div>
         <div class="form-group">
-          <label>Ville</label>
-          <input type="text" class="form-control" placeholder="Ex: Sousse" [(ngModel)]="formData.ville" />
+          <label>Gouvernorat / Ville <span style="color:#e74c3c;">*</span></label>
+          <select class="form-control" [(ngModel)]="formData.ville">
+            <option value="" disabled selected>Choisir un gouvernorat...</option>
+            <option *ngFor="let g of governorates" [value]="g">{{ g }}</option>
+          </select>
         </div>
       </div>
 

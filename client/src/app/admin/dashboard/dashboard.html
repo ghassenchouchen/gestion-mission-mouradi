@@ -20,19 +20,17 @@
     <main class="main-content">
       <!-- Stats Grid -->
       <section class="stats-grid">
-        <div class="stat-card animate-in delay-1" *ngFor="let stat of stats">
-          <div class="stat-header">
-            <div class="stat-icon-wrap" style="background: rgba(212, 168, 83, 0.1); color: #d4a853;">
-              <iconify-icon [attr.icon]="stat.icon" style="font-size: 22px;"></iconify-icon>
-            </div>
-            <span class="stat-badge" [ngClass]="stat.badgeClass">{{ stat.badgeText }}</span>
+        <a [routerLink]="stat.route" [queryParams]="stat.queryParams || {}" class="stat-card stat-card-centered animate-in delay-1" *ngFor="let stat of stats">
+          <div class="stat-icon-wrap-centered">
+            <iconify-icon [attr.icon]="stat.icon" style="font-size: 38px;"></iconify-icon>
           </div>
-          <div class="stat-number">{{ stat.value }}</div>
-          <div class="stat-label">{{ stat.title }}</div>
-          <div class="stat-footer">
+          <div class="stat-number-centered">{{ stat.value }}</div>
+          <div class="stat-label-centered">{{ stat.title }}</div>
+          <div class="stat-footer-centered">
             <span>{{ stat.label }}</span>
+            <span class="stat-arrow-icon"><iconify-icon icon="lucide:arrow-right"></iconify-icon></span>
           </div>
-        </div>
+        </a>
       </section>
 
       <!-- Table Section -->

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { PrintService } from '../../services/print.service';
-import { OrdreMissionService, ChauffeurService, OrdreMission } from '../../services/api.service';
+import { OrdreMissionService, ChauffeurService, VehiculeService, OrdreMission, Vehicule } from '../../services/api.service';
 
 interface StatCard {
   title: string;
@@ -12,6 +12,8 @@ interface StatCard {
   icon: string;
   badgeText: string;
   badgeClass: string;
+  route: string;
+  queryParams?: { [key: string]: string };
 }
 
 interface Mission {
@@ -35,6 +37,7 @@ interface Mission {
 export class AdminDashboard implements OnInit {
   private ordreMissionService = inject(OrdreMissionService);
   private chauffeurService = inject(ChauffeurService);
+  private vehiculeService = inject(VehiculeService);
   private printService = inject(PrintService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -45,23 +48,29 @@ export class AdminDashboard implements OnInit {
       label: 'Missions planifiées et exécutées',
       icon: 'lucide:file-text',
       badgeText: '',
-      badgeClass: 'badge-valide'
+      badgeClass: 'badge-valide',
+      route: '/admin/missions',
+      queryParams: { filter: 'current_month' }
     },
     {
-      title: 'En cours',
+      title: 'Véhicules disponibles',
       value: 0,
-      label: 'Véhicules actuellement sur la route',
+      label: 'Disponibles sur le parc',
       icon: 'lucide:truck',
-      badgeText: 'Active',
-      badgeClass: 'badge-encours'
+      badgeText: '',
+      badgeClass: 'badge-valide',
+      route: '/admin/settings',
+      queryParams: { tab: 'vehicules' }
     },
     {
       title: 'Chauffeurs disponibles',
       value: 0,
       label: 'Prêts pour affectation',
       icon: 'lucide:users',
-      badgeText: '0%',
-      badgeClass: 'badge-termine'
+      badgeText: '',
+      badgeClass: 'badge-termine',
+      route: '/admin/settings',
+      queryParams: { tab: 'chauffeurs' }
     }
   ];
 
@@ -73,7 +82,7 @@ export class AdminDashboard implements OnInit {
 
   loadDashboardData() {
     this.ordreMissionService.getAll().subscribe({
-      next: (missions) => {
+      next: (missions: OrdreMission[]) => {
         // 1. Calculate missions this month
         const currentYearMonth = new Date().toISOString().substring(0, 7); // "YYYY-MM"
         const missionsThisMonth = missions.filter(m => {
@@ -82,11 +91,7 @@ export class AdminDashboard implements OnInit {
         this.stats[0].value = missionsThisMonth.length;
         this.stats[0].label = `Missions pour ${new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`;
 
-        // 2. Count active / "EN_COURS" missions
-        const activeMissions = missions.filter(m => m.statut === 'EN_COURS');
-        this.stats[1].value = activeMissions.length;
-
-        // 3. Populate recent missions (top 5 sorted by date, excluding cancelled)
+        // 2. Populate recent missions (top 5 sorted by date, excluding cancelled)
         this.recentMissions = missions
           .filter(m => m.statut !== 'ANNULE')
           .slice(0, 5)
@@ -100,25 +105,36 @@ export class AdminDashboard implements OnInit {
               employeeInitials: initials,
               destination: m.destination?.nom || 'N/A',
               dateStr: start.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
-              status: m.statut,
+              status: m.statut as any,
               raw: m
             };
           });
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error fetching dashboard missions:', err)
+      error: (err: any) => console.error('Error fetching dashboard missions:', err)
     });
 
-    this.chauffeurService.getAll().subscribe({
-      next: (chauffeurs) => {
-        const availableChauffeurs = chauffeurs.filter(c => c.disponible);
-        this.stats[2].value = availableChauffeurs.length;
-        const total = chauffeurs.length || 1;
-        const rate = Math.round((availableChauffeurs.length / total) * 100);
-        this.stats[2].badgeText = `${rate}%`;
+    // Fetch vehicles for Card 2
+    this.vehiculeService.getAll().subscribe({
+      next: (vehicules: Vehicule[]) => {
+        const usableVehicles = vehicules.filter(v => v.immatriculation !== 'Lui-même' && v.immatriculation !== 'Aucun');
+        const availableVehicles = usableVehicles.filter(v => v.disponible);
+        this.stats[1].value = availableVehicles.length;
+        this.stats[1].badgeText = '';
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error fetching drivers:', err)
+      error: (err: any) => console.error('Error fetching vehicles:', err)
+    });
+
+    // Fetch drivers for Card 3
+    this.chauffeurService.getAll().subscribe({
+      next: (chauffeurs: any[]) => {
+        const availableChauffeurs = chauffeurs.filter(c => c.disponible);
+        this.stats[2].value = availableChauffeurs.length;
+        this.stats[2].badgeText = '';
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => console.error('Error fetching drivers:', err)
     });
   }
 
