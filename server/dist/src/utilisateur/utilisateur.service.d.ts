@@ -5,20 +5,20 @@ export declare class UtilisateurService {
     private mailService;
     constructor(prisma: PrismaService, mailService: MailService);
     findAll(): Promise<{
-        email: string;
-        nom: string;
-        prenom: string;
-        role: string;
+        nom: string | null;
         createdAt: Date;
         id: number;
+        email: string;
+        prenom: string | null;
+        role: string;
     }[]>;
     findOne(id: number): Promise<{
-        email: string;
-        nom: string;
-        prenom: string;
-        role: string;
+        nom: string | null;
         createdAt: Date;
         id: number;
+        email: string;
+        prenom: string | null;
+        role: string;
     }>;
     create(data: {
         email: string;
@@ -27,12 +27,12 @@ export declare class UtilisateurService {
         prenom: string;
         role: string;
     }): Promise<{
-        email: string;
-        nom: string;
-        prenom: string;
-        role: string;
+        nom: string | null;
         createdAt: Date;
         id: number;
+        email: string;
+        prenom: string | null;
+        role: string;
     }>;
     update(id: number, data: {
         email?: string;
@@ -41,20 +41,20 @@ export declare class UtilisateurService {
         prenom?: string;
         role?: string;
     }): Promise<{
-        email: string;
-        nom: string;
-        prenom: string;
-        role: string;
+        nom: string | null;
         createdAt: Date;
         id: number;
+        email: string;
+        prenom: string | null;
+        role: string;
     }>;
     remove(id: number): Promise<{
-        email: string;
-        passwordHash: string;
-        nom: string;
-        prenom: string;
-        role: string;
+        nom: string | null;
         createdAt: Date;
         id: number;
+        email: string;
+        passwordHash: string;
+        prenom: string | null;
+        role: string;
     }>;
 }

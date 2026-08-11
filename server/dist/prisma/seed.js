@@ -51,6 +51,22 @@ async function main() {
     await prisma.vehicule.deleteMany({});
     await prisma.objetMission.deleteMany({});
     await prisma.destination.deleteMany({});
+    await prisma.etablissement.deleteMany({});
+    const etablissementList = [
+        { code: 'DG', nom: 'Direction générale', ville: 'Sousse', adresse: 'B.P 48 El Kantaoui 4089 Port El Kantaoui', actif: true },
+        { code: 'EMG', nom: 'El Mouradi Gammarth', ville: 'Tunis', adresse: 'Les Côtes de Carthage 2078 Gammarth', actif: true },
+        { code: 'EMP', nom: 'El Mouradi Palace', ville: 'Sousse', adresse: 'Zone Touristique El Kantaoui 4089', actif: true },
+        { code: 'EMK', nom: 'El Mouradi Port El Kantaoui', ville: 'Sousse', adresse: 'Port El Kantaoui 4089', actif: true },
+        { code: 'EMH', nom: 'El Mouradi Hammamet', ville: 'Hammamet', adresse: 'Yasmine Hammamet 8050', actif: true },
+        { code: 'EMD', nom: 'El Mouradi Djerba Menzel', ville: 'Djerba', adresse: 'Zone Touristique Midoun 4116', actif: true },
+        { code: 'EMM', nom: 'El Mouradi Mahdia', ville: 'Mahdia', adresse: 'Zone Touristique Mahdia 5100', actif: true },
+    ];
+    const dbEtablissements = {};
+    for (const etab of etablissementList) {
+        const dbEtab = await prisma.etablissement.create({ data: etab });
+        dbEtablissements[etab.code] = dbEtab;
+    }
+    console.log(`✅ Created ${Object.keys(dbEtablissements).length} Etablissements`);
     const salt = await bcrypt.genSalt(10);
     const adminPasswordHash = await bcrypt.hash('admin123', salt);
     const hrPasswordHash = await bcrypt.hash('hr123', salt);
@@ -75,8 +91,8 @@ async function main() {
     console.log('✅ Created Users:', admin.email, hr.email);
     const vehicleList = [
         { immatriculation: '7094 TU 109', marque: 'Isuzu', modele: 'D-Max', type: 'Utilitaire', disponible: true },
-        { immatriculation: '3588 TU 213', marque: 'Citroen', modele: 'Berlingo', type: 'Utilitaire', disponible: true },
-        { immatriculation: '3968 TU 129', marque: 'PEUGEOT', modele: 'Partner', type: 'Utilitaire', disponible: true },
+        { immatriculation: '3588 TU 213', marque: 'Citroen', modele: 'Berlingo', type: 'Utilitaire', disponible: false },
+        { immatriculation: '3968 TU 129', marque: 'PEUGEOT', modele: 'Partner', type: 'Utilitaire', disponible: false },
         { immatriculation: '3597 TU 213', marque: 'Citroen', modele: 'Berlingo', type: 'Utilitaire', disponible: true },
         { immatriculation: '8090 TU 145', marque: 'Mercedes', modele: 'Axor', type: 'Poids Lourd', disponible: true },
         { immatriculation: '2187 TU 73', marque: 'Renault', modele: 'CLR 230', type: 'Poids Lourd', disponible: true },
@@ -97,7 +113,7 @@ async function main() {
     console.log(`✅ Created ${Object.keys(dbVehicles).length} Vehicles`);
     const chauffeurList = [
         { mle: '1001', nom: 'LAKTI', prenom: 'Samir', disponible: true, vehicleImmat: '7094 TU 109' },
-        { mle: '1002', nom: 'Bousnina', prenom: 'Samir', disponible: true, vehicleImmat: '3588 TU 213' },
+        { mle: '1002', nom: 'Bousnina', prenom: 'Samir', disponible: false, vehicleImmat: '3588 TU 213' },
         { mle: '1003', nom: 'Timoomi', prenom: 'Yassin', disponible: false, vehicleImmat: '3968 TU 129' },
         { mle: '1004', nom: 'Tayeri', prenom: 'Bechir', disponible: true, vehicleImmat: '3597 TU 213' },
         { mle: '1005', nom: 'Jelidi', prenom: 'Jamel', disponible: true, vehicleImmat: '8090 TU 145' },
@@ -115,6 +131,7 @@ async function main() {
             data: {
                 ...chauffeurData,
                 vehiculeParDefautId: defaultVehicle ? defaultVehicle.id : undefined,
+                etablissementId: dbEtablissements['DG']?.id || undefined,
             },
         });
         dbChauffeurs.push(dbCh);

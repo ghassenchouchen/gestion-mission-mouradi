@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { PrintService } from '../../services/print.service';
+import { ToastService } from '../../services/toast.service';
 import { 
   OrdreMissionService, 
   ChauffeurService, 
@@ -47,6 +48,7 @@ export class MissionsList implements OnInit {
   private printService = inject(PrintService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
+  private toastService = inject(ToastService);
 
   missions: Mission[] = [];
 
@@ -239,11 +241,12 @@ export class MissionsList implements OnInit {
     
     this.ordreMissionService.update(this.selectedMission.id, { statut: status }).subscribe({
       next: () => {
+        this.toastService.success('Statut de la mission mis à jour avec succès');
         this.loadMissions();
       },
       error: (err) => {
         console.error('Error updating mission status:', err);
-        alert(err.error?.message || 'Erreur lors de la mise à jour du statut.');
+        this.toastService.error(err.error?.message || 'Erreur lors de la mise à jour du statut.');
       }
     });
   }
@@ -252,7 +255,7 @@ export class MissionsList implements OnInit {
     const m = this.missions.find(x => x.reference === ref);
     if (!m) return;
     if (m.status === 'EN_COURS' || m.status === 'TERMINE') {
-      alert("Impossible de modifier les détails d'une mission en cours ou terminée.");
+      this.toastService.warning("Impossible de modifier les détails d'une mission en cours ou terminée.");
       return;
     }
     
@@ -286,7 +289,7 @@ export class MissionsList implements OnInit {
     
     // Valider la cohérence des dates
     if (this.formData.dateFin && this.formData.dateFin < this.formData.dateDebut) {
-      alert("La date de retour ne peut pas être avant la date de départ.");
+      this.toastService.warning("La date de retour ne peut pas être avant la date de départ.");
       return;
     }
 
@@ -296,7 +299,7 @@ export class MissionsList implements OnInit {
       const [hRet, mRet] = this.formData.heureRetour.split(':').map(Number);
       if (!isNaN(hDep) && !isNaN(hRet)) {
         if (hDep > hRet || (hDep === hRet && mDep >= mRet)) {
-          alert("L'heure de retour doit être après l'heure de départ.");
+          this.toastService.warning("L'heure de retour doit être après l'heure de départ.");
           return;
         }
       }
@@ -316,12 +319,13 @@ export class MissionsList implements OnInit {
 
     this.ordreMissionService.update(this.selectedMission.id, payload).subscribe({
       next: () => {
+        this.toastService.success('Modifications enregistrées avec succès');
         this.loadMissions();
         this.closeEditModal();
       },
       error: (err) => {
         console.error('Error saving mission edits:', err);
-        alert(err.error?.message || 'Erreur lors de la sauvegarde des modifications.');
+        this.toastService.error(err.error?.message || 'Erreur lors de la sauvegarde des modifications.');
       }
     });
   }

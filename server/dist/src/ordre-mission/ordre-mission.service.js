@@ -108,7 +108,7 @@ let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
                     }
                 },
                 orderBy: {
-                    reference: 'desc'
+                    id: 'desc'
                 }
             });
             let nextNum = 1;
@@ -123,7 +123,7 @@ let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
             const order = await tx.ordreMission.create({
                 data: {
                     reference,
-                    employeId: dto.employeId,
+                    employeId: dto.employeId || null,
                     destinationId: dto.destinationId,
                     chauffeurId: dto.chauffeurId,
                     vehiculeId: dto.vehiculeId,

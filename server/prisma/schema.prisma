@@ -19,14 +19,25 @@ model Utilisateur {
 
 model Employe {
   id               Int              @id @default(autoincrement())
-  mle              String           @unique
+  mle              String?          @unique
   nom              String
   prenom           String
-  fonction         String
-  hotelAffectation String
+  fonction         String?
+  hotelAffectation String           @default("Direction générale")
   actif            Boolean          @default(true)
   missions         OrdreMission[]
   accompagnements  Accompagnateur[]
+}
+
+model Etablissement {
+  id        Int         @id @default(autoincrement())
+  code      String      @unique
+  nom       String
+  ville     String
+  adresse   String?
+  actif     Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  chauffeurs Chauffeur[]
 }
 
 model Chauffeur {
@@ -38,6 +49,8 @@ model Chauffeur {
   disponible          Boolean        @default(true)
   vehiculeParDefautId Int?           @unique
   vehiculeParDefaut   Vehicule?      @relation("ChauffeurVehiculeDefaut", fields: [vehiculeParDefautId], references: [id])
+  etablissementId     Int?
+  etablissement       Etablissement? @relation(fields: [etablissementId], references: [id], onDelete: SetNull)
   missions            OrdreMission[]
 }
 
@@ -69,8 +82,8 @@ model Destination {
 model OrdreMission {
   id                 Int              @id @default(autoincrement())
   reference          String           @unique
-  employeId          Int
-  employe            Employe          @relation(fields: [employeId], references: [id], onDelete: Restrict)
+  employeId          Int?
+  employe            Employe?         @relation(fields: [employeId], references: [id], onDelete: SetNull)
   destinationId      Int
   destination        Destination      @relation(fields: [destinationId], references: [id], onDelete: Restrict)
   chauffeurId        Int

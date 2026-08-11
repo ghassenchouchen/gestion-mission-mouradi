@@ -3,33 +3,33 @@ export declare class ObjetMissionController {
     private readonly objetMissionService;
     constructor(objetMissionService: ObjetMissionService);
     findAll(): Promise<{
+        actif: boolean;
         id: number;
         libelle: string;
-        actif: boolean;
     }[]>;
     findOne(id: number): Promise<{
+        actif: boolean;
         id: number;
         libelle: string;
-        actif: boolean;
     }>;
     create(body: {
         libelle: string;
     }): Promise<{
+        actif: boolean;
         id: number;
         libelle: string;
-        actif: boolean;
     }>;
     update(id: number, body: {
         libelle?: string;
         actif?: boolean;
     }): Promise<{
+        actif: boolean;
         id: number;
         libelle: string;
-        actif: boolean;
     }>;
     remove(id: number): Promise<{
+        actif: boolean;
         id: number;
         libelle: string;
-        actif: boolean;
     }>;
 }

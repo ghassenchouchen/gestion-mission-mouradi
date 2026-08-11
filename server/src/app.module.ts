@@ -11,6 +11,7 @@ import { EmployeModule } from './employe/employe.module';
 import { OrdreMissionModule } from './ordre-mission/ordre-mission.module';
 import { UtilisateurModule } from './utilisateur/utilisateur.module';
 import { MailModule } from './mail/mail.module';
+import { EtablissementModule } from './etablissement/etablissement.module';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { MailModule } from './mail/mail.module';
     EmployeModule,
     OrdreMissionModule,
     UtilisateurModule,
-    MailModule
+    MailModule,
+    EtablissementModule
   ],
   controllers: [AppController],
   providers: [AppService],

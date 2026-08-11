@@ -1,11 +1,11 @@
-/* ── Page Layout ── */
+/* Page Layout */
 .dashboard-wrapper {
   display: flex;
   min-height: 100vh;
   background-color: #f8f9fc;
 }
 
-/* ── Sidebar Component ── */
+/* Sidebar Component */
 .sidebar {
   width: 256px;
   min-width: 256px;
@@ -126,10 +126,11 @@
   text-overflow: ellipsis;
 }
 
-/* ── Main Layout ── */
+/* Main Layout */
 .main-wrap {
   margin-left: 256px;
-  flex: 1;
+  width: calc(100vw - 256px);
+  max-width: calc(100vw - 256px);
   min-height: 100vh;
   background: #f8f9fc;
   box-sizing: border-box;
@@ -171,7 +172,7 @@
   box-sizing: border-box;
 }
 
-/* ── Stat Cards ── */
+/* Stat Cards */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -282,7 +283,7 @@
   transform: translateX(4px);
 }
 
-/* ── Section Title Block ── */
+/* Section Title Block */
 .table-card {
   background: #ffffff;
   border-radius: 12px;
@@ -317,7 +318,7 @@
   gap: 8px;
 }
 
-/* ── Data Table ── */
+/* Data Table */
 .table-responsive {
   overflow-x: auto;
 }
@@ -359,7 +360,7 @@
   background: #f8f9fc;
 }
 
-/* ── Badges ── */
+/* Badges */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -386,7 +387,7 @@
 .badge-termine   { background: #f0fdf4; color: #16a34a; }
 .badge-annule    { background: #fff1f2; color: #e11d48; }
 
-/* ── Employee Avatar in Table ── */
+/* Employee Avatar in Table */
 .emp-avatar-container {
   display: flex;
   align-items: center;
@@ -415,7 +416,7 @@
   color: #1a1f36;
 }
 
-/* ── Destination cell ── */
+/* Destination cell */
 .dest-container {
   display: flex;
   align-items: center;
@@ -439,7 +440,7 @@
   border: 1px solid #e2e6ef;
 }
 
-/* ── Buttons ── */
+/* Buttons */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -484,7 +485,7 @@
   border-color: #d0d4e0;
 }
 
-/* ── Action Icon Button ── */
+/* Action Icon Button */
 .icon-btn {
   width: 30px;
   height: 30px;
@@ -504,7 +505,7 @@
   color: #1a1f36;
 }
 
-/* ── Table Footer ── */
+/* Table Footer */
 .table-footer {
   display: flex;
   align-items: center;
@@ -529,7 +530,7 @@
   text-decoration: underline;
 }
 
-/* ── Animations ── */
+/* Animations */
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }

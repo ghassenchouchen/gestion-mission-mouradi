@@ -4,35 +4,35 @@ export declare class EmployeService {
     constructor(prisma: PrismaService);
     findAll(): Promise<{
         nom: string;
-        prenom: string;
-        id: number;
-        mle: string;
         actif: boolean;
-        fonction: string;
+        id: number;
+        prenom: string;
+        mle: string | null;
+        fonction: string | null;
         hotelAffectation: string;
     }[]>;
     findOne(id: number): Promise<{
         nom: string;
-        prenom: string;
-        id: number;
-        mle: string;
         actif: boolean;
-        fonction: string;
+        id: number;
+        prenom: string;
+        mle: string | null;
+        fonction: string | null;
         hotelAffectation: string;
     }>;
     create(data: {
-        mle: string;
+        mle?: string;
         nom: string;
         prenom: string;
-        fonction: string;
-        hotelAffectation: string;
+        fonction?: string;
+        hotelAffectation?: string;
     }): Promise<{
         nom: string;
-        prenom: string;
-        id: number;
-        mle: string;
         actif: boolean;
-        fonction: string;
+        id: number;
+        prenom: string;
+        mle: string | null;
+        fonction: string | null;
         hotelAffectation: string;
     }>;
     update(id: number, data: {
@@ -44,20 +44,20 @@ export declare class EmployeService {
         actif?: boolean;
     }): Promise<{
         nom: string;
-        prenom: string;
-        id: number;
-        mle: string;
         actif: boolean;
-        fonction: string;
+        id: number;
+        prenom: string;
+        mle: string | null;
+        fonction: string | null;
         hotelAffectation: string;
     }>;
     remove(id: number): Promise<{
         nom: string;
-        prenom: string;
-        id: number;
-        mle: string;
         actif: boolean;
-        fonction: string;
+        id: number;
+        prenom: string;
+        mle: string | null;
+        fonction: string | null;
         hotelAffectation: string;
     }>;
 }

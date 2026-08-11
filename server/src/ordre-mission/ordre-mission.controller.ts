@@ -15,7 +15,7 @@ export class OrdreMissionController {
   create(
     @CurrentUser() user: any,
     @Body() body: {
-      employeId: number;
+      employeId?: number;
       destinationId: number;
       chauffeurId: number;
       vehiculeId: number;
@@ -68,6 +68,7 @@ export class OrdreMissionController {
       statut?: string;
       departReel?: string;
       retourReel?: string;
+      accompagnateurs?: number[];
     }
   ) {
     return this.service.update(id, body);

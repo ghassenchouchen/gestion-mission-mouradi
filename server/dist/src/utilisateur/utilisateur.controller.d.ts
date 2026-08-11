@@ -3,20 +3,20 @@ export declare class UtilisateurController {
     private readonly utilisateurService;
     constructor(utilisateurService: UtilisateurService);
     findAll(): Promise<{
-        email: string;
-        nom: string;
-        prenom: string;
-        role: string;
+        nom: string | null;
         createdAt: Date;
         id: number;
+        email: string;
+        prenom: string | null;
+        role: string;
     }[]>;
     findOne(id: number): Promise<{
-        email: string;
-        nom: string;
-        prenom: string;
-        role: string;
+        nom: string | null;
         createdAt: Date;
         id: number;
+        email: string;
+        prenom: string | null;
+        role: string;
     }>;
     create(body: {
         email: string;
@@ -25,12 +25,12 @@ export declare class UtilisateurController {
         prenom: string;
         role: string;
     }): Promise<{
-        email: string;
-        nom: string;
-        prenom: string;
-        role: string;
+        nom: string | null;
         createdAt: Date;
         id: number;
+        email: string;
+        prenom: string | null;
+        role: string;
     }>;
     update(id: number, body: {
         email?: string;
@@ -39,20 +39,20 @@ export declare class UtilisateurController {
         prenom?: string;
         role?: string;
     }): Promise<{
-        email: string;
-        nom: string;
-        prenom: string;
-        role: string;
+        nom: string | null;
         createdAt: Date;
         id: number;
+        email: string;
+        prenom: string | null;
+        role: string;
     }>;
     remove(id: number): Promise<{
-        email: string;
-        passwordHash: string;
-        nom: string;
-        prenom: string;
-        role: string;
+        nom: string | null;
         createdAt: Date;
         id: number;
+        email: string;
+        passwordHash: string;
+        prenom: string | null;
+        role: string;
     }>;
 }

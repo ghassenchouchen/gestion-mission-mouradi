@@ -6,7 +6,7 @@
     <header class="topbar">
       <div class="topbar-title-block">
         <h1>Missions</h1>
-        <p>Consultation et suivi des déplacements professionnels</p>
+        <p> Suivi des déplacements</p>
       </div>
       <div class="topbar-actions">
         <!-- Excel Export Button -->
@@ -23,14 +23,13 @@
       <section class="filter-card animate-in">
         <div class="filter-grid">
           <div class="filter-group">
-            <label>Rechercher</label>
-            <input 
-              type="text" 
-              class="filter-control" 
-              placeholder="Référence, employé, destination..." 
-              [(ngModel)]="searchQuery"
-              (ngModelChange)="onFilterChange()"
-            />
+            <label>Chauffeur</label>
+            <select class="filter-control" [(ngModel)]="chauffeurFilter" (ngModelChange)="onFilterChange()">
+              <option value="ALL">Tous les chauffeurs</option>
+              <option *ngFor="let ch of drivers" [value]="ch.id">
+                {{ ch.prenom }} {{ ch.nom }}
+              </option>
+            </select>
           </div>
 
           <div class="filter-group">
@@ -192,7 +191,7 @@
             <span class="details-value">{{ selectedMission.raw.employe?.fonction }}</span>
           </div>
           <div class="details-item">
-            <span class="details-label">Hôtel d'affectation</span>
+            <span class="details-label">Établissement</span>
             <span class="details-value">{{ selectedMission.raw.employe?.hotelAffectation }}</span>
           </div>
         </div>
@@ -235,7 +234,7 @@
           </div>
           <div class="details-item">
             <span class="details-label">Période</span>
-            <span class="details-value">{{ selectedMission.dateStr }} (Départ {{ selectedMission.raw.heureDepart }}<span *ngIf="selectedMission.raw.heureRetour"> — Retour {{ selectedMission.raw.heureRetour }}</span>)</span>
+            <span class="details-value">{{ selectedMission.dateStr }} (Départ {{ selectedMission.raw.heureDepart }}<span *ngIf="selectedMission.raw.heureRetour"> - Retour {{ selectedMission.raw.heureRetour }}</span>)</span>
           </div>
         </div>
 

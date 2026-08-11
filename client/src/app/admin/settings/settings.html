@@ -365,14 +365,14 @@
       <div *ngIf="activeTab === 'employes'">
         <div class="form-group">
           <label>Matricule (MLE)</label>
-          <input type="text" class="form-control" placeholder="Ex: EMP006" [(ngModel)]="formData.mle" />
+          <input type="text" class="form-control" placeholder="Ex: 8971" [(ngModel)]="formData.mle" />
         </div>
         <div class="form-group">
-          <label>Prénom</label>
+          <label>Prénom <span style="color: #e74c3c;">*</span></label>
           <input type="text" class="form-control" placeholder="Ex: Fatma" [(ngModel)]="formData.prenom" />
         </div>
         <div class="form-group">
-          <label>Nom</label>
+          <label>Nom <span style="color: #e74c3c;">*</span></label>
           <input type="text" class="form-control" placeholder="Ex: Kallel" [(ngModel)]="formData.nom" />
         </div>
         <div class="form-group">
@@ -380,9 +380,9 @@
           <input type="text" class="form-control" placeholder="Ex: Responsable RH" [(ngModel)]="formData.fonction" />
         </div>
         <div class="form-group">
-          <label>Hôtel d'affectation principal</label>
+          <label>Établissement <span style="color: #e74c3c;">*</span></label>
           <select class="form-control" [(ngModel)]="formData.hotelAffectation">
-            <option value="" disabled selected>Choisir un hôtel...</option>
+            <option value="" disabled selected>Choisir un établissement...</option>
             <option *ngFor="let hotel of hotelsList" [value]="hotel">{{ hotel }}</option>
           </select>
         </div>

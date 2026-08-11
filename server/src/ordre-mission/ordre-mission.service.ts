@@ -113,7 +113,7 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
   }
 
   async create(userId: number, dto: {
-    employeId: number;
+    employeId?: number;
     destinationId: number;
     chauffeurId: number;
     vehiculeId: number;
@@ -140,7 +140,7 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
           }
         },
         orderBy: {
-          reference: 'desc'
+          id: 'desc'
         }
       });
 
@@ -157,7 +157,7 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
       const order = await tx.ordreMission.create({
         data: {
           reference,
-          employeId: dto.employeId,
+          employeId: dto.employeId || null,
           destinationId: dto.destinationId,
           chauffeurId: dto.chauffeurId,
           vehiculeId: dto.vehiculeId,
@@ -273,6 +273,7 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
     statut?: string;
     departReel?: string;
     retourReel?: string;
+    accompagnateurs?: number[];
   }) {
     return this.prisma.$transaction(async (tx) => {
       const current = await tx.ordreMission.findUnique({
@@ -295,7 +296,8 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
           dto.heureRetour !== undefined ||
           dto.itineraire !== undefined ||
           dto.fraisParticipation !== undefined ||
-          dto.fraisMission !== undefined;
+          dto.fraisMission !== undefined ||
+          dto.accompagnateurs !== undefined;
 
         if (detailsModified) {
           throw new ConflictException(
@@ -327,6 +329,20 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
         where: { id },
         data
       });
+
+      if (dto.accompagnateurs !== undefined) {
+        await tx.accompagnateur.deleteMany({
+          where: { ordreMissionId: id }
+        });
+        if (dto.accompagnateurs.length > 0) {
+          await tx.accompagnateur.createMany({
+            data: dto.accompagnateurs.map(empId => ({
+              ordreMissionId: id,
+              employeId: empId
+            }))
+          });
+        }
+      }
 
       const oldStatut = current.statut;
       const newStatut = dto.statut !== undefined ? dto.statut : current.statut;

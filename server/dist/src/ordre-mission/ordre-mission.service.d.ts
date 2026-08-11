@@ -11,7 +11,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
     private autoStartMissions;
     private autoTerminateMissions;
     create(userId: number, dto: {
-        employeId: number;
+        employeId?: number;
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
@@ -41,7 +41,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         fraisParticipation: number | null;
         fraisMission: number | null;
         notes: string | null;
-        employeId: number;
+        employeId: number | null;
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
@@ -59,46 +59,47 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         };
         chauffeur: {
             nom: string;
-            prenom: string;
             id: number;
+            prenom: string;
             disponible: boolean;
             mle: string | null;
             telephone: string | null;
             vehiculeParDefautId: number | null;
+            etablissementId: number | null;
         };
         objetMission: {
+            actif: boolean;
             id: number;
             libelle: string;
-            actif: boolean;
         };
         destination: {
             nom: string;
-            id: number;
             ville: string;
+            id: number;
         };
         employe: {
             nom: string;
-            prenom: string;
-            id: number;
-            mle: string;
             actif: boolean;
-            fonction: string;
-            hotelAffectation: string;
-        };
-        creePar: {
-            email: string;
-            nom: string;
-            prenom: string;
             id: number;
+            prenom: string;
+            mle: string | null;
+            fonction: string | null;
+            hotelAffectation: string;
+        } | null;
+        creePar: {
+            nom: string | null;
+            id: number;
+            email: string;
+            prenom: string | null;
         };
         accompagnateurs: ({
             employe: {
                 nom: string;
-                prenom: string;
-                id: number;
-                mle: string;
                 actif: boolean;
-                fonction: string;
+                id: number;
+                prenom: string;
+                mle: string | null;
+                fonction: string | null;
                 hotelAffectation: string;
             };
         } & {
@@ -121,7 +122,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         fraisParticipation: number | null;
         fraisMission: number | null;
         notes: string | null;
-        employeId: number;
+        employeId: number | null;
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
@@ -139,46 +140,47 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         };
         chauffeur: {
             nom: string;
-            prenom: string;
             id: number;
+            prenom: string;
             disponible: boolean;
             mle: string | null;
             telephone: string | null;
             vehiculeParDefautId: number | null;
+            etablissementId: number | null;
         };
         objetMission: {
+            actif: boolean;
             id: number;
             libelle: string;
-            actif: boolean;
         };
         destination: {
             nom: string;
-            id: number;
             ville: string;
+            id: number;
         };
         employe: {
             nom: string;
-            prenom: string;
-            id: number;
-            mle: string;
             actif: boolean;
-            fonction: string;
-            hotelAffectation: string;
-        };
-        creePar: {
-            email: string;
-            nom: string;
-            prenom: string;
             id: number;
+            prenom: string;
+            mle: string | null;
+            fonction: string | null;
+            hotelAffectation: string;
+        } | null;
+        creePar: {
+            nom: string | null;
+            id: number;
+            email: string;
+            prenom: string | null;
         };
         accompagnateurs: ({
             employe: {
                 nom: string;
-                prenom: string;
-                id: number;
-                mle: string;
                 actif: boolean;
-                fonction: string;
+                id: number;
+                prenom: string;
+                mle: string | null;
+                fonction: string | null;
                 hotelAffectation: string;
             };
         } & {
@@ -201,7 +203,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         fraisParticipation: number | null;
         fraisMission: number | null;
         notes: string | null;
-        employeId: number;
+        employeId: number | null;
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
@@ -240,7 +242,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         fraisParticipation: number | null;
         fraisMission: number | null;
         notes: string | null;
-        employeId: number;
+        employeId: number | null;
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
@@ -262,7 +264,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         fraisParticipation: number | null;
         fraisMission: number | null;
         notes: string | null;
-        employeId: number;
+        employeId: number | null;
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;

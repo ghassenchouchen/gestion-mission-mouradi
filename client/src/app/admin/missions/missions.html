@@ -159,7 +159,7 @@
   <div class="modal-backdrop" *ngIf="isDetailModalOpen && selectedMission">
     <div class="modal-card animate-in" style="max-width: 600px;">
       <div class="modal-header">
-        <h3>Détails de l'ordre de mission — {{ selectedMission.reference }}</h3>
+        <h3>Détails de l'ordre de mission - {{ selectedMission.reference }}</h3>
         <button class="modal-close-btn" (click)="closeDetailsModal()">
           <iconify-icon icon="lucide:x"></iconify-icon>
         </button>
@@ -182,7 +182,7 @@
             <span class="details-value">{{ selectedMission.raw.employe?.fonction }}</span>
           </div>
           <div class="details-item">
-            <span class="details-label">Hôtel d'affectation</span>
+            <span class="details-label">Établissement</span>
             <span class="details-value">{{ selectedMission.raw.employe?.hotelAffectation }}</span>
           </div>
         </div>
@@ -225,7 +225,7 @@
           </div>
           <div class="details-item">
             <span class="details-label">Période</span>
-            <span class="details-value">{{ selectedMission.dateStr }} (Départ {{ selectedMission.raw.heureDepart }}<span *ngIf="selectedMission.raw.heureRetour"> — Retour {{ selectedMission.raw.heureRetour }}</span>)</span>
+            <span class="details-value">{{ selectedMission.dateStr }} (Départ {{ selectedMission.raw.heureDepart }}<span *ngIf="selectedMission.raw.heureRetour"> - Retour {{ selectedMission.raw.heureRetour }}</span>)</span>
           </div>
         </div>
 
@@ -236,27 +236,9 @@
           <div class="details-item span-2">
             <span class="details-value">
               <span *ngFor="let acc of selectedMission.raw.accompagnateurs; let last = last" style="display:inline-block; margin-right:8px; background:#f0f2f7; padding:4px 8px; border-radius:4px; font-size:12px;">
-                {{ acc.employe.prenom }} {{ acc.employe.nom }} ({{ acc.employe.mle }})
+                {{ acc.employe.prenom }} {{ acc.employe.nom }}
               </span>
             </span>
-          </div>
-        </div>
-
-        <h4 class="details-section-title">
-          <iconify-icon icon="lucide:dollar-sign"></iconify-icon> Frais & Notes
-        </h4>
-        <div class="details-grid">
-          <div class="details-item">
-            <span class="details-label">Frais de participation</span>
-            <span class="details-value">{{ selectedMission.raw.fraisParticipation }} TND</span>
-          </div>
-          <div class="details-item">
-            <span class="details-label">Frais de mission</span>
-            <span class="details-value">{{ selectedMission.raw.fraisMission }} TND</span>
-          </div>
-          <div class="details-item span-2" *ngIf="selectedMission.raw.notes">
-            <span class="details-label">Remarques / Notes</span>
-            <span class="details-value notes-box">{{ selectedMission.raw.notes }}</span>
           </div>
         </div>
       </div>
@@ -307,7 +289,7 @@
           <label>Chauffeur</label>
           <select class="form-control" [(ngModel)]="formData.chauffeurId">
             <option *ngFor="let ch of drivers" [value]="ch.id">
-              {{ ch.prenom }} {{ ch.nom }} ({{ ch.mle }}){{ !ch.disponible ? ' - (En mission)' : '' }}
+              {{ ch.prenom }} {{ ch.nom }}{{ !ch.disponible ? ' - (En mission)' : '' }}
             </option>
           </select>
         </div>
@@ -339,16 +321,6 @@
         <div class="form-group">
           <label>Heure Retour</label>
           <input type="text" class="form-control" placeholder="Ex: 18:00" [(ngModel)]="formData.heureRetour" />
-        </div>
-
-        <div class="form-group">
-          <label>Frais de participation (TND)</label>
-          <input type="number" class="form-control" [(ngModel)]="formData.fraisParticipation" />
-        </div>
-
-        <div class="form-group">
-          <label>Frais de mission (TND)</label>
-          <input type="number" class="form-control" [(ngModel)]="formData.fraisMission" />
         </div>
 
         <div class="form-group" style="grid-column: span 2;">

@@ -32,13 +32,23 @@ let EmployeService = class EmployeService {
         return employe;
     }
     async create(data) {
-        const existing = await this.prisma.employe.findUnique({
-            where: { mle: data.mle },
-        });
-        if (existing) {
-            throw new common_1.ConflictException(`Un employé avec le matricule ${data.mle} existe déjà`);
+        if (data.mle) {
+            const existing = await this.prisma.employe.findUnique({
+                where: { mle: data.mle },
+            });
+            if (existing) {
+                throw new common_1.ConflictException(`Un employé avec le matricule ${data.mle} existe déjà`);
+            }
         }
-        return this.prisma.employe.create({ data });
+        return this.prisma.employe.create({
+            data: {
+                nom: data.nom,
+                prenom: data.prenom,
+                mle: data.mle || undefined,
+                fonction: data.fonction || undefined,
+                hotelAffectation: data.hotelAffectation || 'Direction générale',
+            },
+        });
     }
     async update(id, data) {
         await this.findOne(id);

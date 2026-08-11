@@ -20,13 +20,13 @@ let ChauffeurService = class ChauffeurService {
     async findAll() {
         return this.prisma.chauffeur.findMany({
             orderBy: { nom: 'asc' },
-            include: { vehiculeParDefaut: true },
+            include: { vehiculeParDefaut: true, etablissement: true },
         });
     }
     async findOne(id) {
         const chauffeur = await this.prisma.chauffeur.findUnique({
             where: { id },
-            include: { vehiculeParDefaut: true },
+            include: { vehiculeParDefaut: true, etablissement: true },
         });
         if (!chauffeur) {
             throw new common_1.NotFoundException(`Chauffeur avec ID ${id} introuvable`);
@@ -42,7 +42,10 @@ let ChauffeurService = class ChauffeurService {
                 throw new common_1.ConflictException(`Un chauffeur avec le matricule ${data.mle} existe déjà`);
             }
         }
-        return this.prisma.chauffeur.create({ data });
+        return this.prisma.chauffeur.create({
+            data,
+            include: { vehiculeParDefaut: true, etablissement: true },
+        });
     }
     async update(id, data) {
         await this.findOne(id);
@@ -57,6 +60,7 @@ let ChauffeurService = class ChauffeurService {
         return this.prisma.chauffeur.update({
             where: { id },
             data,
+            include: { vehiculeParDefaut: true, etablissement: true },
         });
     }
     async remove(id) {

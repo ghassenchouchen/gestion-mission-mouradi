@@ -17,7 +17,7 @@ export class HrChauffeursList implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   chauffeurs: Chauffeur[] = [];
-  searchQuery = '';
+  selectedChauffeurId: string = 'ALL';
 
   ngOnInit() {
     this.loadChauffeurs();
@@ -34,13 +34,8 @@ export class HrChauffeursList implements OnInit {
   }
 
   get filteredChauffeurs(): Chauffeur[] {
-    if (!this.searchQuery) return this.chauffeurs;
-    const q = this.searchQuery.toLowerCase();
-    return this.chauffeurs.filter(c => 
-      c.nom.toLowerCase().includes(q) || 
-      c.prenom.toLowerCase().includes(q) || 
-      (c.mle && c.mle.toLowerCase().includes(q))
-    );
+    if (this.selectedChauffeurId === 'ALL') return this.chauffeurs;
+    return this.chauffeurs.filter(c => c.id === Number(this.selectedChauffeurId));
   }
 }
 

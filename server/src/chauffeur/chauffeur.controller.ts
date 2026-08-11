@@ -23,7 +23,7 @@ export class ChauffeurController {
 
   @Post()
   @Roles('ADMIN')
-  create(@Body() body: { mle: string; nom: string; prenom: string; telephone?: string }) {
+  create(@Body() body: { mle: string; nom: string; prenom: string; telephone?: string; vehiculeParDefautId?: number; etablissementId?: number }) {
     return this.chauffeurService.create(body);
   }
 
@@ -31,7 +31,7 @@ export class ChauffeurController {
   @Roles('ADMIN')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { mle?: string; nom?: string; prenom?: string; telephone?: string; disponible?: boolean },
+    @Body() body: { mle?: string; nom?: string; prenom?: string; telephone?: string; disponible?: boolean; vehiculeParDefautId?: number | null; etablissementId?: number | null },
   ) {
     return this.chauffeurService.update(id, body);
   }

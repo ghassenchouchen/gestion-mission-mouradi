@@ -2,7 +2,7 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ChangeDetectorRef } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Sidebar } from '../../admin/sidebar/sidebar';
-import { OrdreMissionService, OrdreMission } from '../../services/api.service';
+import { OrdreMissionService, OrdreMission, ChauffeurService, Chauffeur } from '../../services/api.service';
 
 interface Mission {
   id: number;
@@ -27,12 +27,14 @@ interface Mission {
 })
 export class HrMissionsList implements OnInit {
   private ordreMissionService = inject(OrdreMissionService);
+  private chauffeurService = inject(ChauffeurService);
   private cdr = inject(ChangeDetectorRef);
 
   missions: Mission[] = [];
+  drivers: Chauffeur[] = [];
 
   // Filters state
-  searchQuery = '';
+  chauffeurFilter: number | 'ALL' = 'ALL';
   statusFilter = 'ALL';
   startDateFilter = '';
   endDateFilter = '';
@@ -43,6 +45,7 @@ export class HrMissionsList implements OnInit {
 
   ngOnInit() {
     this.loadMissions();
+    this.chauffeurService.getAll().subscribe(data => { this.drivers = data; this.cdr.markForCheck(); });
   }
 
   loadMissions() {
@@ -87,18 +90,16 @@ export class HrMissionsList implements OnInit {
 
   get filteredMissions(): Mission[] {
     return this.missions.filter(m => {
-      const query = this.searchQuery.toLowerCase();
-      const textMatches = !query || 
-        m.reference.toLowerCase().includes(query) ||
-        m.employeeName.toLowerCase().includes(query) ||
-        m.destination.toLowerCase().includes(query);
+      // Chauffeur match
+      const chauffeurMatches = this.chauffeurFilter === 'ALL' || 
+        (m.raw.chauffeurId && m.raw.chauffeurId === Number(this.chauffeurFilter));
 
       const statusMatches = this.statusFilter === 'ALL' || m.status === this.statusFilter;
 
       const dateStartMatches = !this.startDateFilter || m.dateDebut >= this.startDateFilter;
       const dateEndMatches = !this.endDateFilter || m.dateFin <= this.endDateFilter;
 
-      return textMatches && statusMatches && dateStartMatches && dateEndMatches;
+      return chauffeurMatches && statusMatches && dateStartMatches && dateEndMatches;
     });
   }
 
@@ -135,7 +136,7 @@ export class HrMissionsList implements OnInit {
   }
 
   resetFilters() {
-    this.searchQuery = '';
+    this.chauffeurFilter = 'ALL';
     this.statusFilter = 'ALL';
     this.startDateFilter = '';
     this.endDateFilter = '';
@@ -178,7 +179,7 @@ export class HrMissionsList implements OnInit {
       'Matricule Employé',
       'Employé',
       'Fonction',
-      'Hôtel d\'affectation',
+      'Établissement',
       'Destination',
       'Objet de la Mission',
       'Date Début',

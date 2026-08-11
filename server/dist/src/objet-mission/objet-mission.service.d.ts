@@ -3,33 +3,33 @@ export declare class ObjetMissionService {
     private prisma;
     constructor(prisma: PrismaService);
     findAll(): Promise<{
+        actif: boolean;
         id: number;
         libelle: string;
-        actif: boolean;
     }[]>;
     findOne(id: number): Promise<{
+        actif: boolean;
         id: number;
         libelle: string;
-        actif: boolean;
     }>;
     create(data: {
         libelle: string;
     }): Promise<{
+        actif: boolean;
         id: number;
         libelle: string;
-        actif: boolean;
     }>;
     update(id: number, data: {
         libelle?: string;
         actif?: boolean;
     }): Promise<{
+        actif: boolean;
         id: number;
         libelle: string;
-        actif: boolean;
     }>;
     remove(id: number): Promise<{
+        actif: boolean;
         id: number;
         libelle: string;
-        actif: boolean;
     }>;
 }

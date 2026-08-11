@@ -1,13 +1,16 @@
-/* ── Page Layout ── */
 .missions-wrapper {
   display: flex;
   min-height: 100vh;
   background-color: #f8f9fc;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .main-wrap {
   margin-left: 256px;
-  flex: 1;
+  width: calc(100vw - 256px);
+  max-width: calc(100vw - 256px);
   min-height: 100vh;
   background: #f8f9fc;
   box-sizing: border-box;
@@ -43,7 +46,7 @@
   box-sizing: border-box;
 }
 
-/* ── Filter Bar ── */
+/* Filter Bar */
 .filter-card {
   background: #ffffff;
   border-radius: 12px;
@@ -109,7 +112,7 @@ select.filter-control {
   padding-right: 32px;
 }
 
-/* ── Data Table Card ── */
+/* Data Table Card */
 .table-card {
   background: #ffffff;
   border-radius: 12px;
@@ -179,7 +182,7 @@ select.filter-control {
   background: #f8f9fc;
 }
 
-/* ── Badges ── */
+/* Badges */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -206,7 +209,7 @@ select.filter-control {
 .badge-termine   { background: #f0fdf4; color: #16a34a; }
 .badge-annule    { background: #fff1f2; color: #e11d48; }
 
-/* ── Employee initials/avatar ── */
+/* Employee initials/avatar */
 .emp-avatar-container {
   display: flex;
   align-items: center;
@@ -256,7 +259,7 @@ select.filter-control {
   border: 1px solid #e2e6ef;
 }
 
-/* ── Buttons ── */
+/* Buttons */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -321,7 +324,7 @@ select.filter-control {
   color: #1a1f36;
 }
 
-/* ── Pagination ── */
+/* Pagination */
 .table-footer {
   display: flex;
   align-items: center;
@@ -341,7 +344,7 @@ select.filter-control {
   gap: 8px;
 }
 
-/* ── Animations ── */
+/* Animations */
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -351,7 +354,7 @@ select.filter-control {
   animation: fadeSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* ── Modal Dialog Backdrop & Card ── */
+/* Modal Dialog Backdrop & Card */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -427,7 +430,7 @@ select.filter-control {
   flex-shrink: 0;
 }
 
-/* ── Details Grid Styles ── */
+/* Details Grid Styles */
 .details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -484,7 +487,7 @@ select.filter-control {
   font-size: 16px;
 }
 
-/* ── Modal Form Inputs ── */
+/* Modal Form Inputs */
 .form-group {
   display: flex;
   flex-direction: column;

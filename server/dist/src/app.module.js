@@ -20,6 +20,7 @@ const employe_module_1 = require("./employe/employe.module");
 const ordre_mission_module_1 = require("./ordre-mission/ordre-mission.module");
 const utilisateur_module_1 = require("./utilisateur/utilisateur.module");
 const mail_module_1 = require("./mail/mail.module");
+const etablissement_module_1 = require("./etablissement/etablissement.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -35,7 +36,8 @@ exports.AppModule = AppModule = __decorate([
             employe_module_1.EmployeModule,
             ordre_mission_module_1.OrdreMissionModule,
             utilisateur_module_1.UtilisateurModule,
-            mail_module_1.MailModule
+            mail_module_1.MailModule,
+            etablissement_module_1.EtablissementModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

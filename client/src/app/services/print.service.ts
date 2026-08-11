@@ -18,6 +18,7 @@ export interface PrintMissionDetails {
   vehiculeMarque?: string;
   vehiculeImmatriculation?: string;
   chauffeur: string;
+  chauffeurEtablissement?: string;
   accompagnateurs: string[];
   notes?: string;
   dateEmission?: string;
@@ -42,9 +43,22 @@ export class PrintService {
 
     // Build accompagnateurs section only if there are any
     const buildAccompagnateursSection = () => {
-      if (!details.accompagnateurs || details.accompagnateurs.length === 0) {
+      const hasMainEmployee = !!details.employeeName;
+      const hasAccompagnateurs = details.accompagnateurs && details.accompagnateurs.length > 0;
+
+      if (!hasMainEmployee && !hasAccompagnateurs) {
+        return `
+          <tr>
+            <td class="label">Accompagnateur :</td>
+            <td class="value" style="font-style: italic; color: #6b7280;">Aucun (Déplacement Chauffeur Seul)</td>
+          </tr>
+        `;
+      }
+
+      if (!hasAccompagnateurs) {
         return '';
       }
+
       return `
         <tr>
           <td class="label">Autres Accompagnateurs :</td>
@@ -53,22 +67,34 @@ export class PrintService {
       `;
     };
 
-    // Use hotelAffectation for the upper-left entity name
-    const entityName = details.hotelAffectation || 'Direction Générale';
+    // Upper-left entity name (Direction Générale)
+    const entityName = 'Direction Générale';
+    const chauffeurEtablissement = details.chauffeurEtablissement || 'Direction Générale';
 
-    // Build chauffeur display (name only, no matricule)
-    const chauffeurDisplay = details.chauffeurName || details.chauffeur || 'N/A';
+    // Build chauffeur display (name only, no matricule or leading number)
+    const rawChauffeur = details.chauffeurName || details.chauffeur || 'N/A';
+    const chauffeurDisplay = rawChauffeur.replace(/^\d+\s*[-–—:\s]*/, '').replace(/\s*\(\d+\)$/, '');
 
-    // Build véhicule display (marque + immatriculation on same line, informative)
-    const vehiculeDisplay = (() => {
-      if (details.vehiculeMarque && details.vehiculeImmatriculation) {
-        if (details.vehiculeImmatriculation === 'Lui-même' || details.vehiculeImmatriculation === 'Aucun') {
-          return details.vehiculeMarque;
-        }
-        return `${details.vehiculeMarque} - Immatriculation : ${details.vehiculeImmatriculation}`;
+    // Separate Vehicle Marque/Model and Immatriculation cleanly for UI/UX clarity
+    let vehiculeMarqueModel = details.vehiculeMarque || details.vehicule || 'N/A';
+    let vehiculeImmat = details.vehiculeImmatriculation || '';
+
+    if (!details.vehiculeMarque && details.vehicule) {
+      const match = details.vehicule.match(/^(.*?)\s*\((.*?)\)$/);
+      if (match) {
+        vehiculeMarqueModel = match[1];
+        vehiculeImmat = match[2];
+      } else {
+        vehiculeMarqueModel = details.vehicule.replace(/—/g, '-');
       }
-      return details.vehicule || 'N/A';
-    })();
+    }
+
+    // Clean formatting for special immatriculation values
+    if (vehiculeMarqueModel.includes(' - Immatriculation :')) {
+      const parts = vehiculeMarqueModel.split(' - Immatriculation :');
+      vehiculeMarqueModel = parts[0];
+      vehiculeImmat = parts[1];
+    }
 
     const logoUrl = window.location.origin + '/El-mouradi.png';
 
@@ -83,8 +109,8 @@ export class PrintService {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
         <style>
           @page {
-            size: A4;
-            margin: 0;
+            size: A4 portrait;
+            margin: 0mm;
           }
           body, html {
             font-family: 'Inter', sans-serif;
@@ -101,7 +127,7 @@ export class PrintService {
             width: 210mm;
             height: 297mm;
             box-sizing: border-box;
-            padding: 5mm 20mm 12mm 20mm;
+            padding: 9mm 20mm 10mm 20mm;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -112,7 +138,7 @@ export class PrintService {
           /* Header styles - Large Logo at the top */
           .header {
             text-align: center;
-            margin-bottom: 2px;
+            margin-bottom: 10px;
           }
           .logo-box {
             display: flex;
@@ -120,7 +146,7 @@ export class PrintService {
             align-items: center;
           }
           .logo-img {
-            height: 90px;
+            height: 80px;
             width: auto;
             object-fit: contain;
           }
@@ -130,28 +156,33 @@ export class PrintService {
             flex: 1;
             display: flex;
             flex-direction: column;
+            justify-content: flex-start;
           }
           .doc-title-block {
             text-align: center;
-            margin-top: 2px;
-            margin-bottom: 8px;
+            margin-top: 4px;
+            margin-bottom: 12px;
           }
           .doc-title {
             font-family: 'Playfair Display', serif;
-            font-size: 20px;
+            font-size: 21px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
             color: #1b1f2a;
-            margin: 0 0 2px 0;
-            text-decoration: underline;
-            text-underline-offset: 4px;
+            margin: 0 0 3px 0;
           }
-          .doc-ref {
-            font-size: 13px;
-            font-weight: 600;
-            color: #6b6b6b;
-            margin: 0;
+          .doc-ref-badge {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1b1f2a;
+            background-color: #f4f5f8;
+            border: 1px solid #d0d4e0;
+            padding: 3.5px 13px;
+            border-radius: 4px;
+            letter-spacing: 0.03em;
+            margin-top: 5px;
           }
           .meta-row {
             display: flex;
@@ -160,20 +191,20 @@ export class PrintService {
             font-size: 12.5px;
             font-weight: 700;
             color: #1b1f2a;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             font-family: 'Inter', sans-serif;
           }
 
           /* Info section */
           .section-title {
             font-family: 'Inter', sans-serif;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 700;
             color: #8B7D3C;
             border-bottom: 1.5px solid #8B7D3C;
-            padding-bottom: 2px;
-            margin-top: 6px;
-            margin-bottom: 4px;
+            padding-bottom: 3px;
+            margin-top: 14px;
+            margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 0.08em;
           }
@@ -181,12 +212,12 @@ export class PrintService {
           .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 2px;
+            margin-bottom: 6px;
           }
           .info-table td {
-            padding: 2.5px 0;
+            padding: 4.5px 0;
             font-size: 12px;
-            line-height: 1.3;
+            line-height: 1.45;
             vertical-align: top;
           }
           .info-table td.label {
@@ -200,12 +231,47 @@ export class PrintService {
             font-weight: 500;
           }
 
+          /* Side-by-Side Period Card */
+          .period-row {
+            display: flex;
+            align-items: center;
+            background: #fafafa;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 9px 15px;
+            margin-bottom: 8px;
+          }
+          .period-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+          }
+          .period-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b6b6b;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+          }
+          .period-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1b1f2a;
+            margin-top: 2px;
+          }
+          .period-divider {
+            width: 1px;
+            height: 30px;
+            background: #cbd5e1;
+            margin: 0 18px;
+          }
+
           /* Signatures - Aligned right */
           .signatures-container {
             display: flex;
             justify-content: flex-end;
-            margin-top: 15px;
-            margin-bottom: 10px;
+            margin-top: 32px;
+            margin-bottom: 12px;
           }
           .signature-block {
             width: 50%;
@@ -215,13 +281,13 @@ export class PrintService {
             font-size: 11.5px;
             font-weight: 600;
             text-decoration: underline;
-            margin-bottom: 40px;
+            margin-bottom: 35px;
             color: #1b1f2a;
             text-underline-offset: 3px;
             line-height: 1.4;
           }
           .signature-space {
-            height: 35px;
+            height: 45px;
           }
 
           /* Footer styling matching the user image strictly */
@@ -257,15 +323,22 @@ export class PrintService {
           }
 
           @media print {
-            body, html {
+            html, body {
+              width: 210mm;
               height: 297mm;
-              overflow: hidden;
+              margin: 0 !important;
+              padding: 0 !important;
+              overflow: hidden !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
             .page-container {
-              height: 297mm;
-              padding: 5mm 20mm 10mm 20mm;
-              page-break-inside: avoid;
-              page-break-after: avoid;
+              width: 210mm !important;
+              height: 297mm !important;
+              padding: 8mm 20mm 12mm 20mm !important;
+              box-sizing: border-box !important;
+              page-break-inside: avoid !important;
+              page-break-after: avoid !important;
             }
           }
         </style>
@@ -285,34 +358,51 @@ export class PrintService {
             
             <div class="meta-row">
               <div class="meta-left">${entityName}</div>
-              <div class="meta-right">Tunis, le ${dateEmission}</div>
+              <div class="meta-right">Hammam Sousse, le ${dateEmission}</div>
             </div>
 
             <div class="doc-title-block">
               <h2 class="doc-title">Ordre de Mission</h2>
-              <p class="doc-ref">Réf : ${details.reference}</p>
+              <div class="doc-ref-badge">Réf : ${details.reference}</div>
             </div>
 
-            <!-- Section 1: Chauffeur et Véhicule -->
-            <div class="section-title">Chauffeur et Véhicule</div>
+            <!-- Section 1: Chauffeur -->
+            <div class="section-title">Chauffeur</div>
             <table class="info-table">
               <tr>
                 <td class="label">Chauffeur désigné :</td>
                 <td class="value">${chauffeurDisplay}</td>
               </tr>
               <tr>
-                <td class="label">Véhicule :</td>
-                <td class="value">${vehiculeDisplay}</td>
+                <td class="label">Établissement :</td>
+                <td class="value">${chauffeurEtablissement}</td>
               </tr>
             </table>
 
-            <!-- Section 2: Accompagnateurs -->
+            <!-- Section 2: Véhicule -->
+            <div class="section-title">Véhicule</div>
+            <table class="info-table">
+              <tr>
+                <td class="label">Véhicule affecté :</td>
+                <td class="value">${vehiculeMarqueModel}</td>
+              </tr>
+              ${(vehiculeImmat && vehiculeImmat !== 'Lui-même' && vehiculeImmat !== 'Aucun') ? `
+              <tr>
+                <td class="label">Immatriculation :</td>
+                <td class="value">${vehiculeImmat}</td>
+              </tr>
+              ` : ''}
+            </table>
+
+            <!-- Section 3: Accompagnateurs -->
             <div class="section-title">Accompagnateurs</div>
             <table class="info-table">
+              ${details.employeeName ? `
               <tr>
                 <td class="label">Accompagnateur Principal :</td>
                 <td class="value">${details.employeeName}</td>
               </tr>
+              ` : ''}
               ${buildAccompagnateursSection()}
             </table>
 
@@ -331,22 +421,25 @@ export class PrintService {
 
             <!-- Section 4: Période du Déplacement -->
             <div class="section-title">Période du Déplacement</div>
-            <table class="info-table">
-              <tr>
-                <td class="label">Départ prévu :</td>
-                <td class="value">${details.dateDebut} à ${details.heureDepart}</td>
-              </tr>
-              <tr>
-                <td class="label">Retour prévu :</td>
-                <td class="value">${details.dateFin} à ${details.heureRetour}</td>
-              </tr>
-              ${details.notes ? `
+            <div class="period-row">
+              <div class="period-col">
+                <span class="period-label">Départ prévu :</span>
+                <span class="period-value">${details.dateDebut} à ${details.heureDepart}</span>
+              </div>
+              <div class="period-divider"></div>
+              <div class="period-col">
+                <span class="period-label">Retour prévu :</span>
+                <span class="period-value">${details.dateFin} à ${details.heureRetour}</span>
+              </div>
+            </div>
+            ${details.notes ? `
+            <table class="info-table" style="margin-top: 4px;">
               <tr>
                 <td class="label">Notes / Instructions :</td>
                 <td class="value">${details.notes}</td>
               </tr>
-              ` : ''}
             </table>
+            ` : ''}
 
             <!-- Signatures - Manager Only -->
             <div class="signatures-container">

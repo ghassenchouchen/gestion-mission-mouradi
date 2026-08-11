@@ -4,20 +4,20 @@ export declare class EmployeController {
     constructor(employeService: EmployeService);
     findAll(): Promise<{
         nom: string;
-        prenom: string;
-        id: number;
-        mle: string;
         actif: boolean;
-        fonction: string;
+        id: number;
+        prenom: string;
+        mle: string | null;
+        fonction: string | null;
         hotelAffectation: string;
     }[]>;
     findOne(id: number): Promise<{
         nom: string;
-        prenom: string;
-        id: number;
-        mle: string;
         actif: boolean;
-        fonction: string;
+        id: number;
+        prenom: string;
+        mle: string | null;
+        fonction: string | null;
         hotelAffectation: string;
     }>;
     create(body: {
@@ -28,11 +28,11 @@ export declare class EmployeController {
         hotelAffectation: string;
     }): Promise<{
         nom: string;
-        prenom: string;
-        id: number;
-        mle: string;
         actif: boolean;
-        fonction: string;
+        id: number;
+        prenom: string;
+        mle: string | null;
+        fonction: string | null;
         hotelAffectation: string;
     }>;
     update(id: number, body: {
@@ -44,20 +44,20 @@ export declare class EmployeController {
         actif?: boolean;
     }): Promise<{
         nom: string;
-        prenom: string;
-        id: number;
-        mle: string;
         actif: boolean;
-        fonction: string;
+        id: number;
+        prenom: string;
+        mle: string | null;
+        fonction: string | null;
         hotelAffectation: string;
     }>;
     remove(id: number): Promise<{
         nom: string;
-        prenom: string;
-        id: number;
-        mle: string;
         actif: boolean;
-        fonction: string;
+        id: number;
+        prenom: string;
+        mle: string | null;
+        fonction: string | null;
         hotelAffectation: string;
     }>;
 }

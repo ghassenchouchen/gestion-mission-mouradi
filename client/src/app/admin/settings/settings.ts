@@ -18,6 +18,7 @@ import {
 } from '../../services/api.service';
 
 import { ActivatedRoute } from '@angular/router';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-settings',
@@ -36,6 +37,7 @@ export class Settings implements OnInit {
   private utilisateurService = inject(UtilisateurService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
+  private toastService = inject(ToastService);
 
   activeTab: 'chauffeurs' | 'vehicules' | 'objets' | 'destinations' | 'employes' | 'utilisateurs' = 'chauffeurs';
 
@@ -170,49 +172,51 @@ export class Settings implements OnInit {
     if (this.modalMode === 'add') {
       // Validate form payload
       if (this.activeTab === 'utilisateurs' && (!this.formData.email || !this.formData.password)) {
-        alert('Veuillez remplir l\'email et le mot de passe.');
+        this.toastService.warning('Veuillez remplir l\'email et le mot de passe.');
         return;
       }
       if (this.activeTab === 'chauffeurs' && (!this.formData.nom || !this.formData.prenom)) {
-        alert('Veuillez remplir le nom et le prénom du chauffeur.');
+        this.toastService.warning('Veuillez remplir le nom et le prénom du chauffeur.');
         return;
       }
       if (this.activeTab === 'vehicules' && (!this.formData.immatriculation || !this.formData.marque || !this.formData.modele)) {
-        alert('Veuillez remplir tous les champs obligatoires.');
+        this.toastService.warning('Veuillez remplir tous les champs obligatoires.');
         return;
       }
       if (this.activeTab === 'objets' && !this.formData.libelle) {
-        alert('Libellé est obligatoire.');
+        this.toastService.warning('Le libellé est obligatoire.');
         return;
       }
       if (this.activeTab === 'destinations' && (!this.formData.nom || !this.formData.ville)) {
-        alert('Nom et ville sont obligatoires.');
+        this.toastService.warning('Le nom et la ville sont obligatoires.');
         return;
       }
-      if (this.activeTab === 'employes' && (!this.formData.mle || !this.formData.nom || !this.formData.prenom || !this.formData.fonction || !this.formData.hotelAffectation)) {
-        alert('Veuillez remplir tous les champs obligatoires.');
+      if (this.activeTab === 'employes' && (!this.formData.nom || !this.formData.prenom)) {
+        this.toastService.warning('Le nom et le prénom de l\'employé sont obligatoires.');
         return;
       }
 
       service.create(this.formData).subscribe({
         next: () => {
+          this.toastService.success('Élément créé avec succès');
           this.loadAllData();
           this.closeModal();
         },
         error: (err: any) => {
           console.error('Error creating setting:', err);
-          alert(err.error?.message || 'Erreur lors de la création de l\'élément. Vérifiez l\'unicité des clés (matricule, immatriculation, libelle, etc.)');
+          this.toastService.error(err.error?.message || 'Erreur lors de la création. Vérifiez les contraintes d\'unicité.');
         }
       });
     } else {
       service.update(this.editingId!, this.formData).subscribe({
         next: () => {
+          this.toastService.success('Élément mis à jour avec succès');
           this.loadAllData();
           this.closeModal();
         },
         error: (err: any) => {
           console.error('Error updating setting:', err);
-          alert(err.error?.message || 'Erreur lors de la mise à jour de l\'élément.');
+          this.toastService.error(err.error?.message || 'Erreur lors de la mise à jour de l\'élément.');
         }
       });
     }
@@ -225,15 +229,15 @@ export class Settings implements OnInit {
 
       service.delete(id).subscribe({
         next: () => {
+          this.toastService.success('Élément supprimé avec succès');
           this.loadAllData();
         },
         error: (err: any) => {
           console.error('Error deleting setting:', err);
-          // Standard check for constraint violations (Restrict)
           if (err.status === 409 || err.status === 400 || (err.error?.message && err.error.message.includes('Foreign key'))) {
-            alert('Impossible de supprimer cet élément car il est actuellement référencé dans un ordre de mission.');
+            this.toastService.error('Impossible de supprimer cet élément car il est actuellement référencé dans un ordre de mission.');
           } else {
-            alert('Impossible de supprimer cet élément. Il est probablement associé à un ordre de mission existant (contrainte d\'intégrité).');
+            this.toastService.error('Impossible de supprimer cet élément. Il est référencé par d\'autres données.');
           }
         }
       });

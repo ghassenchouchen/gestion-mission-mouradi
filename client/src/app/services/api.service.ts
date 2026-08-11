@@ -17,6 +17,15 @@ export interface Employe {
   actif: boolean;
 }
 
+export interface Etablissement {
+  id: number;
+  code: string;
+  nom: string;
+  ville: string;
+  adresse?: string | null;
+  actif: boolean;
+}
+
 export interface Chauffeur {
   id: number;
   mle?: string | null;
@@ -25,6 +34,8 @@ export interface Chauffeur {
   telephone?: string | null;
   disponible: boolean;
   vehiculeParDefautId?: number | null;
+  etablissementId?: number | null;
+  etablissement?: Etablissement | null;
 }
 
 export interface Vehicule {
@@ -241,7 +252,7 @@ export class OrdreMissionService {
   }
 
   create(data: {
-    employeId: number;
+    employeId?: number;
     destinationId: number;
     chauffeurId: number;
     vehiculeId: number;
@@ -277,6 +288,7 @@ export class OrdreMissionService {
     statut?: string;
     departReel?: string;
     retourReel?: string;
+    accompagnateurs?: number[];
   }): Observable<OrdreMission> {
     return this.http.put<OrdreMission>(`${this.url}/${id}`, data);
   }
@@ -316,6 +328,34 @@ export class UtilisateurService {
 
   update(id: number, data: Partial<Utilisateur>): Observable<Utilisateur> {
     return this.http.put<Utilisateur>(`${this.url}/${id}`, data);
+  }
+
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.url}/${id}`);
+  }
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class EtablissementService {
+  private http = inject(HttpClient);
+  private url = `${API_BASE}/etablissements`;
+
+  getAll(): Observable<Etablissement[]> {
+    return this.http.get<Etablissement[]>(this.url);
+  }
+
+  getOne(id: number): Observable<Etablissement> {
+    return this.http.get<Etablissement>(`${this.url}/${id}`);
+  }
+
+  create(data: Omit<Etablissement, 'id'>): Observable<Etablissement> {
+    return this.http.post<Etablissement>(this.url, data);
+  }
+
+  update(id: number, data: Partial<Etablissement>): Observable<Etablissement> {
+    return this.http.put<Etablissement>(`${this.url}/${id}`, data);
   }
 
   delete(id: number): Observable<any> {
