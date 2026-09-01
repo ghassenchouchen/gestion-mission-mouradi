@@ -289,7 +289,7 @@ export class CalendrierChauffeurs implements OnInit {
         .map(r => `<tr>
           <td style="padding: 5px 6px; font-size: 9px; font-family: monospace; background: #f8fafc; border: 1px solid #cbd5e1;">${r.reference}</td>
           <td style="padding: 5px 6px; font-size: 9.5px; font-weight: 600; border: 1px solid #cbd5e1;">${r.chauffeur}</td>
-          <td style="padding: 5px 6px; font-size: 9px; border: 1px solid #cbd5e1;">${r.employeeName || '-'}</td>
+          <td style="padding: 5px 6px; font-size: 9px; border: 1px solid #cbd5e1;">${(r.employeeName || '-').replace(/\s*\(\s*(?:MLE:?\s*)?\d+\s*\)/gi, '').replace(/^\d{3,6}\s*[-–—:\s]+\s*/, '').replace(/\s+\d{3,6}$/, '')}</td>
           <td style="padding: 5px 6px; font-size: 9px; border: 1px solid #cbd5e1;">${r.destination}</td>
           <td style="padding: 5px 6px; font-size: 9px; border: 1px solid #cbd5e1;">${new Date(r.dateDebut).toLocaleDateString('fr-FR', {day:'numeric', month:'short'})} - ${new Date(r.dateFin).toLocaleDateString('fr-FR', {day:'numeric', month:'short'})}</td>
         </tr>`).join('');
@@ -301,7 +301,7 @@ export class CalendrierChauffeurs implements OnInit {
             <tr>
               <th style="text-align:left; font-size:8.5px; padding:5px 6px; background:#f1f5f9; border:1px solid #cbd5e1;">Réf.</th>
               <th style="text-align:left; font-size:8.5px; padding:5px 6px; background:#f1f5f9; border:1px solid #cbd5e1;">Chauffeur</th>
-              <th style="text-align:left; font-size:8.5px; padding:5px 6px; background:#f1f5f9; border:1px solid #cbd5e1;">Demandeur</th>
+              <th style="text-align:left; font-size:8.5px; padding:5px 6px; background:#f1f5f9; border:1px solid #cbd5e1;">Accompagnateur</th>
               <th style="text-align:left; font-size:8.5px; padding:5px 6px; background:#f1f5f9; border:1px solid #cbd5e1;">Destination</th>
               <th style="text-align:left; font-size:8.5px; padding:5px 6px; background:#f1f5f9; border:1px solid #cbd5e1;">Période</th>
             </tr>

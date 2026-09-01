@@ -120,11 +120,14 @@
                   <button class="icon-btn" (click)="viewMission(mission.reference)" title="Détails">
                     <iconify-icon icon="lucide:eye"></iconify-icon>
                   </button>
-                  <button class="icon-btn" [disabled]="mission.status === 'EN_COURS' || mission.status === 'TERMINE'" [style.opacity]="(mission.status === 'EN_COURS' || mission.status === 'TERMINE') ? 0.4 : 1" (click)="editMission(mission.reference)" title="Modifier">
+                  <button class="icon-btn" [disabled]="mission.status === 'TERMINE'" [style.opacity]="mission.status === 'TERMINE' ? 0.4 : 1" (click)="editMission(mission.reference)" title="Modifier">
                     <iconify-icon icon="lucide:edit-2"></iconify-icon>
                   </button>
                   <button class="icon-btn" (click)="printMission(mission.reference)" title="Imprimer">
                     <iconify-icon icon="lucide:printer"></iconify-icon>
+                  </button>
+                  <button class="icon-btn icon-btn-danger" [disabled]="mission.status === 'TERMINE'" [style.opacity]="mission.status === 'TERMINE' ? 0.4 : 1" (click)="deleteMission(mission.id)" title="Supprimer">
+                    <iconify-icon icon="lucide:trash"></iconify-icon>
                   </button>
                 </td>
               </tr>
@@ -166,20 +169,12 @@
       </div>
       <div class="modal-body">
         <h4 class="details-section-title">
-          <iconify-icon icon="lucide:user"></iconify-icon> Collaborateur
+          <iconify-icon icon="lucide:user"></iconify-icon> Accompagnateur
         </h4>
         <div class="details-grid">
           <div class="details-item">
-            <span class="details-label">Employé</span>
+            <span class="details-label">Accompagnateur</span>
             <span class="details-value">{{ selectedMission.employeeName }}</span>
-          </div>
-          <div class="details-item">
-            <span class="details-label">Matricule (MLE)</span>
-            <span class="details-value">{{ selectedMission.raw.employe?.mle }}</span>
-          </div>
-          <div class="details-item">
-            <span class="details-label">Fonction</span>
-            <span class="details-value">{{ selectedMission.raw.employe?.fonction }}</span>
           </div>
           <div class="details-item">
             <span class="details-label">Établissement</span>
@@ -195,14 +190,15 @@
             <span class="details-label">Chauffeur</span>
             <span class="details-value">
               {{ selectedMission.raw.chauffeur ? selectedMission.raw.chauffeur.prenom + ' ' + selectedMission.raw.chauffeur.nom : 'Aucun' }}
-              <span *ngIf="selectedMission.raw.chauffeur?.mle" style="color:#8a92a8; font-size:11px;">({{ selectedMission.raw.chauffeur?.mle }})</span>
             </span>
           </div>
           <div class="details-item">
             <span class="details-label">Véhicule</span>
             <span class="details-value">
               {{ selectedMission.raw.vehicule ? selectedMission.raw.vehicule.marque + ' ' + selectedMission.raw.vehicule.modele : 'Aucun' }}
-              <span *ngIf="selectedMission.raw.vehicule?.immatriculation" style="color:#8a92a8; font-size:11px;">({{ selectedMission.raw.vehicule?.immatriculation }})</span>
+              <div *ngIf="selectedMission.raw.vehicule?.immatriculation" style="color:#0f172a; font-size:14px; font-weight:700; font-family:monospace; margin-top:4px; background:#f1f5f9; padding:2px 8px; border-radius:4px; display:inline-block; border:1px solid #cbd5e1;">
+                {{ selectedMission.raw.vehicule?.immatriculation }}
+              </div>
             </span>
           </div>
         </div>
@@ -235,7 +231,7 @@
         <div class="details-grid" *ngIf="selectedMission.raw.accompagnateurs && selectedMission.raw.accompagnateurs.length > 0">
           <div class="details-item span-2">
             <span class="details-value">
-              <span *ngFor="let acc of selectedMission.raw.accompagnateurs; let last = last" style="display:inline-block; margin-right:8px; background:#f0f2f7; padding:4px 8px; border-radius:4px; font-size:12px;">
+              <span *ngFor="let acc of selectedMission.raw.accompagnateurs; let last = last" style="display:inline-block; margin-right:8px; background:#f0f2f7; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:500;">
                 {{ acc.employe.prenom }} {{ acc.employe.nom }}
               </span>
             </span>
@@ -253,6 +249,9 @@
           </button>
           <button *ngIf="selectedMission.status === 'PLANIFIE'" class="btn-ghost" (click)="updateStatus('ANNULE')" style="color:#dc2626; border-color:#fecaca;">
             Annuler la mission
+          </button>
+          <button *ngIf="selectedMission.status !== 'TERMINE'" class="btn-ghost" (click)="deleteMission(selectedMission.id)" style="color:#e74c3c; border-color:#fadbd8;">
+            Supprimer la mission
           </button>
         </div>
         <button class="btn-ghost" (click)="closeDetailsModal()">Fermer</button>

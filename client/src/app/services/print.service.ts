@@ -7,10 +7,11 @@ export interface PrintMissionDetails {
   fonction: string;
   hotelAffectation: string;
   destination: string;
+  autresDestinations?: string[];
   dateDebut: string;
-  dateFin: string;
+  dateFin?: string;
   heureDepart: string;
-  heureRetour: string;
+  heureRetour?: string;
   objet: string;
   itineraire: string;
   vehicule: string;
@@ -22,6 +23,7 @@ export interface PrintMissionDetails {
   accompagnateurs: string[];
   notes?: string;
   dateEmission?: string;
+  creeParRole?: string;
 }
 
 @Injectable({
@@ -41,41 +43,65 @@ export class PrintService {
       year: 'numeric'
     });
 
-    // Build accompagnateurs section only if there are any
-    const buildAccompagnateursSection = () => {
-      const hasMainEmployee = !!details.employeeName;
-      const hasAccompagnateurs = details.accompagnateurs && details.accompagnateurs.length > 0;
+    // Helper to strip matricules from accompagnateur names (keeping names only)
+    const stripMatricule = (nameStr: string): string => {
+      if (!nameStr) return '';
+      return nameStr
+        .replace(/\s*\(\s*(?:MLE:?\s*)?\d+\s*\)/gi, '')
+        .replace(/^\d{3,6}\s*[-–—:\s]+\s*/, '')
+        .replace(/\s+\d{3,6}$/, '')
+        .trim();
+    };
 
-      if (!hasMainEmployee && !hasAccompagnateurs) {
-        return `
+    const rawEmployeeName = stripMatricule(details.employeeName || '');
+    const cleanEmployeeName = (rawEmployeeName !== 'Aucun' && rawEmployeeName !== 'N/A' && rawEmployeeName !== '—') ? rawEmployeeName : '';
+    const cleanedOtherAccompagnateurs = (details.accompagnateurs || []).map(stripMatricule).filter(name => name && name !== 'Aucun' && name !== 'N/A');
+
+    const hasMainAccompagnateur = !!cleanEmployeeName;
+    const hasOtherAccompagnateurs = cleanedOtherAccompagnateurs.length > 0;
+    const hasAnyAccompagnateur = hasMainAccompagnateur || hasOtherAccompagnateurs;
+
+    const buildAccompagnateursSection = () => {
+      if (!hasAnyAccompagnateur) {
+        return '';
+      }
+
+      let rows = '';
+      if (hasMainAccompagnateur) {
+        const labelText = hasOtherAccompagnateurs ? 'Accompagnateur Principal :' : 'Accompagnateur :';
+        rows += `
           <tr>
-            <td class="label">Accompagnateur :</td>
-            <td class="value" style="font-style: italic; color: #6b7280;">Aucun (Déplacement Chauffeur Seul)</td>
+            <td class="label">${labelText}</td>
+            <td class="value">${cleanEmployeeName}</td>
           </tr>
         `;
       }
 
-      if (!hasAccompagnateurs) {
-        return '';
+      if (hasOtherAccompagnateurs) {
+        const labelText = hasMainAccompagnateur ? 'Autres Accompagnateurs :' : 'Accompagnateurs :';
+        rows += `
+          <tr>
+            <td class="label">${labelText}</td>
+            <td class="value">${cleanedOtherAccompagnateurs.join(', ')}</td>
+          </tr>
+        `;
       }
 
       return `
-        <tr>
-          <td class="label">Autres Accompagnateurs :</td>
-          <td class="value">${details.accompagnateurs.join(', ')}</td>
-        </tr>
+        <!-- Section 3: Accompagnateurs -->
+        <div class="section-title">Accompagnateurs</div>
+        <table class="info-table">
+          ${rows}
+        </table>
       `;
     };
 
-    // Upper-left entity name (Direction Générale)
-    const entityName = 'Direction Générale';
+    const entityNameHtml = `Direction générale El Mouradi<br>Services Généraux`;
     const chauffeurEtablissement = details.chauffeurEtablissement || 'Direction Générale';
 
-    // Build chauffeur display (name only, no matricule or leading number)
     const rawChauffeur = details.chauffeurName || details.chauffeur || 'N/A';
     const chauffeurDisplay = rawChauffeur.replace(/^\d+\s*[-–—:\s]*/, '').replace(/\s*\(\d+\)$/, '');
 
-    // Separate Vehicle Marque/Model and Immatriculation cleanly for UI/UX clarity
     let vehiculeMarqueModel = details.vehiculeMarque || details.vehicule || 'N/A';
     let vehiculeImmat = details.vehiculeImmatriculation || '';
 
@@ -89,7 +115,6 @@ export class PrintService {
       }
     }
 
-    // Clean formatting for special immatriculation values
     if (vehiculeMarqueModel.includes(' - Immatriculation :')) {
       const parts = vehiculeMarqueModel.split(' - Immatriculation :');
       vehiculeMarqueModel = parts[0];
@@ -356,9 +381,14 @@ export class PrintService {
           <!-- Document Body -->
           <div class="content-body">
             
-            <div class="meta-row">
-              <div class="meta-left">${entityName}</div>
-              <div class="meta-right">Hammam Sousse, le ${dateEmission}</div>
+            <div class="meta-row" style="margin-bottom: 10px; align-items: flex-start;">
+              <div class="meta-left" style="line-height: 1.35;">
+                <div style="text-align: center;">
+                  <div>Direction générale El Mouradi</div>
+                  ${(!details.creeParRole || details.creeParRole === 'USER') ? `<div style="font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px;">Services Généraux</div>` : ''}
+                </div>
+              </div>
+              <div class="meta-right">El Kantaoui, le ${dateEmission}</div>
             </div>
 
             <div class="doc-title-block">
@@ -389,29 +419,19 @@ export class PrintService {
               ${(vehiculeImmat && vehiculeImmat !== 'Lui-même' && vehiculeImmat !== 'Aucun') ? `
               <tr>
                 <td class="label">Immatriculation :</td>
-                <td class="value">${vehiculeImmat}</td>
+                <td class="value" style="font-size: 14px; font-weight: 700; font-family: monospace;">${vehiculeImmat}</td>
               </tr>
               ` : ''}
             </table>
 
-            <!-- Section 3: Accompagnateurs -->
-            <div class="section-title">Accompagnateurs</div>
-            <table class="info-table">
-              ${details.employeeName ? `
-              <tr>
-                <td class="label">Accompagnateur Principal :</td>
-                <td class="value">${details.employeeName}</td>
-              </tr>
-              ` : ''}
-              ${buildAccompagnateursSection()}
-            </table>
+            ${buildAccompagnateursSection()}
 
             <!-- Section 3: Détails du Déplacement -->
             <div class="section-title">Détails du Déplacement</div>
             <table class="info-table">
               <tr>
-                <td class="label">Destination :</td>
-                <td class="value">${details.destination}</td>
+                <td class="label">Destination(s) :</td>
+                <td class="value">${details.destination}${details.autresDestinations && details.autresDestinations.length > 0 ? ', ' + details.autresDestinations.join(', ') : ''}</td>
               </tr>
               <tr>
                 <td class="label">Objet de la Mission :</td>
@@ -424,22 +444,16 @@ export class PrintService {
             <div class="period-row">
               <div class="period-col">
                 <span class="period-label">Départ prévu :</span>
-                <span class="period-value">${details.dateDebut} à ${details.heureDepart}</span>
+                <span class="period-value">${details.dateDebut}${details.heureDepart ? ' à ' + details.heureDepart : ''}</span>
               </div>
+              ${(details.dateFin || details.heureRetour) ? `
               <div class="period-divider"></div>
               <div class="period-col">
                 <span class="period-label">Retour prévu :</span>
-                <span class="period-value">${details.dateFin} à ${details.heureRetour}</span>
+                <span class="period-value">${details.dateFin || ''}${details.heureRetour ? (details.dateFin ? ' à ' : '') + details.heureRetour : ''}</span>
               </div>
+              ` : ''}
             </div>
-            ${details.notes ? `
-            <table class="info-table" style="margin-top: 4px;">
-              <tr>
-                <td class="label">Notes / Instructions :</td>
-                <td class="value">${details.notes}</td>
-              </tr>
-            </table>
-            ` : ''}
 
             <!-- Signatures - Manager Only -->
             <div class="signatures-container">

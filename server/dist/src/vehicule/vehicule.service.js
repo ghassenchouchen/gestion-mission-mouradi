@@ -38,7 +38,12 @@ let VehiculeService = class VehiculeService {
         if (existing) {
             throw new common_1.ConflictException(`Un véhicule avec l'immatriculation ${data.immatriculation} existe déjà`);
         }
-        return this.prisma.vehicule.create({ data });
+        return this.prisma.vehicule.create({
+            data: {
+                ...data,
+                modele: data.modele || '',
+            },
+        });
     }
     async update(id, data) {
         await this.findOne(id);

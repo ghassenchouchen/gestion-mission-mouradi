@@ -10,13 +10,13 @@ export class UtilisateurController {
   constructor(private readonly utilisateurService: UtilisateurService) {}
 
   @Get()
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN')
   findAll() {
     return this.utilisateurService.findAll();
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.utilisateurService.findOne(id);
   }

@@ -10,25 +10,25 @@ export class VehiculeController {
   constructor(private readonly vehiculeService: VehiculeService) {}
 
   @Get()
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findAll() {
     return this.vehiculeService.findAll();
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.vehiculeService.findOne(id);
   }
 
   @Post()
-  @Roles('ADMIN')
-  create(@Body() body: { immatriculation: string; marque: string; modele: string; type: string }) {
+  @Roles('ADMIN', 'USER')
+  create(@Body() body: { immatriculation: string; marque: string; modele?: string; type: string }) {
     return this.vehiculeService.create(body);
   }
 
   @Put(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: {
@@ -43,7 +43,7 @@ export class VehiculeController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.vehiculeService.remove(id);
   }

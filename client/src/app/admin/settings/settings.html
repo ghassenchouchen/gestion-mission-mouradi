@@ -35,7 +35,7 @@
             <iconify-icon icon="lucide:users"></iconify-icon>
             Employés
           </button>
-          <button class="tab-btn" [class.active]="activeTab === 'utilisateurs'" (click)="switchTab('utilisateurs')">
+          <button class="tab-btn" *ngIf="isAdmin" [class.active]="activeTab === 'utilisateurs'" (click)="switchTab('utilisateurs')">
             <iconify-icon icon="lucide:shield-alert"></iconify-icon>
             Utilisateurs
           </button>
@@ -121,7 +121,7 @@
               <tbody>
                 <tr *ngFor="let item of vehicules">
                   <td><span class="mono-field">{{ item.immatriculation }}</span></td>
-                  <td style="font-weight: 500;">{{ item.marque }} {{ item.modele }}</td>
+                  <td style="font-weight: 500;">{{ item.marque }}{{ (item.modele && !item.marque.includes(item.modele)) ? ' ' + item.modele : '' }}</td>
                   <td>{{ item.type }}</td>
                   <td>
                     <span class="badge" [ngClass]="item.disponible ? 'badge-active' : 'badge-inactive'">
@@ -236,9 +236,8 @@
                   <td><span class="mono-field">{{ item.email }}</span></td>
                   <td style="font-weight: 500;">{{ item.prenom }} {{ item.nom }}</td>
                   <td>
-                    <span class="badge" [ngClass]="item.role === 'ADMIN' ? 'badge-active' : 'badge-inactive'"
-                      style="background: rgba(212, 168, 83, 0.1); color: #d4a853; border: 1px solid rgba(212, 168, 83, 0.2);">
-                      {{ item.role === 'ADMIN' ? 'Administrateur' : 'Ressources Humaines (RH)' }}
+                    <span class="badge" [ngClass]="item.role === 'ADMIN' ? 'badge-active' : (item.role === 'USER' ? 'badge-pending' : 'badge-inactive')">
+                      {{ getRoleLabel(item.role) }}
                     </span>
                   </td>
                   <td style="text-align: right;">
@@ -273,16 +272,16 @@
       <!-- Chauffeurs Fields -->
       <div *ngIf="activeTab === 'chauffeurs'">
         <div class="form-group">
-          <label>Matricule (MLE) <span style="color:#8a92a8; font-weight:400;">(Optionnel)</span></label>
-          <input type="text" class="form-control" placeholder="Ex: 1045" [(ngModel)]="formData.mle" />
-        </div>
-        <div class="form-group">
           <label>Prénom <span style="color:#e74c3c;">*</span></label>
           <input type="text" class="form-control" placeholder="Ex: Slim" [(ngModel)]="formData.prenom" />
         </div>
         <div class="form-group">
           <label>Nom <span style="color:#e74c3c;">*</span></label>
           <input type="text" class="form-control" placeholder="Ex: Ben Ali" [(ngModel)]="formData.nom" />
+        </div>
+        <div class="form-group">
+          <label>Matricule (MLE) <span style="color:#8a92a8; font-weight:400;">(Optionnel)</span></label>
+          <input type="text" class="form-control" placeholder="Ex: 1045" [(ngModel)]="formData.mle" />
         </div>
         <div class="form-group">
           <label>Téléphone <span style="color:#8a92a8; font-weight:400;">(Optionnel)</span></label>
@@ -305,12 +304,8 @@
             [(ngModel)]="formData.immatriculation" />
         </div>
         <div class="form-group">
-          <label>Marque</label>
-          <input type="text" class="form-control" placeholder="Ex: Ford" [(ngModel)]="formData.marque" />
-        </div>
-        <div class="form-group">
-          <label>Modèle</label>
-          <input type="text" class="form-control" placeholder="Ex: Transit" [(ngModel)]="formData.modele" />
+          <label>Marque & Modèle</label>
+          <input type="text" class="form-control" placeholder="Ex: Ford Transit" [(ngModel)]="formData.marque" />
         </div>
         <div class="form-group">
           <label>Type de véhicule</label>
@@ -364,16 +359,16 @@
       <!-- Employés Fields -->
       <div *ngIf="activeTab === 'employes'">
         <div class="form-group">
-          <label>Matricule (MLE)</label>
-          <input type="text" class="form-control" placeholder="Ex: 8971" [(ngModel)]="formData.mle" />
-        </div>
-        <div class="form-group">
           <label>Prénom <span style="color: #e74c3c;">*</span></label>
           <input type="text" class="form-control" placeholder="Ex: Fatma" [(ngModel)]="formData.prenom" />
         </div>
         <div class="form-group">
           <label>Nom <span style="color: #e74c3c;">*</span></label>
           <input type="text" class="form-control" placeholder="Ex: Kallel" [(ngModel)]="formData.nom" />
+        </div>
+        <div class="form-group">
+          <label>Matricule (MLE)</label>
+          <input type="text" class="form-control" placeholder="Ex: 8971" [(ngModel)]="formData.mle" />
         </div>
         <div class="form-group">
           <label>Fonction</label>
@@ -418,6 +413,7 @@
           <label>Rôle</label>
           <select class="form-control" [(ngModel)]="formData.role">
             <option value="ADMIN">Administrateur</option>
+            <option value="USER">Utilisateur</option>
             <option value="HR">Ressources Humaines (RH)</option>
           </select>
         </div>

@@ -98,6 +98,40 @@ let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
         }
     }
     async create(userId, dto) {
+        if (!dto.destinationId) {
+            throw new common_1.BadRequestException("La destination est obligatoire.");
+        }
+        const destExists = await this.prisma.destination.findUnique({ where: { id: dto.destinationId } });
+        if (!destExists) {
+            throw new common_1.BadRequestException("La destination sélectionnée est introuvable ou invalide.");
+        }
+        if (!dto.chauffeurId) {
+            throw new common_1.BadRequestException("Le chauffeur est obligatoire.");
+        }
+        const chaufExists = await this.prisma.chauffeur.findUnique({ where: { id: dto.chauffeurId } });
+        if (!chaufExists) {
+            throw new common_1.BadRequestException("Le chauffeur sélectionné est introuvable ou invalide.");
+        }
+        if (!dto.vehiculeId) {
+            throw new common_1.BadRequestException("Le véhicule est obligatoire.");
+        }
+        const vehicExists = await this.prisma.vehicule.findUnique({ where: { id: dto.vehiculeId } });
+        if (!vehicExists) {
+            throw new common_1.BadRequestException("Le véhicule sélectionné est introuvable ou invalide.");
+        }
+        if (!dto.objetMissionId) {
+            throw new common_1.BadRequestException("L'objet de la mission est obligatoire.");
+        }
+        const objExists = await this.prisma.objetMission.findUnique({ where: { id: dto.objetMissionId } });
+        if (!objExists) {
+            throw new common_1.BadRequestException("L'objet de mission sélectionné est introuvable ou invalide.");
+        }
+        if (dto.employeId) {
+            const empExists = await this.prisma.employe.findUnique({ where: { id: dto.employeId } });
+            if (!empExists) {
+                throw new common_1.BadRequestException("L'accompagnateur principal sélectionné est introuvable.");
+            }
+        }
         const statut = dto.statut || 'PLANIFIE';
         return this.prisma.$transaction(async (tx) => {
             const year = new Date().getFullYear();
@@ -148,6 +182,14 @@ let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
                     }))
                 });
             }
+            if (dto.autresDestinations && dto.autresDestinations.length > 0) {
+                await tx.destinationMission.createMany({
+                    data: dto.autresDestinations.map(destId => ({
+                        ordreMissionId: order.id,
+                        destinationId: destId
+                    }))
+                });
+            }
             if (statut === 'PLANIFIE' || statut === 'EN_COURS') {
                 const chauffeur = await tx.chauffeur.findUnique({ where: { id: dto.chauffeurId } });
                 if (!chauffeur || !chauffeur.disponible) {
@@ -178,11 +220,16 @@ let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
                 vehicule: true,
                 objetMission: true,
                 creePar: {
-                    select: { id: true, email: true, nom: true, prenom: true }
+                    select: { id: true, email: true, nom: true, prenom: true, role: true }
                 },
                 accompagnateurs: {
                     include: {
                         employe: true
+                    }
+                },
+                destinationsMission: {
+                    include: {
+                        destination: true
                     }
                 }
             },
@@ -201,11 +248,16 @@ let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
                 vehicule: true,
                 objetMission: true,
                 creePar: {
-                    select: { id: true, email: true, nom: true, prenom: true }
+                    select: { id: true, email: true, nom: true, prenom: true, role: true }
                 },
                 accompagnateurs: {
                     include: {
                         employe: true
+                    }
+                },
+                destinationsMission: {
+                    include: {
+                        destination: true
                     }
                 }
             }
@@ -223,9 +275,10 @@ let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
             if (!current) {
                 throw new common_1.NotFoundException(`Ordre de mission #${id} introuvable`);
             }
-            if (current.statut === 'EN_COURS' || current.statut === 'TERMINE') {
+            if (current.statut === 'TERMINE') {
                 const detailsModified = dto.employeId !== undefined ||
                     dto.destinationId !== undefined ||
+                    dto.autresDestinations !== undefined ||
                     dto.chauffeurId !== undefined ||
                     dto.vehiculeId !== undefined ||
                     dto.objetMissionId !== undefined ||
@@ -235,9 +288,10 @@ let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
                     dto.heureRetour !== undefined ||
                     dto.itineraire !== undefined ||
                     dto.fraisParticipation !== undefined ||
-                    dto.fraisMission !== undefined;
+                    dto.fraisMission !== undefined ||
+                    dto.accompagnateurs !== undefined;
                 if (detailsModified) {
-                    throw new common_1.ConflictException("Impossible de modifier les détails d'une mission en cours ou terminée.");
+                    throw new common_1.ConflictException("Impossible de modifier les détails d'une mission terminée.");
                 }
             }
             const data = {};
@@ -254,11 +308,11 @@ let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
             if (dto.dateDebut !== undefined)
                 data.dateDebut = new Date(dto.dateDebut);
             if (dto.dateFin !== undefined)
-                data.dateFin = new Date(dto.dateFin);
+                data.dateFin = dto.dateFin ? new Date(dto.dateFin) : null;
             if (dto.heureDepart !== undefined)
                 data.heureDepart = dto.heureDepart;
             if (dto.heureRetour !== undefined)
-                data.heureRetour = dto.heureRetour;
+                data.heureRetour = dto.heureRetour || null;
             if (dto.itineraire !== undefined)
                 data.itineraire = dto.itineraire;
             if (dto.fraisParticipation !== undefined)
@@ -277,6 +331,32 @@ let OrdreMissionService = OrdreMissionService_1 = class OrdreMissionService {
                 where: { id },
                 data
             });
+            if (dto.accompagnateurs !== undefined) {
+                await tx.accompagnateur.deleteMany({
+                    where: { ordreMissionId: id }
+                });
+                if (dto.accompagnateurs.length > 0) {
+                    await tx.accompagnateur.createMany({
+                        data: dto.accompagnateurs.map(empId => ({
+                            ordreMissionId: id,
+                            employeId: empId
+                        }))
+                    });
+                }
+            }
+            if (dto.autresDestinations !== undefined) {
+                await tx.destinationMission.deleteMany({
+                    where: { ordreMissionId: id }
+                });
+                if (dto.autresDestinations.length > 0) {
+                    await tx.destinationMission.createMany({
+                        data: dto.autresDestinations.map(destId => ({
+                            ordreMissionId: id,
+                            destinationId: destId
+                        }))
+                    });
+                }
+            }
             const oldStatut = current.statut;
             const newStatut = dto.statut !== undefined ? dto.statut : current.statut;
             const wasOldActive = oldStatut === 'PLANIFIE' || oldStatut === 'EN_COURS';

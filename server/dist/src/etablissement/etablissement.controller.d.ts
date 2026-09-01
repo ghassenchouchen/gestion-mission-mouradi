@@ -3,33 +3,33 @@ export declare class EtablissementController {
     private readonly service;
     constructor(service: EtablissementService);
     findAll(): Promise<{
+        id: number;
         code: string;
         nom: string;
         ville: string;
         adresse: string | null;
         actif: boolean;
         createdAt: Date;
-        id: number;
     }[]>;
     findOne(id: number): Promise<{
         chauffeurs: {
-            nom: string;
             id: number;
+            nom: string;
             prenom: string;
             disponible: boolean;
             mle: string | null;
-            telephone: string | null;
             vehiculeParDefautId: number | null;
+            telephone: string | null;
             etablissementId: number | null;
         }[];
     } & {
+        id: number;
         code: string;
         nom: string;
         ville: string;
         adresse: string | null;
         actif: boolean;
         createdAt: Date;
-        id: number;
     }>;
     create(body: {
         code: string;
@@ -38,13 +38,13 @@ export declare class EtablissementController {
         adresse?: string;
         actif?: boolean;
     }): Promise<{
+        id: number;
         code: string;
         nom: string;
         ville: string;
         adresse: string | null;
         actif: boolean;
         createdAt: Date;
-        id: number;
     }>;
     update(id: number, body: {
         code?: string;
@@ -53,21 +53,21 @@ export declare class EtablissementController {
         adresse?: string;
         actif?: boolean;
     }): Promise<{
+        id: number;
         code: string;
         nom: string;
         ville: string;
         adresse: string | null;
         actif: boolean;
         createdAt: Date;
-        id: number;
     }>;
     remove(id: number): Promise<{
+        id: number;
         code: string;
         nom: string;
         ville: string;
         adresse: string | null;
         actif: boolean;
         createdAt: Date;
-        id: number;
     }>;
 }

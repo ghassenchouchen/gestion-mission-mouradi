@@ -23,7 +23,7 @@ interface Mission {
   imports: [CommonModule, FormsModule, Sidebar],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './missions.html',
-  styleUrl: '../../admin/missions/missions.css' // Reusing missions list CSS directly
+  styleUrl: '../../admin/missions/missions.css' 
 })
 export class HrMissionsList implements OnInit {
   private ordreMissionService = inject(OrdreMissionService);
@@ -254,7 +254,6 @@ export class HrMissionsList implements OnInit {
   // Modals state
   isDetailModalOpen = false;
   selectedMission: Mission | null = null;
-
   viewDetails(ref: string) {
     const m = this.missions.find(x => x.reference === ref);
     if (!m) return;

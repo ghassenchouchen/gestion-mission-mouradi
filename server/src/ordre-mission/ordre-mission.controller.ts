@@ -11,12 +11,13 @@ export class OrdreMissionController {
   constructor(private readonly service: OrdreMissionService) {}
 
   @Post()
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   create(
     @CurrentUser() user: any,
     @Body() body: {
       employeId?: number;
       destinationId: number;
+      autresDestinations?: number[];
       chauffeurId: number;
       vehiculeId: number;
       objetMissionId: number;
@@ -36,24 +37,25 @@ export class OrdreMissionController {
   }
 
   @Get()
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findAll() {
     return this.service.findAll();
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findOne(id);
   }
 
   @Put(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: {
       employeId?: number;
       destinationId?: number;
+      autresDestinations?: number[];
       chauffeurId?: number;
       vehiculeId?: number;
       objetMissionId?: number;
@@ -75,7 +77,7 @@ export class OrdreMissionController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
   }

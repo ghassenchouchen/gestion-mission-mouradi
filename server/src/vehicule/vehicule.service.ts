@@ -21,7 +21,7 @@ export class VehiculeService {
     return vehicule;
   }
 
-  async create(data: { immatriculation: string; marque: string; modele: string; type: string }) {
+  async create(data: { immatriculation: string; marque: string; modele?: string; type: string }) {
     const existing = await this.prisma.vehicule.findUnique({
       where: { immatriculation: data.immatriculation },
     });
@@ -30,7 +30,12 @@ export class VehiculeService {
         `Un véhicule avec l'immatriculation ${data.immatriculation} existe déjà`,
       );
     }
-    return this.prisma.vehicule.create({ data });
+    return this.prisma.vehicule.create({
+      data: {
+        ...data,
+        modele: data.modele || '',
+      },
+    });
   }
 
   async update(

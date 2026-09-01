@@ -3,34 +3,34 @@ export declare class DestinationController {
     private readonly destinationService;
     constructor(destinationService: DestinationService);
     findAll(): Promise<{
+        id: number;
         nom: string;
         ville: string;
-        id: number;
     }[]>;
     findOne(id: number): Promise<{
+        id: number;
         nom: string;
         ville: string;
-        id: number;
     }>;
     create(body: {
         nom: string;
         ville: string;
     }): Promise<{
+        id: number;
         nom: string;
         ville: string;
-        id: number;
     }>;
     update(id: number, body: {
         nom?: string;
         ville?: string;
     }): Promise<{
+        id: number;
         nom: string;
         ville: string;
-        id: number;
     }>;
     remove(id: number): Promise<{
+        id: number;
         nom: string;
         ville: string;
-        id: number;
     }>;
 }

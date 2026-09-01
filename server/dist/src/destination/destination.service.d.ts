@@ -3,34 +3,34 @@ export declare class DestinationService {
     private prisma;
     constructor(prisma: PrismaService);
     findAll(): Promise<{
+        id: number;
         nom: string;
         ville: string;
-        id: number;
     }[]>;
     findOne(id: number): Promise<{
+        id: number;
         nom: string;
         ville: string;
-        id: number;
     }>;
     create(data: {
         nom: string;
         ville: string;
     }): Promise<{
+        id: number;
         nom: string;
         ville: string;
-        id: number;
     }>;
     update(id: number, data: {
         nom?: string;
         ville?: string;
     }): Promise<{
+        id: number;
         nom: string;
         ville: string;
-        id: number;
     }>;
     remove(id: number): Promise<{
+        id: number;
         nom: string;
         ville: string;
-        id: number;
     }>;
 }

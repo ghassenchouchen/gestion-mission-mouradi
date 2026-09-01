@@ -43,11 +43,11 @@
                 <label>Chauffeur <span>*</span></label>
                 <select class="form-control" [(ngModel)]="chauffeurId" name="chauffeurId" (change)="onChauffeurChange()">
                   <option [ngValue]="null">Choisir un chauffeur...</option>
-                  <option *ngFor="let ch of chauffeurs" [ngValue]="ch.id">
-                    {{ ch.prenom }} {{ ch.nom }}
-                  </option>
                   <option [ngValue]="'NEW'" style="font-weight: 600; color: #d4a853;">
                     + Ajouter un nouveau chauffeur...
+                  </option>
+                  <option *ngFor="let ch of chauffeurs" [ngValue]="ch.id">
+                    {{ ch.prenom }} {{ ch.nom }}
                   </option>
                 </select>
               </div>
@@ -63,16 +63,16 @@
               <h3 style="font-size: 14px; font-weight: 600; color: #1a1f36; margin-bottom: 12px;">Ajouter un nouveau chauffeur</h3>
               <div class="form-grid grid-2" style="margin-bottom: 16px;">
                 <div class="form-group">
-                  <label>Matricule (MLE) - 4 chiffres</label>
-                  <input type="text" class="form-control" placeholder="Ex: 1045" [(ngModel)]="newChauffeurMle" name="newChauffeurMle" maxlength="4" />
-                </div>
-                <div class="form-group">
                   <label>Prénom <span>*</span></label>
                   <input type="text" class="form-control" placeholder="Ex: Ali" [(ngModel)]="newChauffeurPrenom" name="newChauffeurPrenom" />
                 </div>
                 <div class="form-group">
                   <label>Nom <span>*</span></label>
                   <input type="text" class="form-control" placeholder="Ex: Ben Salem" [(ngModel)]="newChauffeurNom" name="newChauffeurNom" />
+                </div>
+                <div class="form-group">
+                  <label>Matricule (MLE) - 4 chiffres</label>
+                  <input type="text" class="form-control" placeholder="Ex: 1045" [(ngModel)]="newChauffeurMle" name="newChauffeurMle" maxlength="4" />
                 </div>
                 <div class="form-group">
                   <label>Numéro de Téléphone</label>
@@ -102,11 +102,11 @@
                 <label>Véhicule <span>*</span></label>
                 <select class="form-control" [(ngModel)]="vehiculeId" name="vehiculeId" (change)="onVehiculeChange()">
                   <option [ngValue]="null">Choisir un véhicule...</option>
-                  <option *ngFor="let veh of vehicules" [ngValue]="veh.id">
-                    {{ veh.marque }} {{ veh.modele }} {{ (veh.immatriculation !== 'Lui-même' && veh.immatriculation !== 'Aucun') ? '(' + veh.immatriculation + ')' : '' }}
-                  </option>
                   <option [ngValue]="'NEW'" style="font-weight: 600; color: #d4a853;">
                     + Ajouter un nouveau véhicule...
+                  </option>
+                  <option *ngFor="let veh of vehicules" [ngValue]="veh.id">
+                    {{ veh.marque }}{{ (veh.modele && !veh.marque.includes(veh.modele)) ? ' ' + veh.modele : '' }} {{ (veh.immatriculation !== 'Lui-même' && veh.immatriculation !== 'Aucun') ? '(' + veh.immatriculation + ')' : '' }}
                   </option>
                 </select>
               </div>
@@ -128,12 +128,8 @@
                   <input type="text" class="form-control" placeholder="Ex: 215 TUN 4321" [(ngModel)]="newVehiculeImmatriculation" name="newVehiculeImmatriculation" />
                 </div>
                 <div class="form-group">
-                  <label>Marque <span>*</span></label>
-                  <input type="text" class="form-control" placeholder="Ex: Ford" [(ngModel)]="newVehiculeMarque" name="newVehiculeMarque" />
-                </div>
-                <div class="form-group">
-                  <label>Modèle <span>*</span></label>
-                  <input type="text" class="form-control" placeholder="Ex: Transit" [(ngModel)]="newVehiculeModele" name="newVehiculeModele" />
+                  <label>Marque & Modèle <span>*</span></label>
+                  <input type="text" class="form-control" placeholder="Ex: Ford Transit" [(ngModel)]="newVehiculeMarque" name="newVehiculeMarque" />
                 </div>
                 <div class="form-group">
                   <label>Type de Véhicule</label>
@@ -162,57 +158,43 @@
               <p class="section-desc"> Ajoutez le demandeur principal et d'autres accompagnateurs si nécessaire</p>
             </div>
 
-            <div class="form-grid grid-2">
-              <div class="form-group">
+            <div class="form-grid grid-2" style="margin-top: 10px;">
+              <div class="form-group" style="grid-column: span 2;">
                 <label>Accompagnateur Principal</label>
                 <select class="form-control" [(ngModel)]="selectedEmployeId" name="selectedEmployeId" (change)="onEmployeChange()">
-                  <option [ngValue]="null">Aucun (Déplacement chauffeur seul)...</option>
-                  <option *ngFor="let emp of employes" [ngValue]="emp.id">
-                    {{ emp.prenom }} {{ emp.nom }}
-                  </option>
+                  <option [ngValue]="null">Aucun (Déplacement Chauffeur Seul)</option>
                   <option [ngValue]="'NEW'" style="font-weight: 600; color: #d4a853;">
                     + Ajouter un nouvel accompagnateur...
                   </option>
+                  <option *ngFor="let emp of employes" [ngValue]="emp.id">
+                    {{ emp.prenom }} {{ emp.nom }}
+                  </option>
                 </select>
-              </div>
-
-              <div class="form-group">
-                <label>Fonction</label>
-                <input type="text" class="form-control" [value]="selectedEmploye ? selectedEmploye.fonction : ''"
-                  disabled placeholder="Auto-rempli..." />
               </div>
             </div>
 
             <!-- Inline Employee Creation Form -->
-            <div class="form-card" *ngIf="showAddEmployeForm" style="margin-top: 20px; margin-bottom: 20px; background: #f8f9fc; border: 1px dashed #d0d4e0; padding: 20px; border-radius: 8px; box-shadow: none;">
-              <h3 style="font-size: 14px; font-weight: 600; color: #1a1f36; margin-bottom: 12px;">Ajouter un nouvel accompagnateur</h3>
-              <div class="form-grid grid-2" style="margin-bottom: 16px;">
-                <div class="form-group">
-                  <label>Matricule (MLE) - 4 chiffres</label>
-                  <input type="text" class="form-control" placeholder="Ex: 8971" [(ngModel)]="newEmployeMle" name="newEmployeMle" maxlength="4" />
+            <div class="form-card" *ngIf="showAddEmployeForm" style="margin-top: 14px; margin-bottom: 14px; background: #f8f9fc; border: 1px dashed #d0d4e0; padding: 14px 18px; border-radius: 8px; box-shadow: none;">
+              <h3 style="font-size: 13px; font-weight: 600; color: #1a1f36; margin-bottom: 10px;">Ajouter un nouvel accompagnateur</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 12px; margin-bottom: 4px;">Prénom <span style="color: #e74c3c;">*</span></label>
+                  <input type="text" class="form-control" placeholder="Ex: Slim" [(ngModel)]="newEmployePrenom" name="newEmployePrenom" style="height: 36px; font-size: 13px;" />
                 </div>
-                <div class="form-group">
-                  <label>Prénom <span style="color: #e74c3c;">*</span></label>
-                  <input type="text" class="form-control" placeholder="Ex: Slim" [(ngModel)]="newEmployePrenom" name="newEmployePrenom" />
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 12px; margin-bottom: 4px;">Nom <span style="color: #e74c3c;">*</span></label>
+                  <input type="text" class="form-control" placeholder="Ex: Gharbi" [(ngModel)]="newEmployeNom" name="newEmployeNom" style="height: 36px; font-size: 13px;" />
                 </div>
-                <div class="form-group">
-                  <label>Nom <span style="color: #e74c3c;">*</span></label>
-                  <input type="text" class="form-control" placeholder="Ex: Gharbi" [(ngModel)]="newEmployeNom" name="newEmployeNom" />
-                </div>
-                <div class="form-group">
-                  <label>Fonction</label>
-                  <input type="text" class="form-control" placeholder="Ex: Auditeur Senior" [(ngModel)]="newEmployeFonction" name="newEmployeFonction" />
-                </div>
-                <div class="form-group" style="grid-column: span 2;">
-                  <label>Établissement <span style="color: #e74c3c;">*</span></label>
-                  <select class="form-control" [(ngModel)]="newEmployeHotel" name="newEmployeHotel">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 12px; margin-bottom: 4px;">Établissement <span style="color: #e74c3c;">*</span></label>
+                  <select class="form-control" [(ngModel)]="newEmployeHotel" name="newEmployeHotel" style="height: 36px; font-size: 13px;">
                     <option *ngFor="let hotel of hotelsList" [value]="hotel">{{ hotel }}</option>
                   </select>
                 </div>
               </div>
-              <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button type="button" class="btn-ghost" (click)="showAddEmployeForm = false" style="padding: 8px 16px; font-size: 13px; height: 32px;">Annuler</button>
-                <button type="button" class="btn-primary" (click)="saveNewEmploye()" style="padding: 8px 16px; font-size: 13px; height: 32px;">Enregistrer</button>
+              <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn-ghost" (click)="showAddEmployeForm = false" style="padding: 6px 14px; font-size: 12.5px; height: 30px;">Annuler</button>
+                <button type="button" class="btn-primary" (click)="saveNewEmploye()" style="padding: 6px 14px; font-size: 12.5px; height: 30px;">Enregistrer</button>
               </div>
             </div>
 
@@ -259,36 +241,71 @@
                 <iconify-icon icon="lucide:map-pin"></iconify-icon>
                 4. Détails de la Mission
               </h2>
-              <p class="section-desc">Spécifiez la destination et l'objet du déplacement</p>
+              <p class="section-desc">Spécifiez les destinations et l'objet du déplacement</p>
             </div>
 
             <div class="form-grid grid-2">
               <!-- Destination with inline creation -->
               <div class="form-group">
-                <label>Destination (Hôtel / Lieu) <span>*</span></label>
+                <label>Destination Principale (Hôtel / Lieu) <span>*</span></label>
                 <select class="form-control" [(ngModel)]="destinationId" name="destinationId" (change)="onDestinationChange()">
                   <option [ngValue]="null">Choisir une destination...</option>
-                  <option *ngFor="let dest of destinations" [ngValue]="dest.id">
-                    {{ dest.nom }} ({{ dest.ville }})
-                  </option>
                   <option [ngValue]="'NEW'" style="font-weight: 600; color: #d4a853;">
                     + Ajouter une nouvelle destination...
+                  </option>
+                  <option *ngFor="let dest of destinations" [ngValue]="dest.id">
+                    {{ dest.nom }} ({{ dest.ville }})
                   </option>
                 </select>
               </div>
 
               <!-- Objet de la Mission -->
               <div class="form-group">
-                <label>Objet de la Mission</label>
+                <label>Objet de la Mission <span>*</span></label>
                 <select class="form-control" [(ngModel)]="objetId" name="objetId" (change)="onObjetChange()">
                   <option [ngValue]="null">Choisir un objet...</option>
-                  <option *ngFor="let obj of objets" [ngValue]="obj.id">
-                    {{ obj.libelle }}
-                  </option>
                   <option [ngValue]="'NEW'" style="font-weight: 600; color: #d4a853;">
                     + Ajouter un nouvel objet de mission...
                   </option>
+                  <option *ngFor="let obj of objets" [ngValue]="obj.id">
+                    {{ obj.libelle }}
+                  </option>
                 </select>
+              </div>
+            </div>
+
+            <!-- Autres Destinations (Multiple Destinations Support) -->
+            <div class="form-grid grid-2" style="margin-top: 16px;">
+              <div class="form-group">
+                <label>Autres destinations (Optionnel)</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <select class="form-control" [(ngModel)]="selectedAutreDestinationId" name="selectedAutreDestinationId" style="flex: 1;">
+                    <option value="" disabled selected>Choisir une autre destination...</option>
+                    <option *ngFor="let dest of availableAutresDestinations" [value]="dest.id">
+                      {{ dest.nom }} ({{ dest.ville }})
+                    </option>
+                  </select>
+                  <button type="button" class="btn-primary" (click)="addAutreDestination()" [disabled]="!selectedAutreDestinationId" style="padding: 10px 14px; font-size: 13px; height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: none;">
+                    <iconify-icon icon="lucide:plus"></iconify-icon>
+                    Ajouter
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Liste des autres destinations</label>
+                <div class="chips-container" style="min-height: 38px; display: flex; align-items: center;">
+                  <span *ngIf="autresDestinations.length === 0"
+                    style="font-size: 12.5px; color: #8a92a8; font-style: italic;">
+                    Aucune autre destination sélectionnée.
+                  </span>
+                  <div class="chip" *ngFor="let dest of autresDestinations">
+                    <span>{{ dest.nom }} ({{ dest.ville }})</span>
+                    <button type="button" class="chip-remove" (click)="removeAutreDestination(dest.id)">
+                      <iconify-icon icon="lucide:x" style="font-size: 14px;"></iconify-icon>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -351,12 +368,12 @@
               </div>
 
               <div class="form-group">
-                <label>Date de retour <span>*</span></label>
+                <label>Date de retour</label>
                 <input type="date" class="form-control" [(ngModel)]="dateFin" name="dateFin" />
               </div>
 
               <div class="form-group">
-                <label>Heure de retour <span>*</span></label>
+                <label>Heure de retour</label>
                 <input type="time" class="form-control" [(ngModel)]="heureRetour" name="heureRetour" />
               </div>
             </div>

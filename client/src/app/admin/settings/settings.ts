@@ -16,7 +16,7 @@ import {
   UtilisateurService,
   Utilisateur
 } from '../../services/api.service';
-
+import { AuthService } from '../../services/auth.service';
 import { ActivatedRoute } from '@angular/router';
 import { ToastService } from '../../services/toast.service';
 
@@ -35,9 +35,14 @@ export class Settings implements OnInit {
   private destinationService = inject(DestinationService);
   private employeService = inject(EmployeService);
   private utilisateurService = inject(UtilisateurService);
+  private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
   private toastService = inject(ToastService);
+
+  get isAdmin(): boolean {
+    return this.authService.getUserRole() === 'ADMIN';
+  }
 
   activeTab: 'chauffeurs' | 'vehicules' | 'objets' | 'destinations' | 'employes' | 'utilisateurs' = 'chauffeurs';
 
@@ -113,10 +118,12 @@ export class Settings implements OnInit {
       next: (data) => { this.employes = data; this.cdr.markForCheck(); },
       error: (err) => console.error('Error loading employees:', err)
     });
-    this.utilisateurService.getAll().subscribe({
-      next: (data) => { this.utilisateurs = data; this.cdr.markForCheck(); },
-      error: (err) => console.error('Error loading users:', err)
-    });
+    if (this.isAdmin) {
+      this.utilisateurService.getAll().subscribe({
+        next: (data) => { this.utilisateurs = data; this.cdr.markForCheck(); },
+        error: (err) => console.error('Error loading users:', err)
+      });
+    }
   }
 
   switchTab(tab: 'chauffeurs' | 'vehicules' | 'objets' | 'destinations' | 'employes' | 'utilisateurs') {
@@ -179,8 +186,8 @@ export class Settings implements OnInit {
         this.toastService.warning('Veuillez remplir le nom et le prénom du chauffeur.');
         return;
       }
-      if (this.activeTab === 'vehicules' && (!this.formData.immatriculation || !this.formData.marque || !this.formData.modele)) {
-        this.toastService.warning('Veuillez remplir tous les champs obligatoires.');
+      if (this.activeTab === 'vehicules' && (!this.formData.immatriculation || !this.formData.marque)) {
+        this.toastService.warning('Veuillez remplir l\'immatriculation et la marque & modèle.');
         return;
       }
       if (this.activeTab === 'objets' && !this.formData.libelle) {
@@ -253,6 +260,15 @@ export class Settings implements OnInit {
       case 'employes': return this.employeService;
       case 'utilisateurs': return this.utilisateurService;
       default: return null;
+    }
+  }
+
+  getRoleLabel(role: string): string {
+    switch (role) {
+      case 'ADMIN': return 'Administrateur';
+      case 'USER': return 'Utilisateur';
+      case 'HR': return 'Ressources Humaines (RH)';
+      default: return role || '';
     }
   }
 }

@@ -118,7 +118,10 @@ export class MissionsList implements OnInit {
     const emp = m.employe;
     const empName = emp ? `${emp.prenom} ${emp.nom}` : 'N/A';
     const initials = emp ? `${emp.prenom[0]}${emp.nom[0]}`.toUpperCase() : 'N/A';
-    const dest = m.destination ? m.destination.nom : 'N/A';
+    
+    const primaryDest = m.destination ? m.destination.nom : 'N/A';
+    const autresDests = m.destinationsMission?.map(dm => dm.destination.nom).join(', ');
+    const dest = autresDests ? `${primaryDest}, ${autresDests}` : primaryDest;
 
     const start = new Date(m.dateDebut);
     const end = m.dateFin ? new Date(m.dateFin) : null;
@@ -254,8 +257,8 @@ export class MissionsList implements OnInit {
   editMission(ref: string) {
     const m = this.missions.find(x => x.reference === ref);
     if (!m) return;
-    if (m.status === 'EN_COURS' || m.status === 'TERMINE') {
-      this.toastService.warning("Impossible de modifier les détails d'une mission en cours ou terminée.");
+    if (m.status === 'TERMINE') {
+      this.toastService.warning("Impossible de modifier les détails d'une mission terminée.");
       return;
     }
     
@@ -278,6 +281,22 @@ export class MissionsList implements OnInit {
     this.isEditModalOpen = true;
   }
 
+  deleteMission(id: number) {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cet ordre de mission ?")) {
+      this.ordreMissionService.delete(id).subscribe({
+        next: () => {
+          this.toastService.success('Ordre de mission supprimé avec succès.');
+          this.closeDetailsModal();
+          this.loadMissions();
+        },
+        error: (err) => {
+          console.error('Error deleting mission:', err);
+          this.toastService.error(err.error?.message || 'Erreur lors de la suppression de l\'ordre de mission.');
+        }
+      });
+    }
+  }
+
   closeEditModal() {
     this.isEditModalOpen = false;
     this.formData = {};
@@ -287,13 +306,11 @@ export class MissionsList implements OnInit {
   saveEdit() {
     if (!this.selectedMission) return;
     
-    // Valider la cohérence des dates
     if (this.formData.dateFin && this.formData.dateFin < this.formData.dateDebut) {
       this.toastService.warning("La date de retour ne peut pas être avant la date de départ.");
       return;
     }
 
-    // Valider la cohérence des heures si le voyage se fait le même jour
     if ((!this.formData.dateFin || this.formData.dateDebut === this.formData.dateFin) && this.formData.heureRetour) {
       const [hDep, mDep] = this.formData.heureDepart.split(':').map(Number);
       const [hRet, mRet] = this.formData.heureRetour.split(':').map(Number);
@@ -350,7 +367,8 @@ export class MissionsList implements OnInit {
       mle: raw.employe?.mle || '',
       fonction: raw.employe?.fonction || '',
       hotelAffectation: raw.employe?.hotelAffectation || '',
-      destination: m.destination,
+      destination: raw.destination ? `${raw.destination.nom} (${raw.destination.ville})` : '',
+      autresDestinations: raw.destinationsMission?.map(dm => `${dm.destination.nom} (${dm.destination.ville})`) || [],
       dateDebut: raw.dateDebut ? new Date(raw.dateDebut).toLocaleDateString('fr-FR') : '',
       dateFin: raw.dateFin ? new Date(raw.dateFin).toLocaleDateString('fr-FR') : '',
       heureDepart: raw.heureDepart || '08:00',
@@ -361,10 +379,10 @@ export class MissionsList implements OnInit {
       chauffeur: raw.chauffeur ? `${raw.chauffeur.prenom} ${raw.chauffeur.nom} (${raw.chauffeur.mle})` : '',
       accompagnateurs: raw.accompagnateurs?.map(a => `${a.employe.prenom} ${a.employe.nom} (${a.employe.mle})`) || [],
       notes: raw.notes || '',
-      dateEmission: dateEmission
+      dateEmission: dateEmission,
+      creeParRole: raw.creePar?.role || 'USER'
     };
 
     this.printService.printOrdreMission(printDetails);
   }
 }
-

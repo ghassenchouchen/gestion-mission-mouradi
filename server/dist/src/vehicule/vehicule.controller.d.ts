@@ -21,7 +21,7 @@ export declare class VehiculeController {
     create(body: {
         immatriculation: string;
         marque: string;
-        modele: string;
+        modele?: string;
         type: string;
     }): Promise<{
         id: number;

@@ -4,8 +4,8 @@
   </div>
 
   <div class="sidebar-nav">
-    <!-- Admin Navigation -->
-    <ng-container *ngIf="currentUser()?.role === 'ADMIN'">
+    <!-- Admin & User Navigation -->
+    <ng-container *ngIf="currentUser()?.role === 'ADMIN' || currentUser()?.role === 'USER'">
       <a routerLink="/admin/dashboard" class="nav-item" [class.active]="activeItem === 'dashboard'">
         <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
         Tableau de bord

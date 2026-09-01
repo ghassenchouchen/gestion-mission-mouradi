@@ -8,7 +8,7 @@ export interface User {
   email: string;
   nom: string;
   prenom: string;
-  role: 'ADMIN' | 'HR';
+  role: 'ADMIN' | 'HR' | 'USER';
 }
 
 export interface LoginResponse {
@@ -52,7 +52,7 @@ export class AuthService {
     return !!this.getToken();
   }
 
-  getUserRole(): 'ADMIN' | 'HR' | null {
+  getUserRole(): 'ADMIN' | 'HR' | 'USER' | null {
     const user = this.currentUser();
     return user ? user.role : null;
   }

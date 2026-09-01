@@ -27,7 +27,13 @@ export class Sidebar {
 
   userRole = computed(() => {
     const user = this.currentUser();
-    return user ? (user.role === 'ADMIN' ? 'Administrateur' : 'Ressources Humaines') : '';
+    if (!user) return '';
+    switch (user.role) {
+      case 'ADMIN': return 'Administrateur';
+      case 'USER': return 'Utilisateur';
+      case 'HR': return 'Ressources Humaines';
+      default: return '';
+    }
   });
 
   initials = computed(() => {

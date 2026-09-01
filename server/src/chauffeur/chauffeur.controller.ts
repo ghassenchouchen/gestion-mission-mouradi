@@ -10,25 +10,26 @@ export class ChauffeurController {
   constructor(private readonly chauffeurService: ChauffeurService) {}
 
   @Get()
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findAll() {
     return this.chauffeurService.findAll();
   }
 
+  
   @Get(':id')
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.chauffeurService.findOne(id);
   }
 
   @Post()
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   create(@Body() body: { mle: string; nom: string; prenom: string; telephone?: string; vehiculeParDefautId?: number; etablissementId?: number }) {
     return this.chauffeurService.create(body);
   }
 
   @Put(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { mle?: string; nom?: string; prenom?: string; telephone?: string; disponible?: boolean; vehiculeParDefautId?: number | null; etablissementId?: number | null },
@@ -37,7 +38,7 @@ export class ChauffeurController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.chauffeurService.remove(id);
   }

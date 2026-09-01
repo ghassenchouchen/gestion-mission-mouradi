@@ -2,14 +2,12 @@
   <app-sidebar activeItem="missions"></app-sidebar>
 
   <div class="main-wrap">
-    <!-- Topbar -->
     <header class="topbar">
       <div class="topbar-title-block">
         <h1>Missions</h1>
         <p> Suivi des déplacements</p>
       </div>
       <div class="topbar-actions">
-        <!-- Excel Export Button -->
         <button class="btn-primary" style="background-color: #16a34a; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);" (click)="exportExcel()">
           <iconify-icon icon="lucide:file-spreadsheet"></iconify-icon>
           Exporter Excel
@@ -17,9 +15,7 @@
       </div>
     </header>
 
-    <!-- Main Content -->
     <main class="main-content">
-      <!-- Filter Bar -->
       <section class="filter-card animate-in">
         <div class="filter-grid">
           <div class="filter-group">
@@ -175,20 +171,12 @@
       </div>
       <div class="modal-body">
         <h4 class="details-section-title">
-          <iconify-icon icon="lucide:user"></iconify-icon> Collaborateur
+          <iconify-icon icon="lucide:user"></iconify-icon> Accompagnateur
         </h4>
         <div class="details-grid">
           <div class="details-item">
-            <span class="details-label">Employé</span>
+            <span class="details-label">Accompagnateur</span>
             <span class="details-value">{{ selectedMission.employeeName }}</span>
-          </div>
-          <div class="details-item">
-            <span class="details-label">Matricule (MLE)</span>
-            <span class="details-value">{{ selectedMission.raw.employe?.mle }}</span>
-          </div>
-          <div class="details-item">
-            <span class="details-label">Fonction</span>
-            <span class="details-value">{{ selectedMission.raw.employe?.fonction }}</span>
           </div>
           <div class="details-item">
             <span class="details-label">Établissement</span>
@@ -204,14 +192,15 @@
             <span class="details-label">Chauffeur</span>
             <span class="details-value">
               {{ selectedMission.raw.chauffeur ? selectedMission.raw.chauffeur.prenom + ' ' + selectedMission.raw.chauffeur.nom : 'Aucun' }}
-              <span *ngIf="selectedMission.raw.chauffeur?.mle" style="color:#8a92a8; font-size:11px;">({{ selectedMission.raw.chauffeur?.mle }})</span>
             </span>
           </div>
           <div class="details-item">
             <span class="details-label">Véhicule</span>
             <span class="details-value">
               {{ selectedMission.raw.vehicule ? selectedMission.raw.vehicule.marque + ' ' + selectedMission.raw.vehicule.modele : 'Aucun' }}
-              <span *ngIf="selectedMission.raw.vehicule?.immatriculation" style="color:#8a92a8; font-size:11px;">({{ selectedMission.raw.vehicule?.immatriculation }})</span>
+              <div *ngIf="selectedMission.raw.vehicule?.immatriculation" style="color:#0f172a; font-size:14px; font-weight:700; font-family:monospace; margin-top:4px; background:#f1f5f9; padding:2px 8px; border-radius:4px; display:inline-block; border:1px solid #cbd5e1;">
+                {{ selectedMission.raw.vehicule?.immatriculation }}
+              </div>
             </span>
           </div>
         </div>
@@ -244,28 +233,10 @@
         <div class="details-grid" *ngIf="selectedMission.raw.accompagnateurs && selectedMission.raw.accompagnateurs.length > 0">
           <div class="details-item span-2">
             <span class="details-value">
-              <span *ngFor="let acc of selectedMission.raw.accompagnateurs" style="display:inline-block; margin-right:8px; background:#f0f2f7; padding:4px 8px; border-radius:4px; font-size:12px;">
-                {{ acc.employe.prenom }} {{ acc.employe.nom }} ({{ acc.employe.mle }})
+              <span *ngFor="let acc of selectedMission.raw.accompagnateurs" style="display:inline-block; margin-right:8px; background:#f0f2f7; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:500;">
+                {{ acc.employe.prenom }} {{ acc.employe.nom }}
               </span>
             </span>
-          </div>
-        </div>
-
-        <h4 class="details-section-title">
-          <iconify-icon icon="lucide:dollar-sign"></iconify-icon> Frais & Notes
-        </h4>
-        <div class="details-grid">
-          <div class="details-item">
-            <span class="details-label">Frais de participation</span>
-            <span class="details-value">{{ selectedMission.raw.fraisParticipation }} TND</span>
-          </div>
-          <div class="details-item">
-            <span class="details-label">Frais de mission</span>
-            <span class="details-value">{{ selectedMission.raw.fraisMission }} TND</span>
-          </div>
-          <div class="details-item span-2" *ngIf="selectedMission.raw.notes">
-            <span class="details-label">Remarques / Notes</span>
-            <span class="details-value notes-box">{{ selectedMission.raw.notes }}</span>
           </div>
         </div>
       </div>

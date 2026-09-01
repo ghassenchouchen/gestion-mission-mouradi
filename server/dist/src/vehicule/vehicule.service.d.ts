@@ -21,7 +21,7 @@ export declare class VehiculeService {
     create(data: {
         immatriculation: string;
         marque: string;
-        modele: string;
+        modele?: string;
         type: string;
     }): Promise<{
         id: number;

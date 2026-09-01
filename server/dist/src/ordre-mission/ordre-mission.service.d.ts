@@ -13,6 +13,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
     create(userId: number, dto: {
         employeId?: number;
         destinationId: number;
+        autresDestinations?: number[];
         chauffeurId: number;
         vehiculeId: number;
         objetMissionId: number;
@@ -27,9 +28,15 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         accompagnateurs?: number[];
         statut?: string;
     }): Promise<{
-        createdAt: Date;
         id: number;
+        createdAt: Date;
         reference: string;
+        employeId: number | null;
+        destinationId: number;
+        chauffeurId: number;
+        vehiculeId: number;
+        objetMissionId: number;
+        creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
         heureDepart: string;
@@ -41,12 +48,6 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         fraisParticipation: number | null;
         fraisMission: number | null;
         notes: string | null;
-        employeId: number | null;
-        destinationId: number;
-        chauffeurId: number;
-        vehiculeId: number;
-        objetMissionId: number;
-        creeParId: number;
     }>;
     findAll(): Promise<({
         vehicule: {
@@ -58,45 +59,57 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
             disponible: boolean;
         };
         chauffeur: {
-            nom: string;
             id: number;
+            nom: string;
             prenom: string;
             disponible: boolean;
             mle: string | null;
-            telephone: string | null;
             vehiculeParDefautId: number | null;
+            telephone: string | null;
             etablissementId: number | null;
         };
         objetMission: {
-            actif: boolean;
             id: number;
+            actif: boolean;
             libelle: string;
         };
+        destinationsMission: ({
+            destination: {
+                id: number;
+                nom: string;
+                ville: string;
+            };
+        } & {
+            id: number;
+            destinationId: number;
+            ordreMissionId: number;
+        })[];
         destination: {
+            id: number;
             nom: string;
             ville: string;
-            id: number;
         };
         employe: {
+            id: number;
             nom: string;
             actif: boolean;
-            id: number;
             prenom: string;
             mle: string | null;
             fonction: string | null;
             hotelAffectation: string;
         } | null;
         creePar: {
-            nom: string | null;
             id: number;
+            nom: string | null;
             email: string;
             prenom: string | null;
+            role: string;
         };
         accompagnateurs: ({
             employe: {
+                id: number;
                 nom: string;
                 actif: boolean;
-                id: number;
                 prenom: string;
                 mle: string | null;
                 fonction: string | null;
@@ -108,9 +121,15 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
             ordreMissionId: number;
         })[];
     } & {
-        createdAt: Date;
         id: number;
+        createdAt: Date;
         reference: string;
+        employeId: number | null;
+        destinationId: number;
+        chauffeurId: number;
+        vehiculeId: number;
+        objetMissionId: number;
+        creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
         heureDepart: string;
@@ -122,12 +141,6 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         fraisParticipation: number | null;
         fraisMission: number | null;
         notes: string | null;
-        employeId: number | null;
-        destinationId: number;
-        chauffeurId: number;
-        vehiculeId: number;
-        objetMissionId: number;
-        creeParId: number;
     })[]>;
     findOne(id: number): Promise<{
         vehicule: {
@@ -139,45 +152,57 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
             disponible: boolean;
         };
         chauffeur: {
-            nom: string;
             id: number;
+            nom: string;
             prenom: string;
             disponible: boolean;
             mle: string | null;
-            telephone: string | null;
             vehiculeParDefautId: number | null;
+            telephone: string | null;
             etablissementId: number | null;
         };
         objetMission: {
-            actif: boolean;
             id: number;
+            actif: boolean;
             libelle: string;
         };
+        destinationsMission: ({
+            destination: {
+                id: number;
+                nom: string;
+                ville: string;
+            };
+        } & {
+            id: number;
+            destinationId: number;
+            ordreMissionId: number;
+        })[];
         destination: {
+            id: number;
             nom: string;
             ville: string;
-            id: number;
         };
         employe: {
+            id: number;
             nom: string;
             actif: boolean;
-            id: number;
             prenom: string;
             mle: string | null;
             fonction: string | null;
             hotelAffectation: string;
         } | null;
         creePar: {
-            nom: string | null;
             id: number;
+            nom: string | null;
             email: string;
             prenom: string | null;
+            role: string;
         };
         accompagnateurs: ({
             employe: {
+                id: number;
                 nom: string;
                 actif: boolean;
-                id: number;
                 prenom: string;
                 mle: string | null;
                 fonction: string | null;
@@ -189,9 +214,15 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
             ordreMissionId: number;
         })[];
     } & {
-        createdAt: Date;
         id: number;
+        createdAt: Date;
         reference: string;
+        employeId: number | null;
+        destinationId: number;
+        chauffeurId: number;
+        vehiculeId: number;
+        objetMissionId: number;
+        creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
         heureDepart: string;
@@ -203,16 +234,11 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         fraisParticipation: number | null;
         fraisMission: number | null;
         notes: string | null;
-        employeId: number | null;
-        destinationId: number;
-        chauffeurId: number;
-        vehiculeId: number;
-        objetMissionId: number;
-        creeParId: number;
     }>;
     update(id: number, dto: {
         employeId?: number;
         destinationId?: number;
+        autresDestinations?: number[];
         chauffeurId?: number;
         vehiculeId?: number;
         objetMissionId?: number;
@@ -227,10 +253,17 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         statut?: string;
         departReel?: string;
         retourReel?: string;
+        accompagnateurs?: number[];
     }): Promise<{
-        createdAt: Date;
         id: number;
+        createdAt: Date;
         reference: string;
+        employeId: number | null;
+        destinationId: number;
+        chauffeurId: number;
+        vehiculeId: number;
+        objetMissionId: number;
+        creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
         heureDepart: string;
@@ -242,17 +275,17 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         fraisParticipation: number | null;
         fraisMission: number | null;
         notes: string | null;
-        employeId: number | null;
-        destinationId: number;
-        chauffeurId: number;
-        vehiculeId: number;
-        objetMissionId: number;
-        creeParId: number;
     }>;
     remove(id: number): Promise<{
-        createdAt: Date;
         id: number;
+        createdAt: Date;
         reference: string;
+        employeId: number | null;
+        destinationId: number;
+        chauffeurId: number;
+        vehiculeId: number;
+        objetMissionId: number;
+        creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
         heureDepart: string;
@@ -264,11 +297,5 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         fraisParticipation: number | null;
         fraisMission: number | null;
         notes: string | null;
-        employeId: number | null;
-        destinationId: number;
-        chauffeurId: number;
-        vehiculeId: number;
-        objetMissionId: number;
-        creeParId: number;
     }>;
 }

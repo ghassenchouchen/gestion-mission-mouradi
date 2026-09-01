@@ -10,25 +10,25 @@ export class EtablissementController {
   constructor(private readonly service: EtablissementService) {}
 
   @Get()
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findAll() {
     return this.service.findAll();
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findOne(id);
   }
 
   @Post()
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   create(@Body() body: { code: string; nom: string; ville: string; adresse?: string; actif?: boolean }) {
     return this.service.create(body);
   }
 
   @Put(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { code?: string; nom?: string; ville?: string; adresse?: string; actif?: boolean }
@@ -37,7 +37,7 @@ export class EtablissementController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
   }

@@ -4,13 +4,13 @@ export declare class ChauffeurService {
     constructor(prisma: PrismaService);
     findAll(): Promise<({
         etablissement: {
+            id: number;
             code: string;
             nom: string;
             ville: string;
             adresse: string | null;
             actif: boolean;
             createdAt: Date;
-            id: number;
         } | null;
         vehiculeParDefaut: {
             id: number;
@@ -21,24 +21,24 @@ export declare class ChauffeurService {
             disponible: boolean;
         } | null;
     } & {
-        nom: string;
         id: number;
+        nom: string;
         prenom: string;
         disponible: boolean;
         mle: string | null;
-        telephone: string | null;
         vehiculeParDefautId: number | null;
+        telephone: string | null;
         etablissementId: number | null;
     })[]>;
     findOne(id: number): Promise<{
         etablissement: {
+            id: number;
             code: string;
             nom: string;
             ville: string;
             adresse: string | null;
             actif: boolean;
             createdAt: Date;
-            id: number;
         } | null;
         vehiculeParDefaut: {
             id: number;
@@ -49,13 +49,13 @@ export declare class ChauffeurService {
             disponible: boolean;
         } | null;
     } & {
-        nom: string;
         id: number;
+        nom: string;
         prenom: string;
         disponible: boolean;
         mle: string | null;
-        telephone: string | null;
         vehiculeParDefautId: number | null;
+        telephone: string | null;
         etablissementId: number | null;
     }>;
     create(data: {
@@ -67,13 +67,13 @@ export declare class ChauffeurService {
         etablissementId?: number;
     }): Promise<{
         etablissement: {
+            id: number;
             code: string;
             nom: string;
             ville: string;
             adresse: string | null;
             actif: boolean;
             createdAt: Date;
-            id: number;
         } | null;
         vehiculeParDefaut: {
             id: number;
@@ -84,13 +84,13 @@ export declare class ChauffeurService {
             disponible: boolean;
         } | null;
     } & {
-        nom: string;
         id: number;
+        nom: string;
         prenom: string;
         disponible: boolean;
         mle: string | null;
-        telephone: string | null;
         vehiculeParDefautId: number | null;
+        telephone: string | null;
         etablissementId: number | null;
     }>;
     update(id: number, data: {
@@ -103,13 +103,13 @@ export declare class ChauffeurService {
         etablissementId?: number | null;
     }): Promise<{
         etablissement: {
+            id: number;
             code: string;
             nom: string;
             ville: string;
             adresse: string | null;
             actif: boolean;
             createdAt: Date;
-            id: number;
         } | null;
         vehiculeParDefaut: {
             id: number;
@@ -120,23 +120,23 @@ export declare class ChauffeurService {
             disponible: boolean;
         } | null;
     } & {
-        nom: string;
         id: number;
+        nom: string;
         prenom: string;
         disponible: boolean;
         mle: string | null;
-        telephone: string | null;
         vehiculeParDefautId: number | null;
+        telephone: string | null;
         etablissementId: number | null;
     }>;
     remove(id: number): Promise<{
-        nom: string;
         id: number;
+        nom: string;
         prenom: string;
         disponible: boolean;
         mle: string | null;
-        telephone: string | null;
         vehiculeParDefautId: number | null;
+        telephone: string | null;
         etablissementId: number | null;
     }>;
 }

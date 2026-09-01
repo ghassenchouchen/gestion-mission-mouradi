@@ -3,17 +3,17 @@ export declare class UtilisateurController {
     private readonly utilisateurService;
     constructor(utilisateurService: UtilisateurService);
     findAll(): Promise<{
+        id: number;
         nom: string | null;
         createdAt: Date;
-        id: number;
         email: string;
         prenom: string | null;
         role: string;
     }[]>;
     findOne(id: number): Promise<{
+        id: number;
         nom: string | null;
         createdAt: Date;
-        id: number;
         email: string;
         prenom: string | null;
         role: string;
@@ -25,9 +25,9 @@ export declare class UtilisateurController {
         prenom: string;
         role: string;
     }): Promise<{
+        id: number;
         nom: string | null;
         createdAt: Date;
-        id: number;
         email: string;
         prenom: string | null;
         role: string;
@@ -39,17 +39,17 @@ export declare class UtilisateurController {
         prenom?: string;
         role?: string;
     }): Promise<{
+        id: number;
         nom: string | null;
         createdAt: Date;
-        id: number;
         email: string;
         prenom: string | null;
         role: string;
     }>;
     remove(id: number): Promise<{
+        id: number;
         nom: string | null;
         createdAt: Date;
-        id: number;
         email: string;
         passwordHash: string;
         prenom: string | null;

@@ -68,7 +68,7 @@ let MailService = MailService_1 = class MailService {
     async sendWelcomeEmail(user) {
         const appUrl = process.env.APP_URL || 'http://192.168.70.12:4200';
         const from = process.env.SMTP_FROM || 'Direction Générale El Mouradi <noreply@elmouradi.com>';
-        const roleLabel = user.role === 'ADMIN' ? 'Administrateur' : 'Ressources Humaines (RH)';
+        const roleLabel = user.role === 'ADMIN' ? 'Administrateur' : user.role === 'HR' ? 'Ressources Humaines (RH)' : 'Utilisateur';
         const fullName = `${user.prenom || ''} ${user.nom || ''}`.trim() || user.email;
         const htmlContent = `
       <!DOCTYPE html>

@@ -211,7 +211,8 @@ export class AdminDashboard implements OnInit {
       chauffeur: raw.chauffeur ? `${raw.chauffeur.prenom} ${raw.chauffeur.nom} (${raw.chauffeur.mle})` : '',
       accompagnateurs: raw.accompagnateurs?.map(a => `${a.employe.prenom} ${a.employe.nom} (${a.employe.mle})`) || [],
       notes: raw.notes || '',
-      dateEmission: dateEmission
+      dateEmission: dateEmission,
+      creeParRole: raw.creePar?.role || 'USER'
     };
 
     this.printService.printOrdreMission(printDetails);

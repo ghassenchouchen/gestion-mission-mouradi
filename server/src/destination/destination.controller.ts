@@ -10,31 +10,31 @@ export class DestinationController {
   constructor(private readonly destinationService: DestinationService) {}
 
   @Get()
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findAll() {
     return this.destinationService.findAll();
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.destinationService.findOne(id);
   }
 
   @Post()
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   create(@Body() body: { nom: string; ville: string }) {
     return this.destinationService.create(body);
   }
 
   @Put(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   update(@Param('id', ParseIntPipe) id: number, @Body() body: { nom?: string; ville?: string }) {
     return this.destinationService.update(id, body);
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.destinationService.remove(id);
   }

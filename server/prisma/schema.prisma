@@ -73,44 +73,46 @@ model ObjetMission {
 }
 
 model Destination {
-  id       Int            @id @default(autoincrement())
-  nom      String         @unique
-  ville    String
-  missions OrdreMission[]
+  id                  Int                  @id @default(autoincrement())
+  nom                 String               @unique
+  ville               String
+  missions            OrdreMission[]
+  destinationsMission DestinationMission[]
 }
 
 model OrdreMission {
-  id                 Int              @id @default(autoincrement())
-  reference          String           @unique
+  id                 Int                  @id @default(autoincrement())
+  reference          String               @unique
   employeId          Int?
-  employe            Employe?         @relation(fields: [employeId], references: [id], onDelete: SetNull)
+  employe            Employe?             @relation(fields: [employeId], references: [id], onDelete: SetNull)
   destinationId      Int
-  destination        Destination      @relation(fields: [destinationId], references: [id], onDelete: Restrict)
+  destination        Destination          @relation(fields: [destinationId], references: [id], onDelete: Restrict)
   chauffeurId        Int
-  chauffeur          Chauffeur        @relation(fields: [chauffeurId], references: [id], onDelete: Restrict)
+  chauffeur          Chauffeur            @relation(fields: [chauffeurId], references: [id], onDelete: Restrict)
   vehiculeId         Int
-  vehicule           Vehicule         @relation(fields: [vehiculeId], references: [id], onDelete: Restrict)
+  vehicule           Vehicule             @relation(fields: [vehiculeId], references: [id], onDelete: Restrict)
   objetMissionId     Int
-  objetMission       ObjetMission     @relation(fields: [objetMissionId], references: [id], onDelete: Restrict)
+  objetMission       ObjetMission         @relation(fields: [objetMissionId], references: [id], onDelete: Restrict)
   creeParId          Int
-  creePar            Utilisateur      @relation(fields: [creeParId], references: [id], onDelete: Restrict)
+  creePar            Utilisateur          @relation(fields: [creeParId], references: [id], onDelete: Restrict)
 
   dateDebut          DateTime
   dateFin            DateTime?
-  heureDepart        String           // "HH:mm"
-  heureRetour        String?          // "HH:mm"
+  heureDepart        String               // "HH:mm"
+  heureRetour        String?              // "HH:mm"
 
   departReel         DateTime?
   retourReel         DateTime?
 
-  statut             String           // "PLANIFIE" | "EN_COURS" | "TERMINE" | "ANNULE"
+  statut             String               // "PLANIFIE" | "EN_COURS" | "TERMINE" | "ANNULE"
   itineraire         String?
-  fraisParticipation Float?           @default(0)
-  fraisMission       Float?           @default(0)
+  fraisParticipation Float?               @default(0)
+  fraisMission       Float?               @default(0)
   notes              String?
-  createdAt          DateTime         @default(now())
+  createdAt          DateTime             @default(now())
 
   accompagnateurs    Accompagnateur[]
+  destinationsMission DestinationMission[]
 }
 
 model Accompagnateur {
@@ -121,4 +123,14 @@ model Accompagnateur {
   employe        Employe      @relation(fields: [employeId], references: [id], onDelete: Restrict)
 
   @@unique([ordreMissionId, employeId])
+}
+
+model DestinationMission {
+  id             Int          @id @default(autoincrement())
+  ordreMissionId Int
+  ordreMission   OrdreMission @relation(fields: [ordreMissionId], references: [id], onDelete: Cascade)
+  destinationId  Int
+  destination    Destination  @relation(fields: [destinationId], references: [id], onDelete: Restrict)
+
+  @@unique([ordreMissionId, destinationId])
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -115,6 +115,7 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
   async create(userId: number, dto: {
     employeId?: number;
     destinationId: number;
+    autresDestinations?: number[];
     chauffeurId: number;
     vehiculeId: number;
     objetMissionId: number;
@@ -129,6 +130,46 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
     accompagnateurs?: number[]; // Employee IDs
     statut?: string; // Default: PLANIFIE
   }) {
+    // Validate foreign keys before proceeding
+    if (!dto.destinationId) {
+      throw new BadRequestException("La destination est obligatoire.");
+    }
+    const destExists = await this.prisma.destination.findUnique({ where: { id: dto.destinationId } });
+    if (!destExists) {
+      throw new BadRequestException("La destination sélectionnée est introuvable ou invalide.");
+    }
+
+    if (!dto.chauffeurId) {
+      throw new BadRequestException("Le chauffeur est obligatoire.");
+    }
+    const chaufExists = await this.prisma.chauffeur.findUnique({ where: { id: dto.chauffeurId } });
+    if (!chaufExists) {
+      throw new BadRequestException("Le chauffeur sélectionné est introuvable ou invalide.");
+    }
+
+    if (!dto.vehiculeId) {
+      throw new BadRequestException("Le véhicule est obligatoire.");
+    }
+    const vehicExists = await this.prisma.vehicule.findUnique({ where: { id: dto.vehiculeId } });
+    if (!vehicExists) {
+      throw new BadRequestException("Le véhicule sélectionné est introuvable ou invalide.");
+    }
+
+    if (!dto.objetMissionId) {
+      throw new BadRequestException("L'objet de la mission est obligatoire.");
+    }
+    const objExists = await this.prisma.objetMission.findUnique({ where: { id: dto.objetMissionId } });
+    if (!objExists) {
+      throw new BadRequestException("L'objet de mission sélectionné est introuvable ou invalide.");
+    }
+
+    if (dto.employeId) {
+      const empExists = await this.prisma.employe.findUnique({ where: { id: dto.employeId } });
+      if (!empExists) {
+        throw new BadRequestException("L'accompagnateur principal sélectionné est introuvable.");
+      }
+    }
+
     const statut = dto.statut || 'PLANIFIE';
 
     return this.prisma.$transaction(async (tx) => {
@@ -184,6 +225,15 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
         });
       }
 
+      if (dto.autresDestinations && dto.autresDestinations.length > 0) {
+        await tx.destinationMission.createMany({
+          data: dto.autresDestinations.map(destId => ({
+            ordreMissionId: order.id,
+            destinationId: destId
+          }))
+        });
+      }
+
       if (statut === 'PLANIFIE' || statut === 'EN_COURS') {
         const chauffeur = await tx.chauffeur.findUnique({ where: { id: dto.chauffeurId } });
         if (!chauffeur || !chauffeur.disponible) {
@@ -217,11 +267,16 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
         vehicule: true,
         objetMission: true,
         creePar: {
-          select: { id: true, email: true, nom: true, prenom: true }
+          select: { id: true, email: true, nom: true, prenom: true, role: true }
         },
         accompagnateurs: {
           include: {
             employe: true
+          }
+        },
+        destinationsMission: {
+          include: {
+            destination: true
           }
         }
       },
@@ -241,11 +296,16 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
         vehicule: true,
         objetMission: true,
         creePar: {
-          select: { id: true, email: true, nom: true, prenom: true }
+          select: { id: true, email: true, nom: true, prenom: true, role: true }
         },
         accompagnateurs: {
           include: {
             employe: true
+          }
+        },
+        destinationsMission: {
+          include: {
+            destination: true
           }
         }
       }
@@ -259,6 +319,7 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
   async update(id: number, dto: {
     employeId?: number;
     destinationId?: number;
+    autresDestinations?: number[];
     chauffeurId?: number;
     vehiculeId?: number;
     objetMissionId?: number;
@@ -283,10 +344,11 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
         throw new NotFoundException(`Ordre de mission #${id} introuvable`);
       }
 
-      if (current.statut === 'EN_COURS' || current.statut === 'TERMINE') {
+      if (current.statut === 'TERMINE') {
         const detailsModified =
           dto.employeId !== undefined ||
           dto.destinationId !== undefined ||
+          dto.autresDestinations !== undefined ||
           dto.chauffeurId !== undefined ||
           dto.vehiculeId !== undefined ||
           dto.objetMissionId !== undefined ||
@@ -301,7 +363,7 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
 
         if (detailsModified) {
           throw new ConflictException(
-            "Impossible de modifier les détails d'une mission en cours ou terminée.",
+            "Impossible de modifier les détails d'une mission terminée.",
           );
         }
       }
@@ -314,9 +376,9 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
       if (dto.vehiculeId !== undefined) data.vehiculeId = dto.vehiculeId;
       if (dto.objetMissionId !== undefined) data.objetMissionId = dto.objetMissionId;
       if (dto.dateDebut !== undefined) data.dateDebut = new Date(dto.dateDebut);
-      if (dto.dateFin !== undefined) data.dateFin = new Date(dto.dateFin);
+      if (dto.dateFin !== undefined) data.dateFin = dto.dateFin ? new Date(dto.dateFin) : null;
       if (dto.heureDepart !== undefined) data.heureDepart = dto.heureDepart;
-      if (dto.heureRetour !== undefined) data.heureRetour = dto.heureRetour;
+      if (dto.heureRetour !== undefined) data.heureRetour = dto.heureRetour || null;
       if (dto.itineraire !== undefined) data.itineraire = dto.itineraire;
       if (dto.fraisParticipation !== undefined) data.fraisParticipation = dto.fraisParticipation;
       if (dto.fraisMission !== undefined) data.fraisMission = dto.fraisMission;
@@ -339,6 +401,20 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
             data: dto.accompagnateurs.map(empId => ({
               ordreMissionId: id,
               employeId: empId
+            }))
+          });
+        }
+      }
+
+      if (dto.autresDestinations !== undefined) {
+        await tx.destinationMission.deleteMany({
+          where: { ordreMissionId: id }
+        });
+        if (dto.autresDestinations.length > 0) {
+          await tx.destinationMission.createMany({
+            data: dto.autresDestinations.map(destId => ({
+              ordreMissionId: id,
+              destinationId: destId
             }))
           });
         }

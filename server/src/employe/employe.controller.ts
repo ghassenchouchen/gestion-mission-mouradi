@@ -10,19 +10,19 @@ export class EmployeController {
   constructor(private readonly employeService: EmployeService) {}
 
   @Get()
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findAll() {
     return this.employeService.findAll();
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'HR')
+  @Roles('ADMIN', 'HR', 'USER')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.employeService.findOne(id);
   }
 
   @Post()
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   create(
     @Body()
     body: {
@@ -37,7 +37,7 @@ export class EmployeController {
   }
 
   @Put(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body()
@@ -54,7 +54,7 @@ export class EmployeController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'USER')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.employeService.remove(id);
   }

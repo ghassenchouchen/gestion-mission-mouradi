@@ -16,25 +16,25 @@ export const routes: Routes = [
     path: 'admin/dashboard', 
     component: AdminDashboard,
     canActivate: [authGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ADMIN', 'USER'] }
   },
   { 
     path: 'admin/nouvelle-mission', 
     component: NouvelleMission,
     canActivate: [authGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ADMIN', 'USER'] }
   },
   { 
     path: 'admin/missions', 
     component: MissionsList,
     canActivate: [authGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ADMIN', 'USER'] }
   },
   { 
     path: 'admin/settings', 
     component: Settings,
     canActivate: [authGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ADMIN', 'USER'] }
   },
   { 
     path: 'hr/dashboard', 

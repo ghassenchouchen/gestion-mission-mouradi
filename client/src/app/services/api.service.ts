@@ -42,7 +42,7 @@ export interface Vehicule {
   id: number;
   immatriculation: string;
   marque: string;
-  modele: string;
+  modele?: string;
   type: string;
   disponible: boolean;
 }
@@ -80,6 +80,7 @@ export interface OrdreMission {
   objetMissionId: number;
   objetMission?: ObjetMission;
   creeParId: number;
+  creePar?: { id: number; email: string; nom?: string; prenom?: string; role?: string };
   dateDebut: string;
   dateFin?: string | null;
   heureDepart: string;
@@ -93,6 +94,7 @@ export interface OrdreMission {
   notes?: string | null;
   createdAt: string;
   accompagnateurs?: Accompagnateur[];
+  destinationsMission?: { id?: number; destinationId?: number; destination: Destination }[];
 }
 
 
@@ -254,6 +256,7 @@ export class OrdreMissionService {
   create(data: {
     employeId?: number;
     destinationId: number;
+    autresDestinations?: number[];
     chauffeurId: number;
     vehiculeId: number;
     objetMissionId: number;
@@ -274,6 +277,7 @@ export class OrdreMissionService {
   update(id: number, data: {
     employeId?: number;
     destinationId?: number;
+    autresDestinations?: number[];
     chauffeurId?: number;
     vehiculeId?: number;
     objetMissionId?: number;
@@ -303,7 +307,7 @@ export interface Utilisateur {
   email: string;
   nom: string;
   prenom: string;
-  role: 'ADMIN' | 'HR';
+  role: 'ADMIN' | 'HR' | 'USER';
   password?: string;
 }
 

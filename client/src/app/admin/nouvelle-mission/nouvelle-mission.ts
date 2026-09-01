@@ -116,9 +116,9 @@ export class NouvelleMission implements OnInit {
   itineraire = '';
 
   dateDebut = new Date().toISOString().split('T')[0];
-  dateFin = new Date().toISOString().split('T')[0];
+  dateFin = '';
   heureDepart = '08:00';
-  heureRetour = '18:00';
+  heureRetour = '';
 
   chauffeurId: number | string | null = null;
   vehiculeId: number | string | null = null;
@@ -126,6 +126,9 @@ export class NouvelleMission implements OnInit {
 
   accompagnateurs: Employe[] = [];
   selectedAccompagnateurId = '';
+
+  autresDestinations: Destination[] = [];
+  selectedAutreDestinationId = '';
 
   notes = '';
 
@@ -158,6 +161,9 @@ export class NouvelleMission implements OnInit {
     this.objetMissionService.getAll().subscribe({
       next: (data) => {
         this.objets = data.filter(o => o.actif);
+        if (this.objets.length > 0 && !this.objetId) {
+          this.objetId = this.objets[0].id;
+        }
         this.cdr.markForCheck();
       },
       error: (err) => console.error('Error loading object missions:', err)
@@ -290,15 +296,15 @@ export class NouvelleMission implements OnInit {
 
   // Add new vehicle directly to NestJS backend database
   saveNewVehicule() {
-    if (!this.newVehiculeImmatriculation || !this.newVehiculeMarque || !this.newVehiculeModele) {
-      this.toastService.warning('Veuillez remplir l\'immatriculation, la marque et le modèle du véhicule.');
+    if (!this.newVehiculeImmatriculation || !this.newVehiculeMarque) {
+      this.toastService.warning('Veuillez remplir l\'immatriculation et la marque & modèle du véhicule.');
       return;
     }
 
     const newVeh: any = {
       immatriculation: this.newVehiculeImmatriculation,
       marque: this.newVehiculeMarque,
-      modele: this.newVehiculeModele,
+      modele: '',
       type: this.newVehiculeType,
       disponible: true
     };
@@ -507,6 +513,40 @@ export class NouvelleMission implements OnInit {
     );
   }
 
+  // Autres Destinations list logic
+  addAutreDestination() {
+    if (!this.selectedAutreDestinationId) return;
+    const destId = Number(this.selectedAutreDestinationId);
+    
+    if (this.autresDestinations.some(d => d.id === destId)) {
+      this.selectedAutreDestinationId = '';
+      return;
+    }
+
+    if (this.destinationId && Number(this.destinationId) === destId) {
+      this.toastService.warning('La destination principale ne peut pas être ré-ajoutée comme autre destination.');
+      this.selectedAutreDestinationId = '';
+      return;
+    }
+
+    const dest = this.destinations.find(d => d.id === destId);
+    if (dest) {
+      this.autresDestinations.push(dest);
+    }
+    this.selectedAutreDestinationId = '';
+  }
+
+  removeAutreDestination(destId: number) {
+    this.autresDestinations = this.autresDestinations.filter(d => d.id !== destId);
+  }
+
+  get availableAutresDestinations(): Destination[] {
+    return this.destinations.filter(d => 
+      (!this.destinationId || d.id !== Number(this.destinationId)) &&
+      !this.autresDestinations.some(ad => ad.id === d.id)
+    );
+  }
+
   printCreatedMission(res: any) {
     const emp = this.employes.find(e => e.id === Number(this.selectedEmployeId));
     const dest = this.destinations.find(d => d.id === Number(this.destinationId));
@@ -520,7 +560,8 @@ export class NouvelleMission implements OnInit {
       mle: emp ? emp.mle : '',
       fonction: emp ? emp.fonction : '',
       hotelAffectation: emp ? emp.hotelAffectation : 'Direction générale',
-      destination: dest ? dest.nom : '',
+      destination: dest ? `${dest.nom} (${dest.ville})` : '',
+      autresDestinations: this.autresDestinations.map(d => `${d.nom} (${d.ville})`),
       dateDebut: this.dateDebut.split('-').reverse().join('/'),
       dateFin: this.dateFin ? this.dateFin.split('-').reverse().join('/') : '',
       heureDepart: this.heureDepart,
@@ -539,7 +580,8 @@ export class NouvelleMission implements OnInit {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
-      })
+      }),
+      creeParRole: res.creePar?.role || 'USER'
     };
 
     this.printService.printOrdreMission(printDetails);
@@ -547,8 +589,8 @@ export class NouvelleMission implements OnInit {
 
   // Submit form
   save(printAfter: boolean = false) {
-    if (!this.destinationId || !this.dateDebut || !this.heureDepart || !this.chauffeurId || !this.vehiculeId) {
-      this.toastService.warning('Veuillez remplir tous les champs obligatoires.');
+    if (!this.destinationId || !this.dateDebut || !this.heureDepart || !this.chauffeurId || !this.vehiculeId || !this.objetId) {
+      this.toastService.warning('Veuillez remplir tous les champs obligatoires (y compris l\'objet de la mission).');
       return;
     }
 
@@ -575,9 +617,10 @@ export class NouvelleMission implements OnInit {
     const payload = {
       employeId: this.selectedEmployeId ? Number(this.selectedEmployeId) : undefined,
       destinationId: Number(this.destinationId),
+      autresDestinations: this.autresDestinations.map(d => d.id),
       chauffeurId: Number(this.chauffeurId),
       vehiculeId: Number(this.vehiculeId),
-      objetMissionId: Number(this.objetId || 1), // Optional but default to 1 if empty
+      objetMissionId: Number(this.objetId),
       dateDebut: this.dateDebut,
       dateFin: this.dateFin || undefined,
       heureDepart: this.heureDepart,
