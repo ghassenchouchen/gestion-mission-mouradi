@@ -8,7 +8,7 @@ export declare class OrdreMissionController {
         autresDestinations?: number[];
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId?: number;
         dateDebut: string;
         dateFin?: string;
         heureDepart: string;
@@ -27,7 +27,7 @@ export declare class OrdreMissionController {
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId: number | null;
         creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
@@ -64,7 +64,7 @@ export declare class OrdreMissionController {
             id: number;
             actif: boolean;
             libelle: string;
-        };
+        } | null;
         destinationsMission: ({
             destination: {
                 id: number;
@@ -120,7 +120,7 @@ export declare class OrdreMissionController {
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId: number | null;
         creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
@@ -157,7 +157,7 @@ export declare class OrdreMissionController {
             id: number;
             actif: boolean;
             libelle: string;
-        };
+        } | null;
         destinationsMission: ({
             destination: {
                 id: number;
@@ -213,7 +213,7 @@ export declare class OrdreMissionController {
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId: number | null;
         creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
@@ -254,7 +254,7 @@ export declare class OrdreMissionController {
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId: number | null;
         creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
@@ -276,7 +276,7 @@ export declare class OrdreMissionController {
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId: number | null;
         creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;

@@ -116,8 +116,16 @@ export class MissionsList implements OnInit {
 
   private mapToViewModel(m: OrdreMission): Mission {
     const emp = m.employe;
-    const empName = emp ? `${emp.prenom} ${emp.nom}` : 'N/A';
-    const initials = emp ? `${emp.prenom[0]}${emp.nom[0]}`.toUpperCase() : 'N/A';
+    let empName = 'Chauffeur seul';
+    let initials = 'CS';
+    if (emp) {
+      empName = `${emp.prenom} ${emp.nom}`;
+      initials = `${emp.prenom[0]}${emp.nom[0]}`.toUpperCase();
+    } else if (m.accompagnateurs && m.accompagnateurs.length > 0 && m.accompagnateurs[0].employe) {
+      const firstAcc = m.accompagnateurs[0].employe;
+      empName = `${firstAcc.prenom} ${firstAcc.nom}${m.accompagnateurs.length > 1 ? ` (+${m.accompagnateurs.length - 1})` : ''}`;
+      initials = `${firstAcc.prenom[0]}${firstAcc.nom[0]}`.toUpperCase();
+    }
     
     const primaryDest = m.destination ? m.destination.nom : 'N/A';
     const autresDests = m.destinationsMission?.map(dm => dm.destination.nom).join(', ');
@@ -376,11 +384,12 @@ export class MissionsList implements OnInit {
       objet: raw.objetMission?.libelle || '',
       itineraire: raw.itineraire || '',
       vehicule: raw.vehicule ? `${raw.vehicule.marque} ${raw.vehicule.modele} (${raw.vehicule.immatriculation})` : '',
-      chauffeur: raw.chauffeur ? `${raw.chauffeur.prenom} ${raw.chauffeur.nom} (${raw.chauffeur.mle})` : '',
-      accompagnateurs: raw.accompagnateurs?.map(a => `${a.employe.prenom} ${a.employe.nom} (${a.employe.mle})`) || [],
+      chauffeur: raw.chauffeur ? (raw.chauffeur.mle ? `${raw.chauffeur.prenom} ${raw.chauffeur.nom} (${raw.chauffeur.mle})` : `${raw.chauffeur.prenom} ${raw.chauffeur.nom}`) : '',
+      accompagnateurs: raw.accompagnateurs?.map(a => a.employe ? (a.employe.mle ? `${a.employe.prenom} ${a.employe.nom} (${a.employe.mle})` : `${a.employe.prenom} ${a.employe.nom}`) : '') || [],
       notes: raw.notes || '',
       dateEmission: dateEmission,
-      creeParRole: raw.creePar?.role || 'USER'
+      creeParRole: raw.creePar?.role || 'USER',
+      createdTime: new Date(raw.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
     };
 
     this.printService.printOrdreMission(printDetails);

@@ -62,8 +62,16 @@ export class HrMissionsList implements OnInit {
 
   private mapToViewModel(m: OrdreMission): Mission {
     const emp = m.employe;
-    const empName = emp ? `${emp.prenom} ${emp.nom}` : 'N/A';
-    const initials = emp ? `${emp.prenom[0]}${emp.nom[0]}`.toUpperCase() : 'N/A';
+    let empName = 'Chauffeur seul';
+    let initials = 'CS';
+    if (emp) {
+      empName = `${emp.prenom} ${emp.nom}`;
+      initials = `${emp.prenom[0]}${emp.nom[0]}`.toUpperCase();
+    } else if (m.accompagnateurs && m.accompagnateurs.length > 0 && m.accompagnateurs[0].employe) {
+      const firstAcc = m.accompagnateurs[0].employe;
+      empName = `${firstAcc.prenom} ${firstAcc.nom}${m.accompagnateurs.length > 1 ? ` (+${m.accompagnateurs.length - 1})` : ''}`;
+      initials = `${firstAcc.prenom[0]}${firstAcc.nom[0]}`.toUpperCase();
+    }
     const dest = m.destination ? m.destination.nom : 'N/A';
 
     const start = new Date(m.dateDebut);

@@ -9,7 +9,7 @@
         <p>Création et affectation d'un ordre de mission</p>
       </div>
       <div class="topbar-actions">
-        <a routerLink="/admin/dashboard" class="btn-ghost">
+        <a routerLink="/dashboard" class="btn-ghost">
           <iconify-icon icon="lucide:arrow-left"></iconify-icon>
           Retour au tableau de bord
         </a>
@@ -202,18 +202,12 @@
             <div class="form-grid grid-2" style="margin-top: 20px;">
               <div class="form-group">
                 <label>Autres accompagnateurs</label>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                  <select class="form-control" [(ngModel)]="selectedAccompagnateurId" name="selectedAccompagnateurId" style="flex: 1;">
-                    <option value="" disabled selected>Choisir un accompagnateur...</option>
-                    <option *ngFor="let emp of availableAccompagnateurs" [value]="emp.id">
-                      {{ emp.prenom }} {{ emp.nom }}
-                    </option>
-                  </select>
-                  <button type="button" class="btn-primary" (click)="addAccompagnateur()" [disabled]="!selectedAccompagnateurId" style="padding: 10px 14px; font-size: 13px; height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: none;">
-                    <iconify-icon icon="lucide:plus"></iconify-icon>
-                    Ajouter
-                  </button>
-                </div>
+                <select class="form-control" [ngModel]="selectedAccompagnateurId" (ngModelChange)="onAccompagnateurSelect($event)" name="selectedAccompagnateurId">
+                  <option [value]="''">Choisir un autre accompagnateur...</option>
+                  <option *ngFor="let emp of availableAccompagnateurs" [value]="emp.id">
+                    {{ emp.prenom }} {{ emp.nom }}
+                  </option>
+                </select>
               </div>
 
               <div class="form-group">
@@ -261,9 +255,9 @@
 
               <!-- Objet de la Mission -->
               <div class="form-group">
-                <label>Objet de la Mission <span>*</span></label>
+                <label>Objet de la Mission</label>
                 <select class="form-control" [(ngModel)]="objetId" name="objetId" (change)="onObjetChange()">
-                  <option [ngValue]="null">Choisir un objet...</option>
+                  <option [ngValue]="null">Choisir un objet (Optionnel)...</option>
                   <option [ngValue]="'NEW'" style="font-weight: 600; color: #d4a853;">
                     + Ajouter un nouvel objet de mission...
                   </option>
@@ -277,19 +271,13 @@
             <!-- Autres Destinations (Multiple Destinations Support) -->
             <div class="form-grid grid-2" style="margin-top: 16px;">
               <div class="form-group">
-                <label>Autres destinations (Optionnel)</label>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                  <select class="form-control" [(ngModel)]="selectedAutreDestinationId" name="selectedAutreDestinationId" style="flex: 1;">
-                    <option value="" disabled selected>Choisir une autre destination...</option>
-                    <option *ngFor="let dest of availableAutresDestinations" [value]="dest.id">
-                      {{ dest.nom }} ({{ dest.ville }})
-                    </option>
-                  </select>
-                  <button type="button" class="btn-primary" (click)="addAutreDestination()" [disabled]="!selectedAutreDestinationId" style="padding: 10px 14px; font-size: 13px; height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: none;">
-                    <iconify-icon icon="lucide:plus"></iconify-icon>
-                    Ajouter
-                  </button>
-                </div>
+                <label>Autres destinations</label>
+                <select class="form-control" [(ngModel)]="selectedAutreDestinationId" (ngModelChange)="onAutreDestinationSelect($event)" name="selectedAutreDestinationId">
+                  <option [value]="''">Choisir une autre destination...</option>
+                  <option *ngFor="let dest of availableAutresDestinations" [value]="dest.id">
+                    {{ dest.nom }} ({{ dest.ville }})
+                  </option>
+                </select>
               </div>
 
               <div class="form-group">
@@ -387,7 +375,7 @@
 
           <!-- Form Actions -->
           <div class="form-actions">
-            <a routerLink="/admin/dashboard" class="btn-ghost">
+            <a routerLink="/dashboard" class="btn-ghost">
               Annuler
             </a>
             <button type="button" class="btn-secondary" [disabled]="isSubmitting" (click)="save(true)">

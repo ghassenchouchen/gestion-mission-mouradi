@@ -171,16 +171,25 @@
       </div>
       <div class="modal-body">
         <h4 class="details-section-title">
-          <iconify-icon icon="lucide:user"></iconify-icon> Accompagnateur
+          <iconify-icon icon="lucide:users"></iconify-icon> Accompagnateur(s)
         </h4>
         <div class="details-grid">
           <div class="details-item">
-            <span class="details-label">Accompagnateur</span>
-            <span class="details-value">{{ selectedMission.employeeName }}</span>
+            <span class="details-label">Accompagnateur Principal</span>
+            <span class="details-value">{{ selectedMission.employeeName !== 'N/A' ? selectedMission.employeeName : 'Aucun (Chauffeur seul)' }}</span>
           </div>
           <div class="details-item">
             <span class="details-label">Établissement</span>
-            <span class="details-value">{{ selectedMission.raw.employe?.hotelAffectation }}</span>
+            <span class="details-value">{{ selectedMission.raw.employe?.hotelAffectation || 'Direction générale' }}</span>
+          </div>
+          <div class="details-item span-2" *ngIf="selectedMission.raw.accompagnateurs && selectedMission.raw.accompagnateurs.length > 0">
+            <span class="details-label">Autres accompagnateurs ({{ selectedMission.raw.accompagnateurs.length }})</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px;">
+              <span *ngFor="let acc of selectedMission.raw.accompagnateurs" style="display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 6px; font-size: 12.5px; font-weight: 600; color: #1e293b;">
+                <iconify-icon icon="lucide:user" style="font-size: 13px; color: #64748b;"></iconify-icon>
+                {{ acc.employe ? (acc.employe.prenom + ' ' + acc.employe.nom) : 'Accompagnateur' }}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -227,18 +236,7 @@
           </div>
         </div>
 
-        <h4 class="details-section-title" *ngIf="selectedMission.raw.accompagnateurs && selectedMission.raw.accompagnateurs.length > 0">
-          <iconify-icon icon="lucide:users"></iconify-icon> Co-accompagnateurs
-        </h4>
-        <div class="details-grid" *ngIf="selectedMission.raw.accompagnateurs && selectedMission.raw.accompagnateurs.length > 0">
-          <div class="details-item span-2">
-            <span class="details-value">
-              <span *ngFor="let acc of selectedMission.raw.accompagnateurs" style="display:inline-block; margin-right:8px; background:#f0f2f7; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:500;">
-                {{ acc.employe.prenom }} {{ acc.employe.nom }}
-              </span>
-            </span>
-          </div>
-        </div>
+
       </div>
       <div class="modal-footer">
         <button class="btn-ghost" (click)="closeDetailsModal()">Fermer</button>

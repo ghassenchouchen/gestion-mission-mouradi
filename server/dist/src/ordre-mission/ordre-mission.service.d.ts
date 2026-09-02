@@ -16,7 +16,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         autresDestinations?: number[];
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId?: number;
         dateDebut: string;
         dateFin?: string;
         heureDepart: string;
@@ -35,7 +35,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId: number | null;
         creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
@@ -72,7 +72,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
             id: number;
             actif: boolean;
             libelle: string;
-        };
+        } | null;
         destinationsMission: ({
             destination: {
                 id: number;
@@ -128,7 +128,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId: number | null;
         creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
@@ -165,7 +165,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
             id: number;
             actif: boolean;
             libelle: string;
-        };
+        } | null;
         destinationsMission: ({
             destination: {
                 id: number;
@@ -221,7 +221,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId: number | null;
         creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
@@ -262,7 +262,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId: number | null;
         creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;
@@ -284,7 +284,7 @@ export declare class OrdreMissionService implements OnModuleInit, OnModuleDestro
         destinationId: number;
         chauffeurId: number;
         vehiculeId: number;
-        objetMissionId: number;
+        objetMissionId: number | null;
         creeParId: number;
         dateDebut: Date;
         dateFin: Date | null;

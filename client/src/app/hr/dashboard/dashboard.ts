@@ -91,8 +91,16 @@ export class HrDashboard implements OnInit {
         this.todayMissions = missions
           .filter(m => m.dateDebut.substring(0, 10) === todayStr && (m.statut === 'PLANIFIE' || m.statut === 'EN_COURS'))
           .map(m => {
-            const empName = m.employe ? `${m.employe.prenom} ${m.employe.nom}` : 'N/A';
-            const initials = m.employe ? `${m.employe.prenom[0]}${m.employe.nom[0]}`.toUpperCase() : 'N/A';
+            let empName = 'Chauffeur seul';
+            let initials = 'CS';
+            if (m.employe) {
+              empName = `${m.employe.prenom} ${m.employe.nom}`;
+              initials = `${m.employe.prenom[0]}${m.employe.nom[0]}`.toUpperCase();
+            } else if (m.accompagnateurs && m.accompagnateurs.length > 0 && m.accompagnateurs[0].employe) {
+              const firstAcc = m.accompagnateurs[0].employe;
+              empName = `${firstAcc.prenom} ${firstAcc.nom}${m.accompagnateurs.length > 1 ? ` (+${m.accompagnateurs.length - 1})` : ''}`;
+              initials = `${firstAcc.prenom[0]}${firstAcc.nom[0]}`.toUpperCase();
+            }
             return {
               reference: m.reference,
               employeeName: empName,

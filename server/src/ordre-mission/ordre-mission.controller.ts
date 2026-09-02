@@ -20,7 +20,7 @@ export class OrdreMissionController {
       autresDestinations?: number[];
       chauffeurId: number;
       vehiculeId: number;
-      objetMissionId: number;
+      objetMissionId?: number;
       dateDebut: string;
       dateFin?: string;
       heureDepart: string;

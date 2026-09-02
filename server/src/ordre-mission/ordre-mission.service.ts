@@ -118,7 +118,7 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
     autresDestinations?: number[];
     chauffeurId: number;
     vehiculeId: number;
-    objetMissionId: number;
+    objetMissionId?: number;
     dateDebut: string;
     dateFin?: string;
     heureDepart: string;
@@ -155,12 +155,11 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
       throw new BadRequestException("Le véhicule sélectionné est introuvable ou invalide.");
     }
 
-    if (!dto.objetMissionId) {
-      throw new BadRequestException("L'objet de la mission est obligatoire.");
-    }
-    const objExists = await this.prisma.objetMission.findUnique({ where: { id: dto.objetMissionId } });
-    if (!objExists) {
-      throw new BadRequestException("L'objet de mission sélectionné est introuvable ou invalide.");
+    if (dto.objetMissionId) {
+      const objExists = await this.prisma.objetMission.findUnique({ where: { id: dto.objetMissionId } });
+      if (!objExists) {
+        throw new BadRequestException("L'objet de mission sélectionné est introuvable ou invalide.");
+      }
     }
 
     if (dto.employeId) {
@@ -202,7 +201,7 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
           destinationId: dto.destinationId,
           chauffeurId: dto.chauffeurId,
           vehiculeId: dto.vehiculeId,
-          objetMissionId: dto.objetMissionId,
+          objetMissionId: dto.objetMissionId || null,
           creeParId: userId,
           dateDebut: new Date(dto.dateDebut),
           dateFin: dto.dateFin ? new Date(dto.dateFin) : null,
@@ -504,19 +503,28 @@ export class OrdreMissionService implements OnModuleInit, OnModuleDestroy {
         throw new NotFoundException(`Ordre de mission #${id} introuvable`);
       }
 
-      // If the deleted mission was active (PLANIFIE or EN_COURS), release the chauffeur and vehicle first
-      if (current.statut === 'PLANIFIE' || current.statut === 'EN_COURS') {
-        await tx.chauffeur.update({
-          where: { id: current.chauffeurId },
-          data: { disponible: true }
-        });
-        await tx.vehicule.update({
-          where: { id: current.vehiculeId },
-          data: { disponible: true }
-        });
+      if (current.statut === 'TERMINE') {
+        throw new BadRequestException("Impossible de supprimer une mission terminée.");
       }
 
-      // Cascade deletes the Accompagnateurs due to schema configuration
+      // Release driver and vehicle
+      await tx.chauffeur.update({
+        where: { id: current.chauffeurId },
+        data: { disponible: true }
+      });
+      await tx.vehicule.update({
+        where: { id: current.vehiculeId },
+        data: { disponible: true }
+      });
+
+      // Explicitly delete join tables
+      await tx.accompagnateur.deleteMany({
+        where: { ordreMissionId: id }
+      });
+      await tx.destinationMission.deleteMany({
+        where: { ordreMissionId: id }
+      });
+
       return tx.ordreMission.delete({
         where: { id }
       });

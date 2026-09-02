@@ -44,7 +44,7 @@ export class Login {
         this.cdr.markForCheck();
         // Redirect based on user role
         if (response.user.role === 'ADMIN' || response.user.role === 'USER') {
-          this.router.navigate(['/admin']);
+          this.router.navigate(['/dashboard']);
         } else if (response.user.role === 'HR') {
           this.router.navigate(['/hr/suivi-chauffeurs']);
         } else {

@@ -9,7 +9,7 @@
         <p>Suivi en temps réel de l'état des missions et ressources</p>
       </div>
       <div class="topbar-actions">
-        <a routerLink="/admin/nouvelle-mission" class="btn-primary">
+        <a routerLink="/nouvelle-mission" class="btn-primary">
           <iconify-icon icon="lucide:plus"></iconify-icon>
           Nouvelle Mission
         </a>
@@ -41,7 +41,7 @@
             <p class="section-sub">Aperçu rapide des missions récemment affectées</p>
           </div>
           <div class="table-actions">
-            <a routerLink="/admin/missions" class="btn-ghost">
+            <a routerLink="/missions" class="btn-ghost">
               Voir tout
             </a>
           </div>
@@ -66,8 +66,11 @@
                 </td>
                 <td>
                   <div class="emp-avatar-container">
-                    <div class="emp-avatar">{{ mission.employeeInitials }}</div>
-                    <span class="emp-name">{{ mission.employeeName }}</span>
+                    <div class="emp-avatar" [style.background]="mission.employeeName === 'Chauffeur seul' ? '#f1f5f9' : ''" [style.color]="mission.employeeName === 'Chauffeur seul' ? '#64748b' : ''" [style.border]="mission.employeeName === 'Chauffeur seul' ? '1px dashed #cbd5e1' : ''">
+                      <iconify-icon *ngIf="mission.employeeName === 'Chauffeur seul'" icon="lucide:user-x" style="font-size: 14px;"></iconify-icon>
+                      <span *ngIf="mission.employeeName !== 'Chauffeur seul'">{{ mission.employeeInitials }}</span>
+                    </div>
+                    <span class="emp-name" [style.font-style]="mission.employeeName === 'Chauffeur seul' ? 'italic' : 'normal'" [style.color]="mission.employeeName === 'Chauffeur seul' ? '#64748b' : ''">{{ mission.employeeName }}</span>
                   </div>
                 </td>
                 <td>
@@ -94,7 +97,7 @@
 
         <div class="table-footer">
           <span class="table-footer-text">Affichage de 5 dernières missions</span>
-          <a routerLink="/admin/missions" class="table-footer-link">Gérer toutes les missions →</a>
+          <a routerLink="/missions" class="table-footer-link">Gérer toutes les missions →</a>
         </div>
       </section>
     </main>

@@ -6,19 +6,23 @@
   <div class="sidebar-nav">
     <!-- Admin & User Navigation -->
     <ng-container *ngIf="currentUser()?.role === 'ADMIN' || currentUser()?.role === 'USER'">
-      <a routerLink="/admin/dashboard" class="nav-item" [class.active]="activeItem === 'dashboard'">
+      <a routerLink="/dashboard" class="nav-item" [class.active]="activeItem === 'dashboard'">
         <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
         Tableau de bord
       </a>
-      <a routerLink="/admin/nouvelle-mission" class="nav-item" [class.active]="activeItem === 'new-mission'">
+      <a routerLink="/nouvelle-mission" class="nav-item" [class.active]="activeItem === 'new-mission'">
         <iconify-icon icon="lucide:plus-circle"></iconify-icon>
         Nouvelle Mission
       </a>
-      <a routerLink="/admin/missions" class="nav-item" [class.active]="activeItem === 'missions'">
+      <a routerLink="/missions" class="nav-item" [class.active]="activeItem === 'missions'">
         <iconify-icon icon="lucide:file-text"></iconify-icon>
         Ordres de mission
       </a>
-      <a routerLink="/admin/settings" class="nav-item" [class.active]="activeItem === 'settings'">
+      <a routerLink="/suivi-chauffeurs" class="nav-item" [class.active]="activeItem === 'suivi-chauffeurs'">
+        <iconify-icon icon="lucide:calendar-clock"></iconify-icon>
+        Suivi Chauffeurs
+      </a>
+      <a routerLink="/settings" class="nav-item" [class.active]="activeItem === 'settings'">
         <iconify-icon icon="lucide:settings"></iconify-icon>
         Paramètres
       </a>
@@ -37,6 +41,10 @@
       <a routerLink="/hr/chauffeurs" class="nav-item" [class.active]="activeItem === 'chauffeurs'">
         <iconify-icon icon="lucide:user-check"></iconify-icon>
         Chauffeurs
+      </a>
+      <a routerLink="/settings" class="nav-item" [class.active]="activeItem === 'settings'">
+        <iconify-icon icon="lucide:settings"></iconify-icon>
+        Paramètres
       </a>
     </ng-container>
   </div>

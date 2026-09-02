@@ -395,7 +395,7 @@ export class CalendrierChauffeurs implements OnInit {
   ${detailTableHtml}
 
   <div class="footer">
-    Rapport généré le ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} - El Mouradi Hotels - Direction Générale
+    Rapport créé le ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} - El Mouradi Hotels - Direction Générale
   </div>
 </body></html>`);
 

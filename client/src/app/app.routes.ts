@@ -13,29 +13,45 @@ import { authGuard } from './guards/auth.guard';
 export const routes: Routes = [
   { path: 'login', component: Login },
   { 
-    path: 'admin/dashboard', 
+    path: 'dashboard', 
     component: AdminDashboard,
     canActivate: [authGuard],
     data: { roles: ['ADMIN', 'USER'] }
   },
   { 
-    path: 'admin/nouvelle-mission', 
+    path: 'nouvelle-mission', 
     component: NouvelleMission,
     canActivate: [authGuard],
     data: { roles: ['ADMIN', 'USER'] }
   },
   { 
-    path: 'admin/missions', 
+    path: 'missions', 
     component: MissionsList,
     canActivate: [authGuard],
     data: { roles: ['ADMIN', 'USER'] }
   },
   { 
-    path: 'admin/settings', 
-    component: Settings,
+    path: 'suivi-chauffeurs', 
+    component: CalendrierChauffeurs,
     canActivate: [authGuard],
     data: { roles: ['ADMIN', 'USER'] }
   },
+  { 
+    path: 'settings', 
+    component: Settings,
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN', 'USER', 'HR'] }
+  },
+
+  // Backward compatibility redirects for legacy /admin/* URLs
+  { path: 'admin/dashboard', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: 'admin/nouvelle-mission', redirectTo: 'nouvelle-mission', pathMatch: 'full' },
+  { path: 'admin/missions', redirectTo: 'missions', pathMatch: 'full' },
+  { path: 'admin/suivi-chauffeurs', redirectTo: 'suivi-chauffeurs', pathMatch: 'full' },
+  { path: 'admin/settings', redirectTo: 'settings', pathMatch: 'full' },
+  { path: 'admin', redirectTo: 'dashboard', pathMatch: 'full' },
+
+  // HR Routes
   { 
     path: 'hr/dashboard', 
     component: HrDashboard,
@@ -60,11 +76,8 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['HR'] }
   },
-  { path: 'admin', redirectTo: 'admin/dashboard', pathMatch: 'full' },
+  { path: 'hr/settings', redirectTo: 'settings', pathMatch: 'full' },
   { path: 'hr', redirectTo: 'hr/suivi-chauffeurs', pathMatch: 'full' },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
 ];
-
-
-

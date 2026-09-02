@@ -142,12 +142,36 @@ export class NouvelleMission implements OnInit {
   }
 
   loadReferenceData() {
-    this.employeService.getAll().subscribe({
-      next: (data) => {
-        this.employes = data.filter(e => e.actif);
-        this.cdr.markForCheck();
+    this.ordreMissionService.getAll().subscribe({
+      next: (allMissions) => {
+        const busyEmployeIds = new Set<number>();
+        for (const m of allMissions) {
+          if (m.statut === 'PLANIFIE' || m.statut === 'EN_COURS') {
+            if (m.employeId) busyEmployeIds.add(m.employeId);
+            if (m.accompagnateurs) {
+              m.accompagnateurs.forEach(a => {
+                if (a.employeId) busyEmployeIds.add(a.employeId);
+              });
+            }
+          }
+        }
+
+        this.employeService.getAll().subscribe({
+          next: (data) => {
+            this.employes = data.filter(e => e.actif && !busyEmployeIds.has(e.id));
+            this.cdr.markForCheck();
+          },
+          error: (err) => console.error('Error loading employees:', err)
+        });
       },
-      error: (err) => console.error('Error loading employees:', err)
+      error: () => {
+        this.employeService.getAll().subscribe({
+          next: (data) => {
+            this.employes = data.filter(e => e.actif);
+            this.cdr.markForCheck();
+          }
+        });
+      }
     });
 
     this.destinationService.getAll().subscribe({
@@ -161,9 +185,7 @@ export class NouvelleMission implements OnInit {
     this.objetMissionService.getAll().subscribe({
       next: (data) => {
         this.objets = data.filter(o => o.actif);
-        if (this.objets.length > 0 && !this.objetId) {
-          this.objetId = this.objets[0].id;
-        }
+
         this.cdr.markForCheck();
       },
       error: (err) => console.error('Error loading object missions:', err)
@@ -477,6 +499,29 @@ export class NouvelleMission implements OnInit {
     return veh ? (veh.immatriculation === 'Lui-même' || veh.immatriculation === 'Aucun') : false;
   }
 
+  onAccompagnateurSelect(empIdVal: any) {
+    if (!empIdVal) return;
+    const empId = Number(empIdVal);
+    
+    if (this.accompagnateurs.some(a => a.id === empId)) {
+      this.selectedAccompagnateurId = '';
+      return;
+    }
+
+    if (this.selectedEmploye && this.selectedEmploye.id === empId) {
+      this.toastService.warning("L'accompagnateur principal ne peut pas être ajouté comme co-accompagnateur.");
+      this.selectedAccompagnateurId = '';
+      return;
+    }
+
+    const emp = this.employes.find(e => e.id === empId);
+    if (emp) {
+      this.accompagnateurs.push(emp);
+    }
+    this.selectedAccompagnateurId = '';
+    this.cdr.markForCheck();
+  }
+
   // Accompagnateurs list logic
   addAccompagnateur() {
     if (!this.selectedAccompagnateurId) return;
@@ -511,6 +556,29 @@ export class NouvelleMission implements OnInit {
       (!this.selectedEmploye || e.id !== this.selectedEmploye.id) &&
       !this.accompagnateurs.some(a => a.id === e.id)
     );
+  }
+
+  onAutreDestinationSelect(destIdVal: any) {
+    if (!destIdVal) return;
+    const destId = Number(destIdVal);
+    
+    if (this.autresDestinations.some(d => d.id === destId)) {
+      this.selectedAutreDestinationId = '';
+      return;
+    }
+
+    if (this.destinationId && Number(this.destinationId) === destId) {
+      this.toastService.warning('La destination principale ne peut pas être ré-ajoutée comme autre destination.');
+      this.selectedAutreDestinationId = '';
+      return;
+    }
+
+    const dest = this.destinations.find(d => d.id === destId);
+    if (dest) {
+      this.autresDestinations.push(dest);
+    }
+    this.selectedAutreDestinationId = '';
+    this.cdr.markForCheck();
   }
 
   // Autres Destinations list logic
@@ -589,8 +657,8 @@ export class NouvelleMission implements OnInit {
 
   // Submit form
   save(printAfter: boolean = false) {
-    if (!this.destinationId || !this.dateDebut || !this.heureDepart || !this.chauffeurId || !this.vehiculeId || !this.objetId) {
-      this.toastService.warning('Veuillez remplir tous les champs obligatoires (y compris l\'objet de la mission).');
+    if (!this.destinationId || !this.dateDebut || !this.heureDepart || !this.chauffeurId || !this.vehiculeId) {
+      this.toastService.warning('Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
@@ -620,7 +688,7 @@ export class NouvelleMission implements OnInit {
       autresDestinations: this.autresDestinations.map(d => d.id),
       chauffeurId: Number(this.chauffeurId),
       vehiculeId: Number(this.vehiculeId),
-      objetMissionId: Number(this.objetId),
+      objetMissionId: this.objetId ? Number(this.objetId) : undefined,
       dateDebut: this.dateDebut,
       dateFin: this.dateFin || undefined,
       heureDepart: this.heureDepart,
@@ -645,7 +713,7 @@ export class NouvelleMission implements OnInit {
         }
 
         setTimeout(() => {
-          this.router.navigate(['/admin/dashboard']);
+          this.router.navigate(['/dashboard']);
         }, 1500);
       },
       error: (err) => {

@@ -77,7 +77,7 @@ export interface OrdreMission {
   chauffeur?: Chauffeur;
   vehiculeId: number;
   vehicule?: Vehicule;
-  objetMissionId: number;
+  objetMissionId?: number;
   objetMission?: ObjetMission;
   creeParId: number;
   creePar?: { id: number; email: string; nom?: string; prenom?: string; role?: string };
@@ -259,7 +259,7 @@ export class OrdreMissionService {
     autresDestinations?: number[];
     chauffeurId: number;
     vehiculeId: number;
-    objetMissionId: number;
+    objetMissionId?: number;
     dateDebut: string;
     dateFin?: string;
     heureDepart: string;

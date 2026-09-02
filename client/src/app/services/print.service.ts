@@ -24,6 +24,7 @@ export interface PrintMissionDetails {
   notes?: string;
   dateEmission?: string;
   creeParRole?: string;
+  createdTime?: string;
 }
 
 @Injectable({
@@ -47,7 +48,7 @@ export class PrintService {
     const stripMatricule = (nameStr: string): string => {
       if (!nameStr) return '';
       return nameStr
-        .replace(/\s*\(\s*(?:MLE:?\s*)?\d+\s*\)/gi, '')
+        .replace(/\s*\(\s*(?:MLE:?\s*)?(?:\d+|null)?\s*\)/gi, '')
         .replace(/^\d{3,6}\s*[-–—:\s]+\s*/, '')
         .replace(/\s+\d{3,6}$/, '')
         .trim();
@@ -100,7 +101,7 @@ export class PrintService {
     const chauffeurEtablissement = details.chauffeurEtablissement || 'Direction Générale';
 
     const rawChauffeur = details.chauffeurName || details.chauffeur || 'N/A';
-    const chauffeurDisplay = rawChauffeur.replace(/^\d+\s*[-–—:\s]*/, '').replace(/\s*\(\d+\)$/, '');
+    const chauffeurDisplay = rawChauffeur.replace(/^\d+\s*[-–—:\s]*/, '').replace(/\s*\((?:\d+|null)?\)$/, '');
 
     let vehiculeMarqueModel = details.vehiculeMarque || details.vehicule || 'N/A';
     let vehiculeImmat = details.vehiculeImmatriculation || '';
@@ -388,7 +389,10 @@ export class PrintService {
                   ${(!details.creeParRole || details.creeParRole === 'USER') ? `<div style="font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px;">Services Généraux</div>` : ''}
                 </div>
               </div>
-              <div class="meta-right">El Kantaoui, le ${dateEmission}</div>
+              <div class="meta-right" style="line-height: 1.35; text-align: right;">
+                <div>El Kantaoui, le ${dateEmission}</div>
+                ${details.createdTime ? `<div style="font-size: 11px; font-weight: 600; color: #475569; margin-top: 2px;">Émis à ${details.createdTime}</div>` : ''}
+              </div>
             </div>
 
             <div class="doc-title-block">
@@ -433,10 +437,12 @@ export class PrintService {
                 <td class="label">Destination(s) :</td>
                 <td class="value">${details.destination}${details.autresDestinations && details.autresDestinations.length > 0 ? ', ' + details.autresDestinations.join(', ') : ''}</td>
               </tr>
+              ${(details.objet && details.objet.trim() !== '') ? `
               <tr>
                 <td class="label">Objet de la Mission :</td>
                 <td class="value">${details.objet}</td>
               </tr>
+              ` : ''}
             </table>
 
             <!-- Section 4: Période du Déplacement -->
